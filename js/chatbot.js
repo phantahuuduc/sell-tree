@@ -59,7 +59,7 @@ function couponLines() {
     const cond = [
       c.minOrder ? `đơn từ ${formatPrice(c.minOrder)}` : "",
       c.maxDiscount ? `tối đa ${formatPrice(c.maxDiscount)}` : "",
-      c.requireNewUser ? "chỉ tài khoản mới" : "",
+      c.requireNewUser ? "chỉ tài khoản đăng ký trong vòng 1 tháng" : "",
     ].filter(Boolean).join(", ");
     return `• <strong>${escapeHTML(c.code)}</strong> — giảm ${c.discountPercent}%${cond ? ` (${cond})` : ""}`;
   }).join("\n");

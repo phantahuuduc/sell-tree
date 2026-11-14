@@ -205,7 +205,7 @@ export function progressHtml(o) {
           ${(done || i === at) && times[i] ? `<time class="order-steps__time" datetime="${escapeHTML(String(times[i]))}">${fmtShort(times[i])}</time>` : ""}
         </li>`;
       }).join("")}
-      ${riding ? `<li class="order-steps__rider" aria-hidden="true">${STEP_ICONS[2]}</li>` : ""}
+      ${riding ? `<li class="order-steps__rider" aria-hidden="true"><span class="order-steps__rider-run"><span class="order-steps__rider-badge">${STEP_ICONS[2]}</span></span></li>` : ""}
     </ol>${etaHtml}`;
 }
 

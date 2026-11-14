@@ -100,7 +100,23 @@ export async function initScheduledBanner() {
         s.toggleAttribute("aria-hidden", !on);
         if (on) s.removeAttribute("tabindex"); else s.setAttribute("tabindex", "-1");
       });
-      dots.querySelectorAll("button").forEach((d, i) => d.classList.toggle("is-active", i === current));
+      // FLIP: đổi kích thước chấm tức thì rồi trượt / co giãn từ vị trí cũ về vị trí mới bằng transform
+      // (không animate width → không reflow từng khung hình). Tắt chuyển động → chỉ đổi lớp.
+      const btns = [...dots.querySelectorAll("button")];
+      const before = reduced ? null : btns.map((d) => d.getBoundingClientRect());
+      btns.forEach((d, i) => d.classList.toggle("is-active", i === current));
+      if (!before || typeof Element.prototype.animate !== "function") return;
+      // Bấm liên tục: bỏ hiệu ứng FLIP cũ trước khi đo vị trí mới (vị trí cũ đã đo ở trên, tính cả chỗ đang trượt dở)
+      btns.forEach((d) => d.getAnimations().forEach((a) => { if (a.id === "dot-flip") a.cancel(); }));
+      const dur = parseFloat(getComputedStyle(dots).getPropertyValue("--dur-mid")) || 260;
+      btns.forEach((d, i) => {
+        const a = before[i], b = d.getBoundingClientRect();
+        if (!b.width || (a.left === b.left && a.width === b.width)) return;
+        d.animate(
+          [{ transform: `translateX(${a.left - b.left}px) scaleX(${a.width / b.width})` }, { transform: "none" }],
+          { duration: dur, easing: "cubic-bezier(.22,1,.36,1)", id: "dot-flip" }
+        );
+      });
     };
     const stop = () => { clearInterval(timer); timer = null; };
     const start = () => {

@@ -525,7 +525,7 @@ flowchart LR
 | Mục | Nội dung |
 |---|---|
 | Luồng chính | 1. Tạo/sửa mã: %, đơn tối thiểu, giảm tối đa, số lượt (0 = không giới hạn), **áp dụng từ ngày – hết hạn**, chỉ tài khoản mới, kích hoạt. 2. Lọc theo trạng thái: Dùng được, Chưa bắt đầu, Hết hạn, Hết lượt, Tạm ngưng, Đã xóa. 3. Ngưng / Kích hoạt. 4. **Xóa mềm** → chuyển sang "Đã xóa", có thể Khôi phục. |
-| Ràng buộc | Không tạo trùng mã (kể cả mã đã xóa). Ngày bắt đầu ≤ ngày hết hạn. % giảm từ 1–100. Mã mới / đổi tên chỉ gồm 3–20 ký tự **chữ không dấu, số, `-`, `_`**. Mô tả ghi một % khác với % giảm thật → hỏi xác nhận; giảm từ 50% trở lên → hỏi xác nhận (nêu rõ mức giảm tối đa). Banner "khách mới" ở giỏ đọc đúng % của mã NGUOIMOI. |
+| Ràng buộc | Không tạo trùng mã (kể cả mã đã xóa). Ngày bắt đầu ≤ ngày hết hạn. % giảm từ 1–100. Mã mới / đổi tên chỉ gồm 3–20 ký tự **chữ không dấu, số, `-`, `_`**. Mô tả ghi một % khác với % giảm thật → hỏi xác nhận; giảm từ 50% trở lên → hỏi xác nhận (nêu rõ mức giảm tối đa). Banner "khách mới" ở giỏ đọc đúng % của mã NGUOIMOI và ghi đúng điều kiện: tài khoản đăng ký trong vòng 1 tháng (không giới hạn "đơn đầu tiên"). |
 
 ### UC46 — Quản lý banner
 | Mục | Nội dung |

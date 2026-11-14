@@ -177,7 +177,7 @@
     import { getProducts, getOrders, getUsers, updateOrderStatus, getPromotions, createPromotion, updatePromotion, deletePromotion, getCategories, createProduct, updateProduct, deleteProduct, getBanners, createBanner, updateBanner, deleteBanner, getSettings, updateSettings, createCategory, updateCategory, deleteCategory, getCoupons, createCoupon, updateCoupon, updateUser, deleteUser, createUser, getAuditLog, getReviews, updateReview, deleteReview } from "./js/api.js";
     import { initPage, formatPrice, showToast, escapeHTML, compressImageToDataURL } from "./js/ui.js";
     import { exportToExcel, exportToTxt, getOrdersInRange, importProductsFromExcel, downloadProductTemplate } from "./js/report.js";
-    import { isCompletedSale } from "./js/sale.js";
+    import { revenueOf } from "./js/sale.js";
     import { renderOrderManager } from "./js/order-ui.js";
     import { initAdminDashboard } from "./js/admin-dashboard.js";
     import { attachMarker } from "./js/slide-marker.js";
@@ -220,7 +220,7 @@
         window.__adminPromotions = promotions;
 
         // Thống kê
-        const revenue = orders.filter(isCompletedSale).reduce((s, o) => s + (Number(o.total) || 0), 0);
+        const revenue = revenueOf(orders);
         const customerCount = users.filter((u) => u.role === "user").length;
 
         document.getElementById("statProducts").textContent = products.length;
@@ -1649,7 +1649,7 @@
               <div class="sale-form__group">
                 <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
                   <input type="checkbox" name="requireNewUser" ${coupon?.requireNewUser ? "checked" : ""}>
-                  Chỉ cho tài khoản mới
+                  Chỉ cho tài khoản mới (đăng ký trong vòng 1 tháng)
                 </label>
               </div>
               <div class="sale-form__group">

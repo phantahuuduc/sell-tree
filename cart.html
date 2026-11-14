@@ -387,7 +387,7 @@
       const newUserBannerHtml = isNewUser(user) && welcomeOk ? `
         <div class="new-user-banner">
           <span>🎁</span>
-          <p>Chào bạn mới! Dùng mã <strong>NGUOIMOI</strong> để giảm ${Number(welcomeCoupon.discountPercent) || 0}%${welcomeCoupon.maxDiscount ? ` (tối đa ${formatPrice(welcomeCoupon.maxDiscount)})` : ""} đơn hàng đầu tiên.</p>
+          <p>Chào bạn mới! Dùng mã <strong>NGUOIMOI</strong> để giảm ${Number(welcomeCoupon.discountPercent) || 0}%${welcomeCoupon.maxDiscount ? ` (tối đa ${formatPrice(welcomeCoupon.maxDiscount)})` : ""} cho đơn hàng của bạn — ưu đãi dành cho tài khoản mới đăng ký trong vòng 1 tháng.</p>
         </div>` : "";
 
       const ship = await getShipping(total);

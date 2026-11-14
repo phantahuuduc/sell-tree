@@ -422,10 +422,12 @@
   overflow: hidden;
 }
 .care-row__fill {
-  display: block; height: 100%; width: 0;
+  /* Rộng 100%, trượt vào bằng translateX (JS đặt translateX(pct - 100%)) — chỉ animate transform */
+  display: block; height: 100%; width: 100%;
   background: var(--specimen);
   border-radius: var(--r-sm);
-  transition: width var(--dur-slow) var(--ease-out);
+  transform: translateX(-100%);
+  transition: transform var(--dur-slow) var(--ease-out);
   transition-delay: var(--delay, 0ms);
 }
 .care-card.is-alert .care-row__fill { background: var(--stamp); }
@@ -1355,16 +1357,18 @@
   margin: 6px 0 4px;
 }
 .pw-meter__bar {
+  /* Rộng 100%, phần chưa đạt trượt ra ngoài khung (overflow:hidden) bằng translateX — chỉ animate transform */
   display: block;
   height: 100%;
-  width: 0;
+  width: 100%;
   border-radius: 3px;
-  transition: width 0.25s ease, background 0.25s ease;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease, background 0.25s ease;
 }
-.pw-meter__bar--empty { width: 0; }
-.pw-meter__bar--weak { width: 33%; background: #d14343; }
-.pw-meter__bar--medium { width: 66%; background: #e0a53a; }
-.pw-meter__bar--strong { width: 100%; background: #2E5E3A; }
+.pw-meter__bar--empty { transform: translateX(-100%); }
+.pw-meter__bar--weak { transform: translateX(-67%); background: #d14343; }
+.pw-meter__bar--medium { transform: translateX(-34%); background: #e0a53a; }
+.pw-meter__bar--strong { transform: translateX(0); background: #2E5E3A; }
 .pw-meter__text {
   font-size: 12px;
   color: var(--ink-soft, #666);
@@ -1924,7 +1928,8 @@
 .sched-banner__dot {
   width: 10px; height: 10px; padding: 0; border: 0; border-radius: 99px; cursor: pointer;
   background: rgba(255,255,255,.5);
-  transition: width var(--dur-mid) var(--ease-out), background var(--dur-mid) var(--ease-out);
+  transform-origin: left center; /* cho hiệu ứng FLIP ở banner.js */
+  transition: background var(--dur-mid) var(--ease-out); /* độ dài chấm: banner.js trượt / co giãn bằng transform (FLIP) */
 }
 .sched-banner__dot.is-active { width: 30px; background: #fff; }
 @media (min-width: 641px) {
@@ -2086,19 +2091,28 @@
 @keyframes stepBeat { 50% { box-shadow: 0 0 0 6px rgba(47,107,60,.18); transform: scale(1.06); } }
 /* Xe giao hàng chạy trên đường nối, dừng đúng quãng đường đã đi */
 .order-steps li.order-steps__rider {
-  position: absolute; z-index: 2; top: calc(var(--dot) / 2); left: calc(10% + 80% * var(--fill));
+  --ride: var(--fill);
+  position: absolute; z-index: 2; top: calc(var(--dot) / 2); left: 10%; width: 80%; height: 0;
+  display: block; pointer-events: none;
+}
+.order-steps__rider-run {
+  display: block; position: relative; width: 100%; height: 0;
+  animation: riderGo 1500ms var(--ease-out) both;
+}
+.order-steps__rider-badge {
+  position: absolute; top: 0; left: calc(100% * var(--ride));
   width: 30px; height: 30px; margin: -15px 0 0 -15px; display: grid; place-items: center; border-radius: 50%;
   background: #fff; color: var(--specimen-dark); border: 2px solid var(--specimen);
   box-shadow: 0 4px 10px -3px rgba(28,42,30,.45);
-  animation: riderGo 1500ms var(--ease-out) both;
 }
 .order-steps__rider svg { width: 16px; height: 16px; animation: riderBob 900ms ease-in-out infinite; }
-@keyframes riderGo { from { left: calc(10% + 80% * var(--at) / 4); opacity: 0; } 30% { opacity: 1; } }
+/* Xuất phát từ chấm của bước hiện tại (--at / 4) rồi chạy tới --ride; % của translateX = bề rộng đường chạy */
+@keyframes riderGo { from { transform: translateX(calc((var(--at) / 4 - var(--ride)) * 100%)); opacity: 0; } 30% { opacity: 1; } }
 @keyframes riderBob { 50% { transform: translateY(-1.5px) rotate(-3deg); } }
 /* Khiếu nại / chậm: đổi sang tông cảnh báo */
 .order-steps.is-warn li.is-current .order-steps__dot { border-color: #c0392b; color: #c0392b; background: #fdf1ef; box-shadow: 0 0 0 4px rgba(192,57,43,.14); }
 .order-steps.is-warn li.is-current .order-steps__dot::after { border-color: #c0392b; }
-.order-steps.is-late li.order-steps__rider { border-color: #c98a1b; color: #8a5a00; }
+.order-steps.is-late .order-steps__rider-badge { border-color: #c98a1b; color: #8a5a00; }
 .order-steps.is-late .order-steps__rider svg { animation: none; }
 
 /* Dòng "dự kiến giao" ngay dưới thanh tiến trình */
@@ -2139,13 +2153,14 @@
   .order-steps__label { font-size: .66rem; }
   .order-steps__time { font-size: .6rem; }
   /* Màn hẹp: khoảng giữa hai chấm chỉ vừa một chiếc xe nhỏ → xe đứng giữa quãng đường, không đè lên chấm */
-  .order-steps li.order-steps__rider { width: 20px; height: 20px; margin: -10px 0 0 -10px; border-width: 1.5px; left: calc(10% + 80% * (var(--at) + .5) / 4); }
+  .order-steps li.order-steps__rider { --ride: calc((var(--at) + .5) / 4); }
+  .order-steps__rider-badge { width: 20px; height: 20px; margin: -10px 0 0 -10px; border-width: 1.5px; }
   .order-steps__rider svg { width: 12px; height: 12px; }
   .order-eta { font-size: .84rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .order-steps::after, .order-steps li .order-steps__dot, .order-steps li .order-steps__dot::after,
-  .order-steps li.order-steps__rider, .order-steps__rider svg, .order-eta, .order-eta__badge i::after { animation: none !important; }
+  .order-steps__rider-run, .order-steps__rider svg, .order-eta, .order-eta__badge i::after { animation: none !important; }
   .order-steps li.is-done .order-steps__dot svg path { animation: none; stroke-dashoffset: 0; }
 }
 

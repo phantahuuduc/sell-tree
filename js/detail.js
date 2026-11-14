@@ -49,7 +49,9 @@ function initCareBars(container) {
         container.querySelectorAll(".care-row__fill").forEach((fill, index) => {
           const targetPct = fill.dataset.targetPct;
           fill.style.setProperty("--delay", `${index * 120}ms`);
-          fill.style.width = `${targetPct}%`;
+          // Trượt bằng transform (không đổi width → không reflow); dải màu rộng 100% nằm trong khung overflow:hidden
+          const pct = Math.max(0, Math.min(100, Number(targetPct) || 0));
+          fill.style.transform = `translateX(${pct - 100}%)`;
         });
 
         // Chạy animation đếm số %

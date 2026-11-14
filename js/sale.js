@@ -189,6 +189,24 @@ export function isCompletedSale(order) {
   return order.paymentStatus === "paid" || order.status === "delivered" || order.status === "completed";
 }
 
+// Doanh thu của một danh sách đơn — NGUỒN DUY NHẤT cho dashboard, ô "Doanh thu" và file báo cáo Excel/TXT,
+// để mọi nơi luôn ra cùng một con số. Chỉ cộng đơn isCompletedSale.
+export function revenueOf(orders) {
+  return (orders || []).filter(isCompletedSale).reduce((s, o) => s + (Number(o.total) || 0), 0);
+}
+
+// Phân loại đơn KHÔNG tính doanh thu (để báo cáo giải thích vì sao tổng là con số đó).
+export function excludedFromRevenue(orders) {
+  const out = { cancelled: 0, refunded: 0, unpaid: 0 };
+  (orders || []).forEach((o) => {
+    if (isCompletedSale(o)) return;
+    if (o.status === "cancelled") out.cancelled++;
+    else if (o.status === "returned" || o.refundStatus === "refunded") out.refunded++;
+    else out.unpaid++; // chờ thanh toán / chờ xác nhận chuyển khoản / bị từ chối…
+  });
+  return out;
+}
+
 export function getBestSellers(products, orders, limit = 6, minSold = 3) {
   const countMap = {};
   (orders || []).filter(isCompletedSale).forEach((order) => {

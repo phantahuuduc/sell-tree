@@ -14,7 +14,7 @@
 // Doanh thu / số lượng bán chỉ tính đơn "đã bán" (isCompletedSale): đã thanh toán hoặc đã giao, không hủy / hoàn.
 // ==========================================================
 import { formatPrice, escapeHTML } from "./ui.js";
-import { isCompletedSale } from "./sale.js";
+import { isCompletedSale, revenueOf } from "./sale.js";
 import { attachMarker } from "./slide-marker.js";
 import { GREEN, slipCell, sproutPlugin, plotOptions, plotBars, plotLine, plotPrevLine, rankOptions, countUp } from "./dash-kit.js";
 
@@ -213,7 +213,7 @@ export function initAdminDashboard(root, data) {
     const sold = all.filter(isCompletedSale);
     const prevAll = orders.filter((o) => inRange(o.createdAt, r.prev));
     const prevSold = prevAll.filter(isCompletedSale);
-    const revenue = sum(sold), prevRevenue = sum(prevSold);
+    const revenue = revenueOf(all), prevRevenue = revenueOf(prevAll); // cùng hàm với file báo cáo
     const avg = sold.length ? Math.round(revenue / sold.length) : 0;
     const prevAvg = prevSold.length ? Math.round(prevRevenue / prevSold.length) : 0;
     const buyers = new Set(sold.map((o) => String(o.userId))).size;

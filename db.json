@@ -1336,49 +1336,6 @@
       "stock": 50,
       "addedDate": "2026-06-10T00:00:00.000Z",
       "labelIds": []
-    },
-    {
-      "name": "ret",
-      "scientificName": "ee",
-      "price": 1000000,
-      "stock": 10,
-      "categoryId": "1",
-      "difficulty": "Dễ chăm",
-      "image": "assets/img/p1.jpg",
-      "description": "",
-      "variants": [],
-      "oldPrice": null,
-      "addedDate": "2026-11-11T02:09:49.600Z",
-      "id": "pMG71gHXPDI",
-      "labelIds": [
-        "care-easy"
-      ]
-    },
-    {
-      "name": "babi",
-      "scientificName": "mymy",
-      "price": 30000,
-      "stock": 10,
-      "categoryId": "4",
-      "image": "assets/img/p1.jpg",
-      "description": "an rat ngon",
-      "labelIds": [
-        "care-hard",
-        "keep-from-kids"
-      ],
-      "difficulty": "Cần chú ý",
-      "petSafe": false,
-      "variants": [
-        {
-          "label": "Lon",
-          "height": "5",
-          "potDiameter": "20",
-          "price": 30000
-        }
-      ],
-      "oldPrice": null,
-      "addedDate": "2026-11-14T13:48:34.055Z",
-      "id": "VQdIcQuPekI"
     }
   ],
   "users": [
@@ -3534,7 +3491,7 @@
       "paymentMethod": "wallet",
       "addInfo": "LASOIRl2Q1ihCm7c-27008",
       "paymentStatus": "paid",
-      "status": "delivered",
+      "status": "completed",
       "paidAt": "2026-11-11T17:05:29.333Z",
       "timeline": [
         {
@@ -3592,17 +3549,30 @@
             "name": "Trần Văn Vườn",
             "role": "staff"
           }
+        },
+        {
+          "action": "auto_complete",
+          "label": "Tự hoàn tất sau khi giao",
+          "status": "completed",
+          "at": "2026-11-14T17:39:49.860Z",
+          "by": {
+            "id": "system",
+            "name": "Hệ thống",
+            "role": "system"
+          }
         }
       ],
       "id": "Rfqq5aYjapc",
       "stockDeducted": {
         "5": 1
       },
-      "updatedAt": "2026-11-11T17:28:02.995Z",
+      "updatedAt": "2026-11-14T17:39:49.860Z",
       "shippedAt": "2026-11-11T17:08:19.704Z",
       "deliveredAt": "2026-11-11T17:28:02.995Z",
       "deliveredBy": "3",
-      "receiveReminderAt": "2026-11-14T14:35:52.138Z"
+      "receiveReminderAt": "2026-11-14T14:35:52.138Z",
+      "completedAt": "2026-11-14T17:39:49.860Z",
+      "receivedConfirmedBy": "system"
     },
     {
       "userId": "Rl2Q1ihCm7c",

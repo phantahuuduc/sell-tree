@@ -4,6 +4,21 @@
 // ==========================================================
 
 import { getOrders, createProduct } from "./api.js";
+import { isCompletedSale, revenueOf, excludedFromRevenue } from "./sale.js";
+
+// Doanh thu trong báo cáo dùng CHUNG hàm với bảng thống kê (sale.js: isCompletedSale / revenueOf)
+// → số trong file xuất luôn khớp số trên dashboard. Trả null (đã báo người dùng) khi không có gì để xuất.
+function splitForReport(orders) {
+  if (!orders.length) { alert("Không có đơn hàng nào trong kỳ này."); return null; }
+  const sold = orders.filter(isCompletedSale);
+  const ex = excludedFromRevenue(orders);
+  if (!sold.length) {
+    alert(`Kỳ này chưa có đơn nào tính vào doanh thu.\n(${orders.length} đơn trong kỳ đều không tính: ${excludedNote(ex)})`);
+    return null;
+  }
+  return { sold, ex, total: revenueOf(orders), all: orders.length };
+}
+const excludedNote = (ex) => `${ex.cancelled} đã hủy · ${ex.refunded} đã hoàn hàng / hoàn tiền · ${ex.unpaid} chưa thanh toán / chờ xử lý`;
 
 function getXLSX() {
   const XLSX = window.XLSX;
@@ -47,13 +62,15 @@ export async function getOrdersInRange(period) {
 }
 
 /* ---- Xuất Excel (.xlsx) — mỗi dòng là 1 sản phẩm trong đơn ---- */
+// Chỉ liệt kê đơn TÍNH DOANH THU (cùng luật với bảng thống kê), cuối file ghi tổng + số đơn không tính.
 export function exportToExcel(orders, filename) {
   const XLSX = getXLSX();
   if (!XLSX) { alert("Thư viện Excel chưa sẵn sàng. Vui lòng tải lại trang."); return; }
-  if (!orders.length) { alert("Không có đơn hàng nào trong kỳ này."); return; }
+  const rep = splitForReport(orders);
+  if (!rep) return;
 
   const rows = [];
-  orders.forEach((o) => {
+  rep.sold.forEach((o) => {
     (o.items || []).forEach((item) => {
       rows.push({
         "Mã đơn": o.id,
@@ -69,12 +86,12 @@ export function exportToExcel(orders, filename) {
     });
   });
 
-  const totalAll = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
   rows.push({});
-  rows.push({ "Mã đơn": "TỔNG CỘNG", "Tổng đơn": totalAll });
+  rows.push({ "Mã đơn": "TỔNG DOANH THU", "Sản phẩm": `${rep.sold.length} đơn tính doanh thu`, "Tổng đơn": rep.total });
+  rows.push({ "Mã đơn": "Không tính", "Sản phẩm": `${rep.all - rep.sold.length} / ${rep.all} đơn trong kỳ: ${excludedNote(rep.ex)}` });
 
   const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = [{ wch: 12 }, { wch: 20 }, { wch: 10 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 14 }];
+  ws["!cols"] = [{ wch: 16 }, { wch: 20 }, { wch: 10 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 14 }];
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Doanh thu");
@@ -83,14 +100,17 @@ export function exportToExcel(orders, filename) {
 
 /* ---- Xuất TXT (Blob + <a download>) ---- */
 export function exportToTxt(orders, filename) {
-  if (!orders.length) { alert("Không có đơn hàng nào trong kỳ này."); return; }
+  const rep = splitForReport(orders);
+  if (!rep) return;
 
   let txt = `BÁO CÁO DOANH THU — LÁ & SỎI\n`;
   txt += `Xuất ngày: ${new Date().toLocaleString("vi-VN")}\n`;
-  txt += `Số đơn: ${orders.length}\n`;
+  txt += `Số đơn tính doanh thu: ${rep.sold.length} / ${rep.all} đơn trong kỳ\n`;
+  txt += `Không tính: ${excludedNote(rep.ex)}\n`;
+  txt += `(Doanh thu = đơn đã thanh toán hoặc đã giao, không bị hủy / hoàn — cùng cách tính với bảng thống kê)\n`;
   txt += `${"=".repeat(70)}\n\n`;
 
-  orders.forEach((o) => {
+  rep.sold.forEach((o) => {
     txt += `Đơn #${o.id} — ${new Date(o.createdAt).toLocaleString("vi-VN")}\n`;
     txt += `Khách: ${o.userId} — Trạng thái: ${o.status}\n`;
     (o.items || []).forEach((item) => {
@@ -100,8 +120,7 @@ export function exportToTxt(orders, filename) {
     txt += `${"-".repeat(70)}\n`;
   });
 
-  const totalAll = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
-  txt += `\nTỔNG CỘNG: ${totalAll.toLocaleString("vi-VN")}đ\n`;
+  txt += `\nTỔNG DOANH THU: ${rep.total.toLocaleString("vi-VN")}đ\n`;
 
   const blob = new Blob([txt], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);

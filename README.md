@@ -100,6 +100,8 @@ Mở trình duyệt: **http://localhost:8090/index.html**
 | 👤 **Khách hàng mới** | `an@gmail.com` | `123456` |
 | 👤 **Khách hàng cũ** | `cu@gmail.com` | `123456` |
 
+> Đây là **tài khoản mẫu phục vụ demo**, không phải dữ liệu người dùng thật (xem mục 8.1).
+>
 > Có thể mở **2 tab song song** (vd 1 khách + 1 nhân viên) để thử luồng chat realtime và duyệt thanh toán — xác thực theo `sessionStorage` nên mỗi tab độc lập.
 
 ---
@@ -253,13 +255,39 @@ Mọi thao tác nhạy cảm của nhân viên (duyệt TT, duyệt nạp ví, �
 
 ---
 
-## 8. Giới hạn (phạm vi học thuật)
+## 8. Hạn chế đã biết & hướng phát triển
 
-- Mật khẩu lưu **dạng thô** trong `db.json` (không hash) — chỉ xóa khỏi object trước khi lưu session.
-- `json-server` **không** xác thực server-side — phân quyền thực thi phía client (trang nội bộ có đối chiếu phiên với máy chủ, nhưng vẫn không chặn được người gọi thẳng API).
-- Không có máy chủ chạy nền: **nhắc xác nhận nhận hàng** và **tự hoàn tất đơn** chạy khi có người mở trang đơn hàng (khách hoặc shop).
-- Không có WebSocket — realtime dùng polling.
-- Public Key EmailJS lộ ở client là **bình thường & an toàn** (chỉ cho gửi, không đọc hộp thư).
+Dự án được xây dựng trong phạm vi môn Lập trình Web Client, với backend giả lập bằng `json-server`. Các hạn chế dưới đây xuất phát từ lựa chọn công nghệ đó, không sửa được nếu giữ nguyên kiến trúc hiện tại; chúng được ghi nhận để người đọc đánh giá đúng phạm vi của sản phẩm.
+
+### 8.1 Bảo mật API
+
+**Hiện trạng.** `json-server` không có cơ chế xác thực phía máy chủ. Bất kỳ ai biết đường dẫn API (ví dụ `/users`, `/orders`) đều:
+
+- đọc được toàn bộ dữ liệu, kể cả **mật khẩu đang lưu dạng văn bản thường** trong `db.json`;
+- thêm, sửa, xóa được mọi bản ghi bằng các lệnh `POST` / `PATCH` / `DELETE` gửi thẳng tới API.
+
+Việc phân quyền (`requireRole`, đối chiếu phiên với máy chủ) chỉ diễn ra ở trình duyệt. Cơ chế này chặn được thao tác sai trên giao diện nhưng không chặn được người gọi API trực tiếp.
+
+Các tài khoản trong `db.json` (mục 3) là **tài khoản mẫu phục vụ demo**, không chứa dữ liệu người dùng thật.
+
+**Hướng khắc phục khi phát triển tiếp:**
+
+1. Thay `json-server` bằng một backend thật (Node.js/Express hoặc tương đương). Nhờ kiến trúc phân lớp, mọi lệnh gọi đã đi qua `js/api.js`, nên phần giao diện gần như không phải sửa.
+2. Băm mật khẩu bằng **bcrypt** trước khi lưu, và không bao giờ trả mật khẩu về client.
+3. Xác thực bằng **JWT** (hoặc session cookie `HttpOnly`): mỗi request mang token, máy chủ kiểm tra trước khi xử lý.
+4. **Phân quyền phía máy chủ**: mỗi endpoint tự kiểm tra vai trò (khách / nhân viên / quản trị) và quyền sở hữu dữ liệu (khách chỉ xem đơn của mình).
+
+### 8.2 Dữ liệu không bền vững trên bản deploy
+
+**Hiện trạng.** Bản online chạy API trên gói miễn phí của Render. Gói này không giữ lại thay đổi ghi vào file khi máy chủ khởi động lại, "ngủ" do không có truy cập, hoặc deploy lại. Vì vậy đơn hàng, tài khoản, đánh giá… tạo trên bản online **có thể mất**, và dữ liệu quay về trạng thái gốc của `db.json` trong mã nguồn. Bản chạy local (`start-db.bat`) không bị ảnh hưởng: mọi thay đổi được ghi thẳng vào `db.json` trên máy.
+
+**Hướng khắc phục:** lưu dữ liệu trong một cơ sở dữ liệu thật như **MongoDB Atlas** hoặc **PostgreSQL** (Supabase, Neon, Render PostgreSQL…) thay cho file JSON. Kết hợp với backend ở mục 8.1, dữ liệu sẽ tồn tại độc lập với vòng đời của máy chủ ứng dụng.
+
+### 8.3 Các giới hạn khác
+
+- Không có máy chủ chạy nền: **nhắc xác nhận nhận hàng** và **tự hoàn tất đơn** chỉ chạy khi có người mở trang đơn hàng (khách hoặc shop). *Hướng phát triển:* tác vụ định kỳ (cron) phía máy chủ.
+- Không có WebSocket — realtime dùng polling. *Hướng phát triển:* WebSocket / Server-Sent Events.
+- Public Key EmailJS lộ ở client là **bình thường và an toàn** (chỉ cho gửi, không đọc được hộp thư).
 
 ---
 
