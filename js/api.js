@@ -4,12 +4,15 @@
 // ==========================================================
 import axios from "axios";
 
-export const API_URL = "http://localhost:3000";
+const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+export const API_URL = IS_LOCAL
+  ? "http://localhost:3000"
+  : "https://sell-tree.onrender.com";
 
 // Tạo một instance axios dùng chung: cùng baseURL, cùng timeout.
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 8000,
+  timeout: IS_LOCAL ? 8000 : 60000,
 });
 
 // Retry interceptor: khi lỗi mạng (server chưa sẵn sàng / mất kết nối tạm thời),
