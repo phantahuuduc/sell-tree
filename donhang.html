@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Đơn Hàng Của Tôi — Tiệm Cây Lá & Sỏi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <!-- jsPDF cho tải hóa đơn -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+  <script type="importmap">{ "imports": { "axios": "https://esm.sh/axios@1.7.9" } }</script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="cart.html">Giỏ hàng</a>
+      </nav>
+      <div class="header-actions"><div class="account" data-account></div></div>
+    </div>
+  </header>
+
+  <main class="container profile-page" id="mainContent">
+    <h1 class="animate__animated animate__fadeInUp">Đơn hàng của tôi</h1>
+    <div id="ordersList"><div class="state"><svg class="leaf-loader" viewBox="0 0 48 48" aria-hidden="true"><path class="leaf-loader__leaf" pathLength="1" d="M22 40A14 14 0 0 1 19.6 12.2C31 10 34 9 38 4c2 4 4 8.4 4 16 0 11-9.6 20-20 20Z"/><path class="leaf-loader__vein" pathLength="1" d="M4 42c0-6 3.7-10.7 10.2-12C19 29 24 26 26 24"/></svg><p>Đang tải đơn hàng...</p></div></div>
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container"><div class="site-footer__note"><p data-site="copyrightNote">© 2026 Lá & Sỏi</p></div></div>
+  </footer>
+
+  <script type="module" src="js/orders.js"></script>
+</body>
+</html>

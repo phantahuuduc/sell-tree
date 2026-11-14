@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Chi Tiết Cây Cảnh — Tiệm Lá & Sỏi</title>
+  <meta name="description" content="Xem chi tiết hồ sơ thực vật, phiếu chăm sóc nước, ánh sáng và độ ẩm của cây cảnh tại Lá & Sỏi.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <!-- Animate.css — thư viện animation CSS3 -->
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <!-- Chuyển cảnh từ thẻ sản phẩm (js/product-flow.js): ghi lại sớm việc trang được hiện ra có kèm View Transition hay không,
+       và (trình duyệt hỗ trợ) chờ khung xương vẽ xong rồi mới hiện khung hình đầu tiên để ảnh "bay" đúng chỗ. -->
+  <script>
+    window.addEventListener("pagereveal", function (e) { window.__pdReveal = e.viewTransition ? "vt" : "plain"; });
+  </script>
+  <link rel="expect" href="#pdSkelReady" blocking="render">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9",
+        "three": "https://esm.sh/three@0.170.0",
+        "three/addons/": "https://esm.sh/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="index.html#plantQuiz">Cây đầu tiên</a>
+        <a href="#footer">Liên hệ</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="account" data-account></div>
+
+        <a class="cart-link" href="cart.html" aria-label="Giỏ hàng trống">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          <span class="cart-badge" data-cart-count hidden>0</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobilePanel" aria-label="Mở menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-panel" id="mobilePanel" aria-hidden="true">
+    <div class="mobile-panel__scrim" data-close></div>
+    <div class="mobile-panel__sheet">
+      <div class="mobile-panel__head">
+        <span class="brand">Lá & Sỏi</span>
+        <button class="btn btn--ghost" type="button" data-close aria-label="Đóng menu">✕</button>
+      </div>
+      <nav>
+        <a href="index.html">Trang chủ sản phẩm</a>
+        <a href="cart.html">Giỏ hàng</a>
+      </nav>
+      <div class="account" data-account></div>
+    </div>
+  </div>
+
+  <main id="mainContent">
+    <article class="container detail" id="detailContainer">
+      <!-- JS detail.js sẽ render breadcrumb, gallery, phiếu chăm sóc M5, buy control và gợi ý -->
+    </article>
+    <!-- Khung xương của trang chi tiết: vẽ ngay khi trình duyệt đọc tới đây (trước cả khi module JS tải xong),
+         kèm ảnh của thẻ sản phẩm vừa bấm để ảnh "bay" từ thẻ tới đúng khung ảnh lớn. Xem js/product-flow.js. -->
+    <script>
+      (function () {
+        var box = document.getElementById("detailContainer");
+        var id = new URLSearchParams(location.search).get("id");
+        if (!box || !id) return;
+        var hint = null;
+        try { hint = JSON.parse(sessionStorage.getItem("pd_from") || "null"); } catch (e) { /* bỏ qua */ }
+        if (!hint || String(hint.id) !== id) hint = null;
+        var line = function (cls) { return '<div class="sk-line ' + cls + '"></div>'; };
+        box.innerHTML =
+          '<div class="pd-skel skeleton" role="status" aria-label="Đang tải thông tin cây">' +
+            line("pd-skel__crumb") +
+            '<div class="detail__grid">' +
+              '<div class="gallery"><div class="gallery__main" id="pdSkelMedia"></div></div>' +
+              '<div class="info">' + line("pd-skel__title") + line("w40") + line("pd-skel__price") + line("w60") +
+                line("pd-skel__card") + line("w80") + line("") + line("w60") + line("pd-skel__buy") + '</div>' +
+            '</div>' +
+          '</div>';
+        if (!hint || !hint.src) return;
+        var media = document.getElementById("pdSkelMedia");
+        var img = new Image();
+        img.className = "pd-skel__img";
+        img.alt = "";
+        img.src = hint.src;
+        media.appendChild(img);
+        media.classList.add("has-img");
+        window.__pdHint = hint;
+
+        // Chỉ làm hiệu ứng bay khi vừa bấm từ thẻ sang (không phải tải lại trang) và máy không bật giảm chuyển động
+        var fresh = Date.now() - (hint.at || 0) < 5000;
+        var calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!fresh || calm) return;
+        // Trình duyệt chưa có View Transitions liên trang: tự cho ảnh bay từ vị trí thẻ tới khung ảnh lớn
+        var fly = function () {
+          var from = hint.rect, to = media.getBoundingClientRect();
+          if (!from || !to.width || !media.animate) return;
+          window.__pdReady = performance.now() + 380;
+          media.animate([
+            { transformOrigin: "0 0", transform: "translate(" + (from[0] - to.left) + "px," + (from[1] - to.top) + "px) scale(" + (from[2] / to.width) + "," + (from[3] / to.height) + ")" },
+            { transformOrigin: "0 0", transform: "none" }
+          ], { duration: 380, easing: "cubic-bezier(.22,1,.36,1)" });
+        };
+        // Trình duyệt tự cho ảnh bay (View Transition) chỉ khi khung xương có mặt TRƯỚC lúc trang được hiện ra;
+        // mọi trường hợp còn lại (chưa hỗ trợ, hoặc trang đã hiện trước khi chạy tới đây) thì tự làm hiệu ứng bay.
+        // (Sự kiện pagereveal — nếu có — luôn tới trước khung hình đầu tiên, nên tới requestAnimationFrame là đã biết kết quả.)
+        if (window.__pdReveal) fly();
+        else requestAnimationFrame(function () {
+          if (window.__pdReveal === "vt") window.__pdReady = performance.now() + 400; else fly();
+        });
+      })();
+    </script>
+    <span id="pdSkelReady" hidden></span>
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <h2><span data-site="shopName">Lá & Sỏi</span> — <span data-site="tagline">Tiệm Cây Cảnh</span></h2>
+          <p data-site="footerIntro">Mỗi chậu cây là một sinh thể cần hiểu đúng nhu cầu.</p>
+        </div>
+        <div>
+          <h2>Ghé thăm tiệm</h2>
+          <p data-site="address">86 Nguyễn Văn Thủ, P. Đa Kao, Q.1, TP.HCM</p>
+        </div>
+        <div>
+          <h2>Hỗ trợ người trồng</h2>
+          <p>Điện thoại / Zalo: <span data-site="phone">0908 123 456</span></p>
+        </div>
+      </div>
+      <div class="site-footer__note">
+        <p data-site="copyrightNote">© 2026 Lá & Sỏi — Bài thi môn Lập trình Web Client.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/detail.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Trang Nhân Viên — Tiệm Cây Lá & Sỏi</title>
+  <meta name="description" content="Trang nghiệp vụ dành cho nhân viên Lá & Sỏi.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9"
+      }
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="staff.html" aria-current="page">Nhân viên</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="account" data-account></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-page adm-book" id="mainContent">
+    <div class="adm-book__head">
+      <p class="adm-book__name">Sổ nghiệp vụ <small>vườn ươm Lá &amp; Sỏi</small></p>
+    </div>
+
+    <!-- Điều hướng: thẻ phân trang của sổ — chỉ gồm các mục thuộc quyền nhân viên -->
+    <nav class="adm-tabs" role="tablist" aria-label="Các mục nghiệp vụ">
+        <div class="adm-tabs__group" role="presentation" title="Tổng quan">
+          <button class="adm-tab" type="button" role="tab" aria-selected="true" data-staff-tab="dashboard"><span>Hôm nay</span></button>
+        </div>
+        <div class="adm-tabs__group" role="presentation" title="Việc cần làm">
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-staff-tab="payments"><span>Duyệt thanh toán</span> <span class="tab-badge" id="payBadge" hidden>0</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-staff-tab="orders"><span>Đơn hàng</span> <span class="tab-badge" id="orderBadge" hidden>0</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-staff-tab="chat"><span>Tin nhắn</span> <span class="tab-badge" id="chatBadge" hidden>0</span></button>
+        </div>
+        <div class="adm-tabs__group" role="presentation" title="Kho">
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-staff-tab="stock"><span>Tồn kho</span></button>
+        </div>
+    </nav>
+
+    <div class="adm-main adm-sheet">
+    <h1 class="adm-sheet__title" id="admTitle" data-no="01">Hôm nay</h1>
+
+    <!-- Tổng quan: việc đang chờ là chính; doanh thu hôm nay / tuần này là phụ (js/staff.js › loadDashboard) -->
+    <div class="admin-panel" id="panelDashboard">
+      <div id="staffDash"><div class="state"><p>Đang tải số liệu…</p></div></div>
+
+      <details class="adm-more">
+        <summary>Xuất báo cáo hôm nay / tuần này</summary>
+      <h3 class="dash-section-title">Xuất báo cáo ngắn hạn</h3>
+      <div class="export-row">
+        <button class="btn btn--primary" id="exportTodayExcel">Xuất Excel hôm nay</button>
+        <button class="btn btn--ghost" id="exportTodayTxt">Xuất TXT hôm nay</button>
+        <button class="btn btn--primary" id="exportWeekExcel">Xuất Excel tuần này</button>
+        <button class="btn btn--ghost" id="exportWeekTxt">Xuất TXT tuần này</button>
+      </div>
+      </details>
+    </div>
+
+    <!-- Duyệt thanh toán (QR) + Nạp ví -->
+    <div class="admin-panel" id="panelPayments" hidden>
+      <div class="state"><p>Đang tải...</p></div>
+    </div>
+
+    <!-- Tin nhắn khách hàng -->
+    <div class="admin-panel" id="panelChat" hidden>
+      <div class="state"><p>Đang tải tin nhắn...</p></div>
+    </div>
+
+    <!-- Đơn hàng -->
+    <div class="admin-panel" id="panelOrders" hidden>
+      <div class="state"><p>Đang tải đơn hàng...</p></div>
+    </div>
+
+    <!-- Tồn kho -->
+    <div class="admin-panel" id="panelStock" hidden>
+      <p class="muted">Nhân viên chỉ được cập nhật số lượng tồn kho, không được thêm hoặc xóa sản phẩm.</p>
+      <div class="state"><p>Đang tải tồn kho...</p></div>
+    </div>
+    </div><!-- /.adm-main -->
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container">
+      <div class="site-footer__note">
+        <p>&copy; 2026 Lá & Sỏi — Bài thi môn Lập trình Web Client.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Thư viện: SheetJS (xuất Excel) + Chart.js (biểu đồ) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script type="module" src="js/staff.js"></script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi" class="js">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Lá & Sỏi — Tiệm Cây Cảnh & Sen Đá Tốt Cho Người Mới Trồng</title>
+  <meta name="description"
+    content="Tiệm cây cảnh & sen đá tại TP.HCM. Cây dưỡng sẵn tại vườn, mỗi chậu đi kèm phiếu ghi chú cách tưới, ánh sáng và độ ẩm chi tiết.">
+
+  <!-- Google Fonts: Lora (serif) + Be Vietnam Pro (sans-serif cho tiếng Việt) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese"
+    rel="stylesheet">
+
+  <!-- Animate.css — thư viện animation CSS3 -->
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9",
+        "three": "https://esm.sh/three@0.170.0",
+        "three/addons/": "https://esm.sh/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+  <!-- Header dùng chung -->
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          aria-hidden="true">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html" aria-current="page">Cây cảnh</a>
+        <a href="#plantQuiz">Cây đầu tiên</a>
+        <a href="#footer">Liên hệ</a>
+      </nav>
+
+      <form class="header-search" id="searchForm" role="search">
+        <input type="search" id="searchInput" placeholder="Tìm theo tên cây hoặc tên khoa học..."
+          aria-label="Tìm kiếm sản phẩm">
+        <button type="submit" class="header-search__btn" aria-label="Tìm kiếm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            aria-hidden="true">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        </button>
+      </form>
+
+      <div class="header-actions">
+        <div class="account" data-account>
+          <!-- JavaScript sẽ điền tên user hoặc link đăng nhập -->
+        </div>
+
+        <a class="cart-link" href="cart.html" aria-label="Giỏ hàng trống">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="8" cy="21" r="1" />
+            <circle cx="19" cy="21" r="1" />
+            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+          </svg>
+          <span class="cart-badge" data-cart-count hidden>0</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobilePanel"
+          aria-label="Mở menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Panel menu mobile -->
+  <div class="mobile-panel" id="mobilePanel" aria-hidden="true">
+    <div class="mobile-panel__scrim" data-close></div>
+    <div class="mobile-panel__sheet">
+      <div class="mobile-panel__head">
+        <span class="brand">Lá & Sỏi</span>
+        <button class="btn btn--ghost" type="button" data-close aria-label="Đóng menu">✕</button>
+      </div>
+      <nav>
+        <a href="index.html">Trang chủ sản phẩm</a>
+        <a href="#plantQuiz">Gợi ý chọn cây</a>
+        <a href="cart.html">Giỏ hàng</a>
+      </nav>
+      <div class="account" data-account></div>
+    </div>
+  </div>
+
+  <main id="mainContent">
+
+    <!-- Banner theo lịch (tự bật/tắt theo ngày — vd Giáng sinh), có hiệu ứng Three.js -->
+    <section class="sched-banner" id="scheduledBanner" aria-roledescription="carousel" aria-label="Ưu đãi nổi bật" hidden>
+      <div class="sched-banner__track" id="schedBannerTrack"></div>
+      <div class="sched-banner__fx" id="schedBannerFx" aria-hidden="true"></div>
+      <button class="sched-banner__nav sched-banner__nav--prev" id="schedBannerPrev" type="button" aria-label="Banner trước" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+      </button>
+      <button class="sched-banner__nav sched-banner__nav--next" id="schedBannerNext" type="button" aria-label="Banner sau" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+      </button>
+      <div class="sched-banner__dots" id="schedBannerDots" hidden></div>
+    </section>
+
+    <!-- Hero section -->
+    <section class="hero grid-paper">
+      <div class="container hero__inner">
+        <div class="hero__content">
+          <h1 class="hero__title">
+            <span class="line"><span><span id="heroSpeciesCount">18</span> loài cây đã qua</span></span>
+            <span class="line"><span>ba tuần dưỡng vườn</span></span>
+            <span class="line"><span>trước khi về nhà bạn.</span></span>
+          </h1>
+          <p class="hero__lead">
+            Mỗi chậu cây đều đi kèm một phiếu chỉ số ghi rõ lượng nước, mức nắng và độ ẩm — viết cho người chưa bao giờ
+            nuôi cây.
+          </p>
+          <div class="hero__actions">
+            <a class="hero-cta hero-cta--main" href="#catalog" id="heroBtn">
+              <span class="hero-cta__ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+              </span>
+              <span class="hero-cta__txt">
+                <strong>Khám phá vườn cây</strong>
+                <small><span id="heroCtaCount">20</span> loài đang có sẵn</small>
+              </span>
+              <span class="hero-cta__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </a>
+            <a class="hero-cta hero-cta--tag" href="#plantQuiz">
+              <span class="hero-cta__ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h11v6a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M15 13l4-4 2 2"/><path d="M7 11V8a2 2 0 0 1 4 0v3"/><path d="M19 5.5c0 .8-.6 1.5-1.3 1.5S16.4 6.3 16.4 5.5 17.7 3 17.7 3s1.3 1.7 1.3 2.5z"/></svg>
+              </span>
+              <span class="hero-cta__txt">
+                <small>Hay quên tưới?</small>
+                <strong>Chọn cây hợp bạn</strong>
+              </span>
+            </a>
+          </div>
+          <ul class="hero__features">
+            <li class="hero-feat">
+              <span class="hero-feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+                </svg></span>
+              <span class="hero-feat__txt"><strong><span id="heroFactNum1">20</span> loài tuyển chọn</strong><small>sen
+                  đá &amp; cây nhiệt đới</small></span>
+            </li>
+            <li class="hero-feat">
+              <span class="hero-feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6" />
+                  <path d="M9 15h6M9 11h3" />
+                </svg></span>
+              <span class="hero-feat__txt"><strong>Phiếu chăm sóc</strong><small>kèm chỉ số nước &amp;
+                  nắng</small></span>
+            </li>
+            <li class="hero-feat">
+              <span class="hero-feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+                  <path d="M3 21v-5h5" />
+                </svg></span>
+              <span class="hero-feat__txt"><strong>Đổi cây 7 ngày</strong><small>nếu cây chưa hợp nhà bạn</small></span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Tờ tiêu bản dán băng keo M1 -->
+        <aside class="sheet" aria-label="Hình mẫu tiêu bản">
+          <div class="sheet__img">
+            <img src="assets/img/p1.jpg" alt="Chậu Trầu Bà Lỗ lá thủng mọc khỏe" width="400" height="500"
+              loading="eager" fetchpriority="high">
+          </div>
+          <div class="sheet__label">
+            <dl>
+              <dt>Tên:</dt>
+              <dd>Trầu Bà Lỗ</dd>
+              <dt>Khoa học:</dt>
+              <dd><em>Monstera adansonii</em></dd>
+              <dt>Mã:</dt>
+              <dd>BL-001 · Vườn Củ Chi</dd>
+            </dl>
+          </div>
+          <div class="sheet__foot"></div>
+          <div class="sheet__stamp" aria-hidden="true">
+            TIÊU BẢN<b>#01</b>ĐÃ KIỂM CHỨNG
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- === SALE BANNER + COUNTDOWN === -->
+    <section class="sale-banner" id="saleBanner" hidden>
+      <div class="container sale-banner__inner">
+        <div class="sale-banner__text">
+          <span class="sale-banner__badge">SALE</span>
+          <h2 class="sale-banner__title" id="saleBannerTitle">Đang sale!</h2>
+          <p class="sale-banner__desc" id="saleBannerDesc"></p>
+        </div>
+        <div class="sale-banner__countdown" id="saleCountdown">
+          <span class="sale-banner__label">Kết thúc sau:</span>
+          <div class="countdown">
+            <div class="countdown__item"><span class="countdown__num" id="countDays">00</span><span
+                class="countdown__unit">ngày</span></div>
+            <div class="countdown__sep">:</div>
+            <div class="countdown__item"><span class="countdown__num" id="countHours">00</span><span
+                class="countdown__unit">giờ</span></div>
+            <div class="countdown__sep">:</div>
+            <div class="countdown__item"><span class="countdown__num" id="countMins">00</span><span
+                class="countdown__unit">phút</span></div>
+            <div class="countdown__sep">:</div>
+            <div class="countdown__item"><span class="countdown__num" id="countSecs">00</span><span
+                class="countdown__unit">giây</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- === HÀNG MỚI VỀ === -->
+    <section class="new-arrivals" id="newArrivals" hidden>
+      <div class="container">
+        <div class="section-head">
+          <h2>🌿 Hàng Mới Về</h2>
+          <p>Các loài cây vừa cập bến trong 30 ngày qua</p>
+        </div>
+        <div class="mini-grid" id="newArrivalsList"></div>
+      </div>
+    </section>
+
+    <!-- === SẢN PHẨM NỔI BẬT === -->
+    <section class="best-sellers" id="bestSellers" hidden>
+      <div class="container">
+        <div class="section-head">
+          <h2>🔥 Bán Chạy Nhất</h2>
+          <p>Top cây được mua nhiều nhất — tính theo số chậu đã bán trong các đơn đã thanh toán</p>
+        </div>
+        <ol class="podium" id="bestSellersList"></ol>
+        <p class="podium__note muted" id="bestSellersNote" hidden></p>
+      </div>
+    </section>
+
+    <!-- Gợi ý chọn cây: dải mời ngắn; câu hỏi + kết quả hiện trong hộp thoại (js/quiz.js) -->
+    <section class="first-plant quiz-band" id="plantQuiz" aria-labelledby="quizBandTitle">
+      <div class="container quiz-band__inner">
+        <div class="quiz-band__text">
+          <p class="quiz-band__eyebrow">Chưa biết chọn cây nào?</p>
+          <h2 id="quizBandTitle">Tìm cây hợp với nhà bạn trong 30 giây</h2>
+          <p>3 câu hỏi về ánh sáng, thói quen tưới và thú cưng — có ngay danh sách cây dễ sống nhất với bạn.</p>
+        </div>
+        <button class="btn btn--primary quiz-band__btn" type="button" data-open-quiz>
+          Bắt đầu chọn cây
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Danh mục & Lưới sản phẩm -->
+    <section class="container catalog" id="catalog">
+      <div class="catalog__head">
+        <div>
+          <h2>Danh mục thực vật</h2>
+          <p>Lọc theo nhu cầu phòng hoặc tìm theo tên khoa học bên dưới.</p>
+        </div>
+      </div>
+
+      <!-- Thanh công cụ lọc & sắp xếp -->
+      <div class="toolbar">
+        <div class="tabs" id="categoryList" role="tablist" aria-label="Danh mục sản phẩm">
+          <!-- JS sẽ render các tab danh mục tại đây -->
+        </div>
+
+        <div class="toolbar__right">
+          <span class="result-count" id="resultCount">Đang tải...</span>
+          <div class="select">
+            <select id="sortSelect" aria-label="Sắp xếp sản phẩm">
+              <option value="default">Sắp xếp: Mặc định</option>
+              <option value="best">Bán chạy nhất</option>
+              <option value="newest">Mới nhập về</option>
+              <option value="price-asc">Giá: Thấp đến Cao</option>
+              <option value="price-desc">Giá: Cao đến Thấp</option>
+              <option value="name-az">Tên: A → Z</option>
+            </select>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dải báo lọc đang kích hoạt -->
+      <div class="active-filter" id="activeFilterBar" hidden>
+        <span>Đang áp dụng bộ lọc.</span>
+        <button class="btn btn--text" id="clearFilterBtn" type="button">Xóa tất cả bộ lọc</button>
+      </div>
+
+      <!-- Lưới sản phẩm (CSS Grid 4 cột, reveal M2, FLIP M4) -->
+      <ul class="product-grid" id="productGrid" aria-live="polite">
+        <!-- JS sẽ render card sản phẩm ở đây -->
+      </ul>
+
+      <!-- Phân trang -->
+      <nav class="pagination" id="pagination" aria-label="Phân trang" hidden>
+        <!-- JS sẽ render các nút phân trang -->
+      </nav>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" id="footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <h2><span data-site="shopName">Lá & Sỏi</span> — <span data-site="tagline">Tiệm Cây Cảnh</span></h2>
+          <p data-site="footerIntro">Mỗi chậu cây là một sinh thể cần hiểu đúng nhu cầu. Chúng tôi nuôi dưỡng cây 3 tuần
+            tại vườn Củ Chi trước khi giao đến phòng bạn.</p>
+        </div>
+        <div>
+          <h2>Ghé thăm tiệm</h2>
+          <p data-site="address">86 Nguyễn Văn Thủ, P. Đa Kao, Q.1, TP.HCM</p>
+          <p>Mở cửa: <span data-site="openHours">09:00 – 20:00 hằng ngày</span></p>
+        </div>
+        <div>
+          <h2>Hỗ trợ người trồng</h2>
+          <p>Điện thoại / Zalo: <span data-site="phone">0908 123 456</span></p>
+          <p>Email: <span data-site="email">trogiup@lasoi.vn</span></p>
+        </div>
+      </div>
+      <div class="site-footer__note">
+        <p data-site="copyrightNote">Lá mỏng manh vươn lên đón nắng, Sỏi lặng lẽ trầm mặc dưới chân</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+
+</html>

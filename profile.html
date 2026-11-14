@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Hồ Sơ Của Bạn — Tiệm Cây Lá & Sỏi</title>
+  <meta name="description" content="Quản lý thông tin tài khoản, đổi mật khẩu, ảnh đại diện và ví tại Lá & Sỏi.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9"
+      }
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="cart.html">Giỏ hàng</a>
+      </nav>
+      <div class="header-actions">
+        <div class="account" data-account></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container profile-page" id="mainContent">
+    <h1 class="animate__animated animate__fadeInUp">Hồ sơ của bạn</h1>
+
+    <!-- Tabs hồ sơ -->
+    <div class="admin-tabs" role="tablist">
+      <button class="tab" type="button" role="tab" aria-selected="true" data-profile-tab="info">Thông tin</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-profile-tab="password">Mật khẩu</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-profile-tab="wallet">Ví của tôi</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-profile-tab="favorites">Yêu thích</button>
+    </div>
+
+    <!-- Panel Thông tin + Avatar -->
+    <div class="admin-panel" id="panelInfo">
+      <div class="profile-grid">
+        <div class="profile-avatar-box">
+          <img id="avatarPreview" class="profile-avatar" src="assets/placeholder.svg" alt="Ảnh đại diện" data-fallback>
+          <label for="avatarFile" class="btn btn--ghost btn--sm" style="cursor:pointer">📁 Đổi ảnh đại diện</label>
+          <input id="avatarFile" type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none">
+          <small class="muted" style="font-size:12px;text-align:center">JPG/PNG/GIF/WEBP, tối đa 2 MB</small>
+        </div>
+
+        <form id="infoForm" class="sale-form" autocomplete="off" style="margin:0;flex:1">
+          <div class="sale-form__grid">
+            <div class="sale-form__group">
+              <label for="pf_name">Họ và tên</label>
+              <input id="pf_name" name="name" type="text" required>
+            </div>
+            <div class="sale-form__group">
+              <label for="pf_email">Email (không đổi được)</label>
+              <input id="pf_email" name="email" type="email" readonly style="opacity:.7;cursor:not-allowed">
+            </div>
+            <div class="sale-form__group">
+              <label for="pf_phone">Số điện thoại</label>
+              <input id="pf_phone" name="phone" type="tel">
+            </div>
+            <div class="sale-form__group">
+              <label for="pf_role">Vai trò</label>
+              <input id="pf_role" type="text" readonly style="opacity:.7;cursor:not-allowed">
+            </div>
+            <div class="sale-form__group sale-form__full">
+              <label for="pf_address">Địa chỉ nhận hàng</label>
+              <input id="pf_address" name="address" type="text" placeholder="Số nhà, đường, phường, quận, thành phố">
+            </div>
+          </div>
+          <div class="sale-form__actions">
+            <button class="btn btn--primary" type="submit">Lưu thông tin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Panel Đổi mật khẩu -->
+    <div class="admin-panel" id="panelPassword" hidden>
+      <form id="passwordForm" class="sale-form" autocomplete="off" style="max-width:520px">
+        <h3 class="dash-section-title" style="margin-top:0">Đổi mật khẩu</h3>
+        <div class="sale-form__grid" style="grid-template-columns:1fr">
+          <div class="sale-form__group">
+            <label for="pw_old">Mật khẩu hiện tại</label>
+            <input id="pw_old" name="oldPassword" type="password" required>
+          </div>
+          <div class="sale-form__group">
+            <label for="pw_new">Mật khẩu mới</label>
+            <input id="pw_new" name="newPassword" type="password" required>
+            <div class="pw-meter"><span class="pw-meter__bar pw-meter__bar--empty"></span></div>
+            <div class="pw-meter__text" id="pwStrengthText" aria-live="polite"></div>
+          </div>
+          <div class="sale-form__group">
+            <label for="pw_confirm">Xác nhận mật khẩu mới</label>
+            <input id="pw_confirm" name="confirmPassword" type="password" required>
+          </div>
+        </div>
+        <p class="pw-msg" id="pwMsg" aria-live="polite" style="min-height:18px;font-size:13px"></p>
+        <div class="sale-form__actions">
+          <button class="btn btn--primary" type="submit">Cập nhật mật khẩu</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Panel Ví -->
+    <div class="admin-panel" id="panelWallet" hidden>
+      <div class="wallet-card">
+        <div class="wallet-card__label">Số dư ví Lá & Sỏi</div>
+        <div class="wallet-card__balance" id="walletBalance">0 ₫</div>
+        <button class="btn btn--primary btn--sm" id="btnTopup" type="button">+ Nạp tiền vào ví</button>
+      </div>
+      <h3 class="dash-section-title">Lịch sử giao dịch</h3>
+      <div id="walletHistory" class="admin-table-wrap">
+        <p class="muted">Đang tải...</p>
+      </div>
+    </div>
+
+    <!-- Panel Yêu thích -->
+    <div class="admin-panel" id="panelFavorites" hidden>
+      <div id="favoritesList"><p class="muted">Đang tải...</p></div>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container">
+      <div class="site-footer__note">
+        <p data-site="copyrightNote">© 2026 Lá & Sỏi — Bài thi môn Lập trình Web Client.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/profile.js"></script>
+</body>
+</html>

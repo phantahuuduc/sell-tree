@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Giỏ Hàng — Tiệm Cây Lá & Sỏi</title>
+  <meta name="description" content="Xem và quản lý các chậu cây cảnh đã chọn trong giỏ hàng.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <!-- Animate.css — thư viện animation CSS3 -->
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9"
+      }
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="index.html#plantQuiz">Cây đầu tiên</a>
+        <a href="#footer">Liên hệ</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="account" data-account></div>
+
+        <a class="cart-link" href="cart.html" aria-label="Giỏ hàng">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+          <span class="cart-badge" data-cart-count hidden>0</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobilePanel" aria-label="Mở menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-panel" id="mobilePanel" aria-hidden="true">
+    <div class="mobile-panel__scrim" data-close></div>
+    <div class="mobile-panel__sheet">
+      <div class="mobile-panel__head">
+        <span class="brand">Lá & Sỏi</span>
+        <button class="btn btn--ghost" type="button" data-close aria-label="Đóng menu">✕</button>
+      </div>
+      <nav>
+        <a href="index.html">Trang chủ sản phẩm</a>
+        <a href="index.html#plantQuiz">Cây đầu tiên</a>
+        <a href="donhang.html">Đơn hàng của tôi</a>
+        <a href="#footer">Liên hệ</a>
+      </nav>
+      <div class="account" data-account></div>
+    </div>
+  </div>
+
+  <main class="container cart-page" id="mainContent">
+    <h1>Giỏ hàng của bạn</h1>
+
+    <div class="cart-layout" id="cartLayout">
+      <!-- JS sẽ render danh sách món hàng + bảng tóm tắt -->
+    </div>
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <h2><span data-site="shopName">Lá & Sỏi</span> — <span data-site="tagline">Tiệm Cây Cảnh</span></h2>
+          <p data-site="footerIntro">Mỗi chậu cây là một sinh thể cần hiểu đúng nhu cầu.</p>
+        </div>
+        <div>
+          <h2>Ghé thăm tiệm</h2>
+          <p data-site="address">86 Nguyễn Văn Thủ, P. Đa Kao, Q.1, TP.HCM</p>
+        </div>
+        <div>
+          <h2>Hỗ trợ người trồng</h2>
+          <p>Điện thoại / Zalo: <span data-site="phone">0908 123 456</span></p>
+        </div>
+      </div>
+      <div class="site-footer__note">
+        <p data-site="copyrightNote">© 2026 Lá & Sỏi — Bài thi môn Lập trình Web Client.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- jsPDF + AutoTable: xuất hóa đơn thành file PDF trực tiếp -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
+
+  <script>
+    window.__cartModuleLoaded = false;
+    window.addEventListener("error", function(e) {
+      if (e.filename && e.filename.includes("/js/")) {
+        document.getElementById("cartLayout").innerHTML +=
+          '<p style="color:red;padding:12px;border:1px solid red;margin-top:12px;">⚠️ Lỗi JS: ' + e.message + ' (' + e.filename + ':' + e.lineno + ')</p>';
+      }
+    });
+    setTimeout(function() {
+      if (!window.__cartModuleLoaded) {
+        console.error("Module script không chạy được — kiểm tra Console (F12) để xem lỗi.");
+      }
+    }, 5000);
+  </script>
+  <script type="module">
+    import { getCart, setCart, updateCartQuantity, removeFromCart, clearCart, getUser, setUser, requireLogin, cartProductId } from "./js/storage.js";
+    import { createOrder, getCouponByCode, updateCoupon, updateUser, getUserById, createWalletTransaction, getProducts, getSettings, updateProduct, updateOrder, getOrderById } from "./js/api.js";
+    import { initPage, formatPrice, updateCartBadge, showToast, escapeHTML, ICONS, normalizePhone, isValidPhone } from "./js/ui.js";
+    import { validateCoupon, isNewUser, ensurePromotions, getPriceInfo } from "./js/sale.js";
+    import { openPaymentModal } from "./js/payment.js";
+    import { celebrateOrder } from "./js/fx.js";
+    import { estimateWindow, setDeliveryRules, deliveryBasisText } from "./js/order-flow.js";
+    await initPage();
+
+    // Dynamic import chatbot + chat nhân viên — lazy load
+    (async () => {
+      try {
+        const { initChatbot } = await import("./js/chatbot.js");
+        await initChatbot();
+      } catch (err) {
+        console.warn("Chatbot load failed:", err);
+      }
+      try {
+        const { initCustomerChat } = await import("./js/chat.js");
+        await initCustomerChat();
+      } catch (err) {
+        console.warn("Chat load failed:", err);
+      }
+    })();
+
+    const layout = document.getElementById("cartLayout");
+
+    // State coupon — lưu vào sessionStorage để không mất khi trang reload (ví dụ sau đăng nhập)
+    let appliedCoupon = null;
+    let couponDiscount = 0;
+
+    try {
+      const saved = sessionStorage.getItem("cart_coupon");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        appliedCoupon = parsed.coupon;
+        couponDiscount = parsed.discount;
+      }
+    } catch {}
+
+    function saveCouponState() {
+      if (appliedCoupon) {
+        sessionStorage.setItem("cart_coupon", JSON.stringify({
+          coupon: appliedCoupon,
+          discount: couponDiscount,
+        }));
+      } else {
+        sessionStorage.removeItem("cart_coupon");
+      }
+    }
+
+    // Tính giá thực từng món theo giá niêm yết hiện tại + khuyến mãi đang chạy
+    async function priceCart(items, force = false) {
+      await ensurePromotions(force);
+      const products = await getProducts().catch(() => []);
+      return items.map((it) => {
+        const p = products.find((x) => String(x.id) === String(it.productId || it.id));
+        if (!p) return { ...it, unitPrice: Number(it.price) || 0, listPrice: null, promoName: "", stock: null };
+        const variant = it.variantLabel ? (p.variants || []).find((v) => v.label === it.variantLabel) : null;
+        // Size đã bị đổi tên/xóa → giữ giá niêm yết lúc thêm vào giỏ thay vì rơi về giá size rẻ nhất
+        const base = variant ? variant.price : (it.variantLabel ? Number(it.price) || p.price : p.price);
+        const pi = getPriceInfo(p, base);
+        return { ...it, unitPrice: pi.price, listPrice: pi.original, promoName: pi.promo?.name || "", stock: Number(p.stock) || 0 };
+      });
+    }
+
+    // Tồn kho tính chung cho mọi size của một cây. Tồn = 0 là hàng "Đặt trước" (giao khi có hàng) → không giới hạn.
+    const stockLimit = (stock) => (Number(stock) > 0 ? Number(stock) : Infinity);
+    function productQty(items, pid) {
+      return items.filter((i) => cartProductId(i) === pid).reduce((s, i) => s + (Number(i.quantity) || 0), 0);
+    }
+    // Những cây trong giỏ đang nhiều hơn số còn trong kho
+    function overStock(items) {
+      const seen = new Set(), out = [];
+      items.forEach((i) => {
+        const pid = cartProductId(i);
+        if (seen.has(pid) || i.stock == null) return;
+        seen.add(pid);
+        const want = productQty(items, pid), max = stockLimit(i.stock);
+        if (want > max) out.push({ pid, name: i.name, want, max });
+      });
+      return out;
+    }
+    // Giảm số lượng trong giỏ về đúng tồn kho (bớt từ dòng cuối của cây đó trước)
+    async function trimToStock(over) {
+      const cart = await getCart();
+      over.forEach(({ pid, max }) => {
+        let extra = productQty(cart, pid) - max;
+        for (let k = cart.length - 1; k >= 0 && extra > 0; k--) {
+          if (cartProductId(cart[k]) !== pid) continue;
+          const cut = Math.min(extra, cart[k].quantity);
+          cart[k].quantity -= cut; extra -= cut;
+        }
+      });
+      await setCart(cart.filter((i) => i.quantity > 0));
+    }
+
+    // ----- Thông tin giao hàng (điền sẵn từ Hồ sơ, giữ nguyên khi giỏ vẽ lại) -----
+    let shipTo = null;
+    let welcomeCoupon;   // mã NGUOIMOI (nạp 1 lần cho banner khách mới)
+    async function loadShipTo(user) {
+      if (shipTo || !user) return;
+      const fresh = (await getUserById(user.id).catch(() => null)) || user;
+      shipTo = { name: fresh.name || "", phone: fresh.phone || "", address: fresh.address || "", note: "", save: !fresh.phone || !fresh.address };
+    }
+    function shipToHtml() {
+      if (!shipTo) return "";
+      const v = (k) => escapeHTML(shipTo[k] || "");
+      return `
+          <fieldset class="ship-to" id="shipTo">
+            <legend>Giao đến</legend>
+            <label class="ship-to__field"><span>Người nhận</span>
+              <input type="text" data-ship="name" value="${v("name")}" maxlength="60" autocomplete="name" required></label>
+            <label class="ship-to__field"><span>Số điện thoại</span>
+              <input type="tel" data-ship="phone" value="${v("phone")}" maxlength="16" placeholder="0908 123 456" autocomplete="tel" required></label>
+            <label class="ship-to__field"><span>Địa chỉ nhận hàng</span>
+              <textarea data-ship="address" rows="2" maxlength="200" placeholder="Số nhà, đường, phường, quận" autocomplete="street-address" required>${v("address")}</textarea></label>
+            <label class="ship-to__field"><span>Ghi chú cho shop <small>(không bắt buộc)</small></span>
+              <input type="text" data-ship="note" value="${v("note")}" maxlength="150" placeholder="VD: giao giờ hành chính"></label>
+            <label class="ship-to__save"><input type="checkbox" data-ship="save" ${shipTo.save ? "checked" : ""}> Lưu làm địa chỉ mặc định trong Hồ sơ</label>
+            <p class="ship-to__msg" id="shipToMsg" role="alert"></p>
+          </fieldset>`;
+    }
+    layout.addEventListener("input", (e) => {
+      const k = e.target.dataset?.ship;
+      if (!k || !shipTo) return;
+      shipTo[k] = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+      e.target.closest(".ship-to__field")?.classList.remove("has-error");
+    });
+    // Kiểm tra trước khi thanh toán; sai thì tô đỏ ô đầu tiên và đưa vào tầm nhìn
+    function checkShipTo() {
+      const box = document.getElementById("shipTo");
+      const msg = document.getElementById("shipToMsg");
+      if (!box || !shipTo) return false;
+      const bad = (k, text) => {
+        const input = box.querySelector(`[data-ship="${k}"]`);
+        input.closest(".ship-to__field").classList.add("has-error");
+        msg.textContent = text;
+        input.focus({ preventScroll: true });
+        input.scrollIntoView({ block: "center", behavior: "smooth" });
+        return false;
+      };
+      box.querySelectorAll(".has-error").forEach((f) => f.classList.remove("has-error"));
+      msg.textContent = "";
+      if (shipTo.name.trim().length < 2) return bad("name", "Vui lòng nhập tên người nhận.");
+      if (!isValidPhone(shipTo.phone)) return bad("phone", "Số điện thoại gồm 10 số, bắt đầu bằng 0 (ví dụ: 0908 123 456).");
+      if (shipTo.address.trim().length < 10) return bad("address", "Vui lòng nhập địa chỉ đầy đủ (số nhà, đường, phường, quận).");
+      return true;
+    }
+    const sumPriced = (priced) => priced.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+
+    // Phí giao theo Cài đặt của shop: tạm tính (sau khuyến mãi, trước mã giảm) đạt ngưỡng thì miễn phí.
+    // Cùng công thức với hóa đơn để số tiền khách trả = số trên hóa đơn.
+    let shopSettings = null;
+    async function getShipping(subtotal, force = false) {
+      if (!shopSettings || force) {
+        shopSettings = (await getSettings().catch(() => null)) || shopSettings || {};
+        setDeliveryRules(shopSettings); // dự kiến giao tính theo lịch làm việc trong Cài đặt của shop
+      }
+      const fee = Number(shopSettings.shipFee ?? 30000);
+      const free = Number(shopSettings.freeShipThreshold ?? 300000);
+      return { fee: subtotal >= free ? 0 : fee, free };
+    }
+
+    // Tiền giảm của mã luôn tính theo tổng hiện tại (đổi số lượng / khuyến mãi thay đổi)
+    async function refreshCouponDiscount(total) {
+      if (!appliedCoupon) { couponDiscount = 0; return; }
+      const r = validateCoupon(appliedCoupon, total, await getUser());
+      if (r.valid) couponDiscount = r.discount;
+      else { appliedCoupon = null; couponDiscount = 0; }
+      saveCouponState();
+    }
+
+    async function renderCart() {
+      const viewer = await getUser();
+      if (viewer && (viewer.role === "staff" || viewer.role === "admin")) {
+        layout.innerHTML = `
+          <div class="state" style="grid-column: 1 / -1;">
+            ${ICONS.alert}
+            <h2>Tài khoản ${viewer.role === "admin" ? "quản trị" : "nhân viên"} không thể mua hàng</h2>
+            <p>Để thử luồng mua hàng, vui lòng đăng nhập bằng tài khoản khách (vd nút "Khách mới" ở trang đăng nhập).</p>
+            <a class="btn btn--primary" href="${viewer.role === "admin" ? "admin.html" : "staff.html"}">Về trang làm việc</a>
+          </div>`;
+        return;
+      }
+      const rawItems = await getCart();
+      const items = await priceCart(rawItems);
+      if (!items.length) {
+        layout.innerHTML = `
+          <div class="state" style="grid-column: 1 / -1;">
+            ${ICONS.search}
+            <h2>Giỏ hàng chưa có chậu cây nào</h2>
+            <p>Mời bạn ghé xem các loài cây dưỡng sẵn tại tiệm để chọn cây đầu tiên.</p>
+            <a class="btn btn--primary" href="index.html#catalog">Xem danh mục cây</a>
+          </div>
+          <section class="cart-suggest" id="cartSuggest" style="grid-column: 1 / -1;" hidden>
+            <h2>Có thể bạn sẽ thích</h2>
+            <ul class="cart-suggest__grid"></ul>
+          </section>`;
+        // Gợi ý 4 cây còn hàng (không chặn trang nếu tải lỗi)
+        getProducts().then((list) => {
+          const box = document.getElementById("cartSuggest");
+          if (!box) return;
+          const picks = (list || []).filter((p) => p.careLevel && Number(p.stock) > 0).slice(0, 4);
+          if (!picks.length) return;
+          box.querySelector("ul").innerHTML = picks.map((p) => {
+            const pi = getPriceInfo(p);
+            const url = `product-detail.html?id=${encodeURIComponent(p.id)}`;
+            return `<li><a class="cart-suggest__item" href="${url}">
+              <img src="${escapeHTML(p.image)}" alt="" width="200" height="250" loading="lazy">
+              <strong>${escapeHTML(p.name)}</strong>
+              <span>${formatPrice(pi.price)}</span>
+            </a></li>`;
+          }).join("");
+          box.hidden = false;
+        }).catch(() => {});
+        return;
+      }
+
+      const total = sumPriced(items);
+      await refreshCouponDiscount(total);
+
+      const listHtml = items
+        .map((item) => {
+          const max = stockLimit(item.stock);
+          const used = productQty(items, cartProductId(item));
+          const full = used >= max;
+          const stockNote = item.stock == null ? ""
+            : used > max ? `<p class="cart-item__stock is-over">Chỉ còn ${max} chậu — vui lòng giảm số lượng</p>`
+            : Number(item.stock) <= 0 ? `<p class="cart-item__stock">Hàng đặt trước — giao khi có hàng</p>`
+            : full ? `<p class="cart-item__stock">Đã chọn hết ${max} chậu còn trong kho</p>` : "";
+          return `
+        <li class="cart-item" data-id="${item.id}">
+          <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}" data-fallback width="88" height="110">
+          <div>
+            <h2><a href="product-detail.html?id=${item.productId || item.id}">${escapeHTML(item.name)}</a>${
+              item.variantLabel ? ` <span class="cart-item__variant">(${escapeHTML(item.variantLabel)})</span>` : ""
+            }</h2>
+            <div class="cart-item__price">${formatPrice(item.unitPrice)} / chậu${item.listPrice ? ` <s>${formatPrice(item.listPrice)}</s>` : ""}${item.promoName ? `<span class="cart-item__promo">🔥 ${escapeHTML(item.promoName)}</span>` : ""}</div>
+            <div class="cart-item__ctrl">
+              <div class="qty">
+                <button type="button" data-action="minus" aria-label="Giảm số lượng">−</button>
+                <input type="number" value="${item.quantity}" min="1" readonly>
+                <button type="button" data-action="plus" aria-label="Tăng số lượng"${full ? " disabled" : ""}>+</button>
+              </div>
+              <button class="btn btn--text" type="button" data-action="remove" style="color: var(--stamp);">Xóa</button>
+            </div>
+            ${stockNote}
+          </div>
+          <div class="cart-item__total">${formatPrice(item.unitPrice * item.quantity)}</div>
+        </li>`;
+        })
+        .join("");
+
+      const user = await getUser();
+      await loadShipTo(user);
+
+      // % giảm lấy từ chính mã NGUOIMOI (quản trị đổi % thì banner đổi theo); mã tắt / hết hạn thì không hiện
+      if (isNewUser(user) && welcomeCoupon === undefined) welcomeCoupon = await getCouponByCode("NGUOIMOI").catch(() => null);
+      const welcomeOk = welcomeCoupon && welcomeCoupon.isActive !== false && !welcomeCoupon.deletedAt
+        && (!welcomeCoupon.expiryDate || new Date(welcomeCoupon.expiryDate) > new Date());
+      const newUserBannerHtml = isNewUser(user) && welcomeOk ? `
+        <div class="new-user-banner">
+          <span>🎁</span>
+          <p>Chào bạn mới! Dùng mã <strong>NGUOIMOI</strong> để giảm ${Number(welcomeCoupon.discountPercent) || 0}%${welcomeCoupon.maxDiscount ? ` (tối đa ${formatPrice(welcomeCoupon.maxDiscount)})` : ""} đơn hàng đầu tiên.</p>
+        </div>` : "";
+
+      const ship = await getShipping(total);
+      const finalTotal = Math.max(0, total - couponDiscount) + ship.fee;
+      // Dự kiến nhận: theo lịch làm việc của shop, tính như thể thanh toán ngay bây giờ; có cây đặt trước thì chưa hẹn được ngày
+      const hasPreorder = items.some((i) => i.stock != null && Number(i.stock) <= 0);
+      const win = estimateWindow();
+      const dm = (d) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const etaText = hasPreorder ? "Khi có hàng (đặt trước)"
+        : `<span class="eta-why" tabindex="0" title="${escapeHTML(deliveryBasisText())}">${win.from.getTime() === win.to.getTime() ? dm(win.to) : `${dm(win.from)} – ${dm(win.to)}`} <span aria-hidden="true">ⓘ</span></span>`;
+      // Check nếu coupon có maxDiscount và đã chạm cap → thêm chú thích
+      const rawDiscount = appliedCoupon ? Math.round(total * (appliedCoupon.discountPercent || 0) / 100) : 0;
+      const capped = appliedCoupon?.maxDiscount && rawDiscount > appliedCoupon.maxDiscount;
+      const capNote = capped
+        ? ` <small style="color:var(--ink-soft);font-weight:400">(giảm ${appliedCoupon.discountPercent}%, tối đa ${appliedCoupon.maxDiscount.toLocaleString("vi-VN")}₫)</small>`
+        : "";
+      const discountRow = couponDiscount > 0 ? `
+        <dt>Giảm giá (${escapeHTML(appliedCoupon?.code || "")}):${capNote}</dt>
+        <dd class="summary__discount">−${formatPrice(couponDiscount)}</dd>` : "";
+
+      // Thanh tiến độ miễn phí giao hàng: cho thấy còn thiếu bao nhiêu (thay cho dòng chữ nhỏ trước đây)
+      const shipDone = ship.fee === 0;
+      const shipPct = ship.free > 0 ? Math.min(1, total / ship.free) : 1;
+      const shipProgressHtml = ship.free > 0 ? `
+        <div class="ship-progress${shipDone ? " is-done" : ""}" role="status">
+          <p>${shipDone
+            ? `🎉 Đơn của bạn được <strong>miễn phí giao hàng</strong>`
+            : `🚚 Mua thêm <strong>${formatPrice(ship.free - total)}</strong> để được miễn phí giao hàng`}</p>
+          <div class="ship-progress__track" aria-hidden="true"><i style="transform:scaleX(${shipPct.toFixed(3)})"></i></div>
+          ${shipDone ? "" : `<small>Miễn phí giao cho đơn từ ${formatPrice(ship.free)}</small>`}
+        </div>` : "";
+
+      layout.innerHTML = `
+        <div>
+          <ul class="cart-list">
+            ${listHtml}
+          </ul>
+          ${shipToHtml()}
+        </div>
+        <aside class="summary">
+          <h2>Tóm tắt đơn hàng</h2>
+          ${newUserBannerHtml}
+          ${shipProgressHtml}
+          <dl>
+            <dt>Số lượng cây:</dt>
+            <dd>${items.reduce((s, i) => s + i.quantity, 0)} chậu</dd>
+            <dt>Tạm tính:</dt>
+            <dd>${formatPrice(total)}</dd>
+            ${discountRow}
+            <dt>Phí giao tận nhà (TP.HCM):</dt>
+            <dd>${ship.fee ? formatPrice(ship.fee) : `<span style="color:var(--specimen)">Miễn phí</span>`}</dd>
+            <dt>Dự kiến nhận hàng:</dt>
+            <dd>${etaText}</dd>
+
+            <dt class="total">Tổng thanh toán:</dt>
+            <dd class="total">${formatPrice(finalTotal)}</dd>
+          </dl>
+
+          <div class="coupon-box" id="couponBox">
+            <label for="couponInput" class="coupon-box__label">Mã giảm giá:</label>
+            <div class="coupon-box__field">
+              <input type="text" id="couponInput" placeholder="VD: CHAOBAN" maxlength="20" autocomplete="off" value="${escapeHTML(appliedCoupon?.code || "")}">
+              <button class="btn btn--ghost" type="button" id="applyCouponBtn">${appliedCoupon ? "Đổi" : "Áp dụng"}</button>
+            </div>
+            <p class="coupon-box__msg" id="couponMsg"></p>
+          </div>
+
+          <button class="btn btn--primary" id="checkoutBtn" type="button" onclick="window.__doCheckout ? window.__doCheckout() : alert('Module chưa load xong — thử reload trang')">Đặt hàng ngay</button>
+          <p class="summary__note"><sup>*</sup>Đơn hàng sẽ kèm theo phiếu chỉ số chăm sóc của từng chậu cây.</p>
+          ${hasPreorder ? "" : `<p class="summary__note">🚚 ${escapeHTML(deliveryBasisText())}</p>`}
+        </aside>`;
+
+    }
+
+    await renderCart();
+
+    // Nếu vừa đăng nhập xong và có coupon đã lưu → thông báo
+    if (appliedCoupon && (await getUser())) {
+      setTimeout(() => {
+        const m = document.getElementById("couponMsg");
+        if (m) {
+          m.textContent = `✓ Mã ${appliedCoupon.code} vẫn được áp dụng. Bấm Đặt hàng để hoàn tất.`;
+          m.className = "coupon-box__msg coupon-box__msg--success";
+        }
+      }, 100);
+    }
+
+    // Event delegation — gắn 1 lần duy nhất, không bị trùng khi renderCart() chạy lại
+    layout.addEventListener("click", async (e) => {
+      const cartItem = e.target.closest(".cart-item");
+      if (!cartItem) return;
+      const id = cartItem.dataset.id;
+      const items = await getCart();
+      const item = items.find((i) => String(i.id) === String(id));
+      if (!item) return;
+
+      if (e.target.closest('[data-action="minus"]')) {
+        await updateCartQuantity(id, item.quantity - 1);
+        await updateCartBadge();
+        await renderCart();
+      } else if (e.target.closest('[data-action="plus"]')) {
+        const priced = await priceCart(items);
+        const max = stockLimit(priced.find((i) => String(i.id) === String(id))?.stock);
+        if (productQty(items, cartProductId(item)) >= max) {
+          showToast(`"${item.name}" chỉ còn ${max} chậu trong kho.`, { icon: "alert" });
+          return;
+        }
+        await updateCartQuantity(id, item.quantity + 1, max);
+        await updateCartBadge();
+        await renderCart();
+      } else if (e.target.closest('[data-action="remove"]')) {
+        await removeFromCart(id);
+        await updateCartBadge();
+        await renderCart();
+        showToast(`Đã xóa "${item.name}" khỏi giỏ hàng`);
+      }
+    });
+
+    // Coupon — event delegation, gắn 1 lần
+    document.addEventListener("click", async (e) => {
+      const couponBtn = e.target.closest("#applyCouponBtn");
+      if (!couponBtn) return;
+
+      const input = document.getElementById("couponInput");
+      const msg = document.getElementById("couponMsg");
+      const code = input?.value.trim().toUpperCase();
+      if (!code) {
+        msg.textContent = "Vui lòng nhập mã giảm giá.";
+        msg.className = "coupon-box__msg coupon-box__msg--error";
+        return;
+      }
+      try {
+        const total = sumPriced(await priceCart(await getCart()));
+        const coupon = await getCouponByCode(code);
+        const result = validateCoupon(coupon, total, await getUser());
+        if (result.valid) {
+          appliedCoupon = coupon;
+          couponDiscount = result.discount;
+          saveCouponState();
+          await renderCart();
+          setTimeout(() => {
+            const m = document.getElementById("couponMsg");
+            if (m) {
+              m.textContent = `✓ ${result.message}`;
+              m.className = "coupon-box__msg coupon-box__msg--success";
+            }
+          }, 0);
+        } else {
+          appliedCoupon = null;
+          couponDiscount = 0;
+          saveCouponState();
+          msg.textContent = result.message;
+          msg.className = "coupon-box__msg coupon-box__msg--error";
+        }
+      } catch (err) {
+        msg.textContent = "Lỗi kiểm tra mã. Vui lòng thử lại.";
+        msg.className = "coupon-box__msg coupon-box__msg--error";
+      }
+    });
+
+    // Checkout — expose ra window để inline onclick gọi được
+    window.__doCheckout = async function () {
+      const btn = document.getElementById("checkoutBtn");
+      if (!btn || btn.disabled) return;
+
+      const loggedIn = await requireLogin("Vui lòng đăng nhập để đặt hàng.");
+      if (!loggedIn) return;
+
+      btn.disabled = true;
+      btn.textContent = "Đang xử lý…";
+
+      try {
+        const currentUser = await getUser();
+        const items = await getCart();
+        if (!items.length) {
+          showToast("Giỏ hàng trống.");
+          btn.disabled = false;
+          btn.textContent = "Đặt hàng ngay";
+          return;
+        }
+
+        if (!checkShipTo()) {
+          btn.disabled = false;
+          btn.textContent = "Đặt hàng ngay";
+          return;
+        }
+
+        // Lấy khuyến mãi MỚI NHẤT từ server lúc đặt hàng (sale có thể vừa bắt đầu / kết thúc)
+        const pricedItems = await priceCart(items, true);
+        // Tồn kho có thể vừa giảm (người khác mua) → không cho đặt nhiều hơn số còn lại
+        const over = overStock(pricedItems);
+        if (over.length) {
+          await trimToStock(over);
+          await updateCartBadge();
+          await renderCart();
+          showToast(`Kho vừa thay đổi: ${over.map((o) => `"${o.name}" chỉ còn ${o.max} chậu`).join(", ")}. Đã chỉnh lại giỏ, vui lòng kiểm tra rồi đặt lại.`, { icon: "alert" });
+          return;
+        }
+        const subtotal = sumPriced(pricedItems);
+        await refreshCouponDiscount(subtotal);
+        const ship = await getShipping(subtotal, true);
+        const finalTotal = Math.max(0, subtotal - couponDiscount) + ship.fee;
+
+        // Lấy số dư ví mới nhất từ server
+        const freshUser = (await getUserById(currentUser.id).catch(() => currentUser)) || currentUser;
+        // Mã CK gọn gàng: LASOI<user_id>-<5 số thời gian> (không chứa khoảng trắng / ký tự đặc biệt)
+        const addInfo = `LASOI${currentUser.id}-${Date.now().toString().slice(-5)}`;
+
+        // Mở modal thanh toán (chọn Ví hoặc QR). Khôi phục nút nếu hủy.
+        const pay = await openPaymentModal({
+          amount: finalTotal,
+          title: "Thanh toán đơn hàng",
+          addInfo,
+          allowWallet: true,
+          walletBalance: freshUser.walletBalance || 0,
+        });
+        if (!pay) {
+          btn.disabled = false;
+          btn.textContent = "Đặt hàng ngay";
+          return;
+        }
+
+        const orderBase = {
+          userId: String(currentUser.id),
+          items: pricedItems.map((i) => ({
+            productId: i.productId || i.id,
+            name: i.variantLabel ? `${i.name} (${i.variantLabel})` : i.name,
+            price: i.unitPrice,
+            ...(i.listPrice ? { listPrice: i.listPrice } : {}),
+            ...(i.promoName ? { promotion: i.promoName } : {}),
+            quantity: i.quantity,
+          })),
+          subtotal,
+          shippingFee: ship.fee,
+          discount: couponDiscount,
+          couponCode: appliedCoupon?.code || null,
+          total: finalTotal,
+          createdAt: new Date().toISOString(),
+          paymentMethod: pay.method,
+          addInfo,
+          shipping: {
+            name: shipTo.name.trim(),
+            phone: normalizePhone(shipTo.phone),
+            address: shipTo.address.trim(),
+            ...(shipTo.note.trim() ? { note: shipTo.note.trim() } : {}),
+          },
+        };
+
+        let newOrder;
+        if (pay.method === "wallet") {
+          // --- Trả bằng ví: trừ số dư ngay, không cần nhân viên ---
+          const balance = Number(freshUser.walletBalance || 0);
+          if (balance < finalTotal) {
+            showToast("Số dư ví không đủ. Vui lòng chọn chuyển khoản QR.", { icon: "alert" });
+            btn.disabled = false; btn.textContent = "Đặt hàng ngay";
+            return;
+          }
+          const newBalance = balance - finalTotal;
+          await updateUser(currentUser.id, { walletBalance: newBalance });
+          await setUser({ ...currentUser, walletBalance: newBalance });
+
+          const paidAt = new Date().toISOString();
+          newOrder = await createOrder({
+            ...orderBase,
+            paymentStatus: "paid",
+            status: "confirmed",
+            paidAt,
+            timeline: [{
+              action: "pay_wallet", label: "Thanh toán bằng Ví web", status: "confirmed", at: paidAt,
+              by: { id: String(currentUser.id), name: currentUser.name || "", role: "user" },
+            }],
+          });
+
+          await createWalletTransaction({
+            userId: String(currentUser.id),
+            type: "payment",
+            amount: finalTotal,
+            status: "confirmed",
+            note: `Thanh toán đơn #${newOrder.id}`,
+            orderId: String(newOrder.id),
+            createdAt: new Date().toISOString(),
+          });
+        } else {
+          // --- Chuyển khoản QR: chờ nhân viên xác nhận ---
+          newOrder = await createOrder({
+            ...orderBase,
+            paymentStatus: "awaiting_confirmation",
+            status: "pending",
+            paymentProof: pay.proofImage || "",
+            proofMissing: !!pay.proofMissing,
+          });
+        }
+
+        // Trừ tồn kho theo đơn; lưu số đã trừ để khi hủy / hoàn hàng trả lại đúng số đó.
+        // Hàng đặt trước (kho không đủ) chỉ trừ tới 0.
+        let deducted = null;
+        try {
+          const need = {};
+          pricedItems.forEach((i) => { const pid = String(i.productId || i.id); need[pid] = (need[pid] || 0) + Number(i.quantity || 0); });
+          deducted = {};
+          const latest = await getProducts().catch(() => []);
+          for (const [pid, qty] of Object.entries(need)) {
+            const p = latest.find((x) => String(x.id) === pid);
+            if (!p) continue;
+            const take = Math.min(Math.max(0, Number(p.stock) || 0), qty);
+            if (take > 0) await updateProduct(pid, { stock: Number(p.stock) - take });
+            deducted[pid] = take;
+          }
+          await updateOrder(newOrder.id, { stockDeducted: deducted });
+        } catch (stockErr) {
+          console.warn("Không trừ được tồn kho:", stockErr);
+        }
+
+        // Chốt an toàn: đơn phải còn trên máy chủ sau khi các bước trên chạy xong. Nếu máy chủ đã làm rơi đơn
+        // (json-server chạy kiểu --watch có thể đè mất lượt ghi) thì ghi lại nguyên đơn với đúng mã cũ,
+        // tránh cảnh ví đã trừ tiền mà nhân viên không thấy đơn.
+        try {
+          const saved = await getOrderById(newOrder.id);
+          if (!saved) newOrder = await createOrder({ ...newOrder, ...(deducted ? { stockDeducted: deducted } : {}) });
+          else if (deducted && !saved.stockDeducted) await updateOrder(newOrder.id, { stockDeducted: deducted });
+        } catch (verifyErr) {
+          console.warn("Không kiểm tra lại được đơn:", verifyErr);
+        }
+
+        // Khách chọn "lưu làm địa chỉ mặc định" → ghi vào Hồ sơ (lỗi thì bỏ qua, đơn đã tạo xong)
+        if (shipTo.save) {
+          try { await updateUser(currentUser.id, { phone: orderBase.shipping.phone, address: orderBase.shipping.address }); } catch {}
+        }
+
+        // Cập nhật lượt dùng coupon + clear giỏ (user vẫn tạo đơn khác được)
+        if (appliedCoupon) {
+          try { await updateCoupon(appliedCoupon.id, { usedCount: (appliedCoupon.usedCount || 0) + 1 }); } catch {}
+        }
+        appliedCoupon = null;
+        couponDiscount = 0;
+        saveCouponState();
+        await clearCart();
+        await updateCartBadge();
+        await renderCart();
+
+        // Ăn mừng: dấu tick vẽ dần + confetti (tự đóng, bấm để đóng sớm)
+        celebrateOrder(pay.method === "wallet"
+          ? { title: "Đặt hàng thành công!", message: `Đơn #${newOrder.id} đã thanh toán bằng Ví web. Shop đang chuẩn bị hàng.` }
+          : { title: "Đã gửi đơn hàng!", message: `Đơn #${newOrder.id} đang chờ nhân viên xác nhận thanh toán.` });
+
+        if (pay.method === "wallet") {
+          showToast("✓ Thanh toán bằng ví thành công! Đang xuất hóa đơn…");
+          try {
+            const { generateInvoicePDF } = await import("./js/invoice.js");
+            const fileName = await generateInvoicePDF(newOrder, currentUser);
+            showToast(`📄 Đã tải hóa đơn "${fileName}". Xem lại trong "Đơn hàng của tôi".`);
+          } catch (pdfErr) {
+            console.error("Lỗi PDF:", pdfErr);
+          }
+        } else {
+          showToast("✓ Đã gửi đơn! Đơn đang CHỜ NHÂN VIÊN XÁC NHẬN thanh toán. Hóa đơn sẽ gửi qua email sau khi được duyệt.", { icon: "alert" });
+        }
+      } catch (err) {
+        console.error("Lỗi đặt hàng:", err);
+        showToast("Không thể tạo đơn hàng trên server. Đã lưu giỏ hàng.", { icon: "alert" });
+        btn.disabled = false;
+        btn.textContent = "Đặt hàng ngay";
+      }
+    };
+
+    window.__cartModuleLoaded = true;
+  </script>
+</body>
+</html>

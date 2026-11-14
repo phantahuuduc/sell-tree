@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Quản Trị — Tiệm Cây Lá & Sỏi</title>
+  <meta name="description" content="Trang quản trị dành cho admin Lá & Sỏi.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9"
+      }
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="admin.html" aria-current="page">Quản trị</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="account" data-account></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-page adm-book" id="mainContent">
+    <!-- Sổ quản trị: tên sổ + số liệu toàn cửa hàng (không phụ thuộc bộ lọc thời gian) -->
+    <div class="adm-book__head">
+      <p class="adm-book__name">Sổ quản trị <small>vườn ươm Lá &amp; Sỏi</small></p>
+      <dl class="adm-totals" id="adminStats" aria-label="Toàn cửa hàng">
+        <div><dt>Sản phẩm</dt><dd id="statProducts">—</dd></div>
+        <div><dt>Đơn hàng</dt><dd id="statOrders">—</dd></div>
+        <div><dt>Khách hàng</dt><dd id="statUsers">—</dd></div>
+        <div><dt>Đã thu (mọi thời gian)</dt><dd id="statRevenue">—</dd></div>
+      </dl>
+    </div>
+
+    <!-- Điều hướng: thẻ phân trang của sổ, gắn trên mép trang giấy. Thẻ đang mở do js/slide-marker.js đánh dấu (trượt) -->
+    <nav class="adm-tabs" role="tablist" aria-label="Các mục quản trị">
+        <div class="adm-tabs__group" role="presentation" title="Tổng quan">
+          <button class="adm-tab" type="button" role="tab" aria-selected="true" data-admin-tab="dashboard"><span>Thống kê</span></button>
+        </div>
+        <div class="adm-tabs__group" role="presentation" title="Bán hàng">
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="orders"><span>Đơn hàng</span> <span class="tab-badge" id="adminOrderBadge" hidden>0</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="products"><span>Sản phẩm</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="categories"><span>Danh mục</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="labels"><span>Nhãn sản phẩm</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="reviews"><span>Đánh giá</span></button>
+        </div>
+        <div class="adm-tabs__group" role="presentation" title="Khuyến mãi">
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="sale"><span>Chương trình khuyến mãi</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="coupons"><span>Mã giảm giá</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="banners"><span>Banner</span></button>
+        </div>
+        <div class="adm-tabs__group" role="presentation" title="Khách hàng">
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="users"><span>Tài khoản</span></button>
+        </div>
+        <div class="adm-tabs__group" role="presentation" title="Hệ thống">
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="audit"><span>Nhật ký nhân viên</span></button>
+          <button class="adm-tab" type="button" role="tab" aria-selected="false" data-admin-tab="settings"><span>Cài đặt</span></button>
+        </div>
+    </nav>
+
+    <div class="adm-main adm-sheet">
+    <h1 class="adm-sheet__title" id="admTitle" data-no="01">Thống kê</h1>
+
+    <!-- Thống kê: nội dung do js/admin-dashboard.js dựng theo khoảng thời gian đang chọn -->
+    <div class="admin-panel" id="panelDashboard">
+      <div id="dashRoot"><div class="state"><p>Đang tải số liệu…</p></div></div>
+
+      <details class="adm-more">
+        <summary>Xuất báo cáo &amp; nhập sản phẩm từ Excel</summary>
+      <h3 class="dash-section-title">Xuất báo cáo của kỳ đang xem</h3>
+      <div class="export-row">
+        <button class="btn btn--primary" id="exportRangeExcel">Xuất Excel kỳ đang chọn</button>
+        <button class="btn btn--ghost" id="exportRangeTxt">Xuất TXT kỳ đang chọn</button>
+      </div>
+      <h3 class="dash-section-title">Xuất báo cáo dài hạn</h3>
+      <div class="export-row">
+        <button class="btn btn--primary" id="exportMonthExcel">Xuất Excel theo tháng</button>
+        <button class="btn btn--ghost" id="exportMonthTxt">Xuất TXT theo tháng</button>
+        <button class="btn btn--primary" id="exportQuarterExcel">Xuất Excel theo quý</button>
+        <button class="btn btn--ghost" id="exportQuarterTxt">Xuất TXT theo quý</button>
+        <button class="btn btn--primary" id="exportYearExcel">Xuất Excel theo năm</button>
+        <button class="btn btn--ghost" id="exportYearTxt">Xuất TXT theo năm</button>
+      </div>
+
+      <h3 class="dash-section-title">Nhập sản phẩm từ Excel</h3>
+      <div class="import-row">
+        <input type="file" id="importProductFile" accept=".xlsx,.xls">
+        <button class="btn btn--primary" id="importProductBtn">Nhập sản phẩm</button>
+        <button class="btn btn--text" id="downloadTemplate" type="button">Tải file mẫu .xlsx</button>
+      </div>
+      </details>
+    </div>
+
+    <!-- Panel đơn hàng -->
+    <div class="admin-panel" id="panelOrders" hidden>
+      <div class="state"><p>Đang tải đơn hàng...</p></div>
+    </div>
+
+    <!-- Panel sản phẩm -->
+    <div class="admin-panel" id="panelProducts" hidden>
+      <div class="state"><p>Đang tải sản phẩm...</p></div>
+    </div>
+
+    <!-- Panel tài khoản (user + nhân viên) -->
+    <div class="admin-panel" id="panelUsers" hidden>
+      <div class="state"><p>Đang tải tài khoản...</p></div>
+    </div>
+
+    <!-- Panel nhật ký thao tác nhân viên (minh bạch, chống gian lận) -->
+    <div class="admin-panel" id="panelAudit" hidden>
+      <div class="state"><p>Đang tải nhật ký...</p></div>
+    </div>
+
+    <!-- Panel đánh giá sản phẩm -->
+    <div class="admin-panel" id="panelReviews" hidden>
+      <div class="state"><p>Đang tải đánh giá...</p></div>
+    </div>
+
+    <!-- Panel danh mục -->
+    <div class="admin-panel" id="panelCategories" hidden></div>
+
+    <!-- Panel mã giảm giá -->
+    <div class="admin-panel" id="panelCoupons" hidden></div>
+
+    <!-- Panel banner -->
+    <div class="admin-panel" id="panelBanners" hidden></div>
+
+    <!-- Panel khuyến mãi -->
+    <div class="admin-panel" id="panelSale" hidden></div>
+
+    <!-- Panel nhãn sản phẩm (js/admin-labels.js) -->
+    <div class="admin-panel" id="panelLabels" hidden></div>
+
+    <!-- Panel cài đặt chung -->
+    <div class="admin-panel" id="panelSettings" hidden></div>
+    </div><!-- /.adm-main -->
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container">
+      <div class="site-footer__note">
+        <p>&copy; 2026 Lá & Sỏi — Bài thi môn Lập trình Web Client.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Thư viện: SheetJS (xuất/nhập Excel) + Chart.js (biểu đồ) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script type="module">
+    import { getUser, requireRole } from "./js/storage.js";
+    import { getProducts, getOrders, getUsers, updateOrderStatus, getPromotions, createPromotion, updatePromotion, deletePromotion, getCategories, createProduct, updateProduct, deleteProduct, getBanners, createBanner, updateBanner, deleteBanner, getSettings, updateSettings, createCategory, updateCategory, deleteCategory, getCoupons, createCoupon, updateCoupon, updateUser, deleteUser, createUser, getAuditLog, getReviews, updateReview, deleteReview } from "./js/api.js";
+    import { initPage, formatPrice, showToast, escapeHTML, compressImageToDataURL } from "./js/ui.js";
+    import { exportToExcel, exportToTxt, getOrdersInRange, importProductsFromExcel, downloadProductTemplate } from "./js/report.js";
+    import { isCompletedSale } from "./js/sale.js";
+    import { renderOrderManager } from "./js/order-ui.js";
+    import { initAdminDashboard } from "./js/admin-dashboard.js";
+    import { attachMarker } from "./js/slide-marker.js";
+    import { ensureLabels } from "./js/labels.js";
+    import { initLabelsPanel, renderLabelPicker, readLabelPicker, legacyFields } from "./js/admin-labels.js";
+
+    await initPage();
+
+    // Kiểm tra quyền admin
+    // Chưa đăng nhập → sang trang đăng nhập rồi quay lại (giống trang Nhân viên);
+    // đăng nhập rồi mà không phải quản trị → báo không có quyền; là quản trị → đối chiếu thêm với máy chủ.
+    const user = await getUser();
+    if (!user) {
+      await requireRole(["admin"]);
+    } else if (user.role !== "admin") {
+      document.getElementById("mainContent").innerHTML = `
+        <div class="state" style="padding: 80px 0;">
+          <h2>Không có quyền truy cập</h2>
+          <p>Trang này chỉ dành cho tài khoản quản trị viên.</p>
+          <a class="btn btn--primary" href="${user.role === "staff" ? "staff.html" : "index.html"}">${user.role === "staff" ? "Về trang Nhân viên" : "Về trang chủ"}</a>
+        </div>`;
+    } else if (await requireRole(["admin"])) {
+      loadAdmin();
+    }
+
+    async function loadAdmin() {
+      try {
+        await ensureLabels(); // nhãn sản phẩm: cần cho form sản phẩm
+        const [products, orders, users, promotions, categories, banners, coupons, settings] = await Promise.all([
+          getProducts(),
+          getOrders().catch(() => []),
+          getUsers().catch(() => []),
+          getPromotions().catch(() => []),
+          getCategories().catch(() => []),
+          getBanners().catch(() => []),
+          getCoupons().catch(() => []),
+          getSettings().catch(() => null),
+        ]);
+        window.__adminCategories = categories;
+        window.__adminPromotions = promotions;
+
+        // Thống kê
+        const revenue = orders.filter(isCompletedSale).reduce((s, o) => s + (Number(o.total) || 0), 0);
+        const customerCount = users.filter((u) => u.role === "user").length;
+
+        document.getElementById("statProducts").textContent = products.length;
+        document.getElementById("statOrders").textContent = orders.length;
+        document.getElementById("statRevenue").textContent = formatPrice(revenue);
+        document.getElementById("statUsers").textContent = customerCount;
+
+        renderOrders(orders, products);
+        renderProducts(products);
+        renderUsers(users);
+        loadDashboard(orders, products, users, categories);
+        loadSalePanel(promotions);
+        loadBannersPanel(banners);
+        loadCategoriesPanel(categories, products);
+        loadCouponsPanel(coupons);
+        loadSettingsPanel(settings);
+        initExportButtons();
+        initImport();
+        initTabs();
+      } catch (err) {
+        console.error("Lỗi admin:", err);
+        document.getElementById("panelOrders").innerHTML = `<div class="state"><p>Lỗi tải dữ liệu: ${escapeHTML(err.message)}</p></div>`;
+      }
+    }
+
+    function initTabs() {
+      const TAB_KEY = "admin_tab";
+      const buttons = Array.from(document.querySelectorAll("[data-admin-tab]"));
+      const panelOf = (tab) => document.getElementById("panel" + tab.charAt(0).toUpperCase() + tab.slice(1));
+      // Panel cần nạp dữ liệu mỗi lần mở
+      const onOpen = {
+        audit: () => renderAudit(),
+        reviews: () => renderReviewsPanel(),
+        labels: () => initLabelsPanel(document.getElementById("panelLabels")),
+      };
+      function activate(tab) {
+        const btn = buttons.find((b) => b.dataset.adminTab === tab) || buttons[0];
+        tab = btn.dataset.adminTab;
+        buttons.forEach((b) => b.setAttribute("aria-selected", b === btn ? "true" : "false"));
+        buttons.forEach((b) => { const p = panelOf(b.dataset.adminTab); if (p) p.hidden = b !== btn; });
+        const title = document.getElementById("admTitle");
+        title.textContent = btn.querySelector("span")?.textContent || "";
+        title.dataset.no = String(buttons.indexOf(btn) + 1).padStart(2, "0"); // "No. 03" trước tên mục
+        onOpen[tab]?.();
+        try { sessionStorage.setItem(TAB_KEY, tab); } catch { /* bỏ qua */ }
+      }
+      buttons.forEach((btn) => btn.addEventListener("click", () => {
+        activate(btn.dataset.adminTab);
+      }));
+      // Tải lại trang vẫn ở đúng mục đang xem
+      let saved = "dashboard";
+      try { saved = sessionStorage.getItem(TAB_KEY) || "dashboard"; } catch { /* bỏ qua */ }
+      activate(saved);
+      // Gắn sau khi đã mở đúng mục: lần tải đầu dấu nằm sẵn đúng chỗ. Dấu "thẻ đang mở" trượt từ thẻ cũ sang thẻ mới; rê chuột có vệt nhạt đi theo
+      attachMarker(document.querySelector(".adm-tabs"), { item: ".adm-tab", isActive: (b) => b.getAttribute("aria-selected") === "true", hover: true });
+    }
+
+    // ----- Panel Đánh giá: xem / lọc / phản hồi / xóa -----
+    let reviewStarFilter = "all";
+    async function renderReviewsPanel() {
+      const panel = document.getElementById("panelReviews");
+      const [reviews, products, users] = await Promise.all([
+        getReviews().catch(() => []),
+        getProducts().catch(() => []),
+        getUsers().catch(() => []),
+      ]);
+      const pName = (id) => products.find((p) => String(p.id) === String(id))?.name || `#${id}`;
+      const uName = (id) => users.find((u) => String(u.id) === String(id))?.name || `#${id}`;
+      const sorted = reviews.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const shown = sorted.filter((r) => reviewStarFilter === "all"
+        || (reviewStarFilter === "noreply" ? !(r.replies || []).length : String(Math.round(r.rating)) === reviewStarFilter));
+      const avg = reviews.length ? reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviews.length : 0;
+      const stars = (n) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
+      const filters = [["all", "Tất cả", reviews.length], ["noreply", "Chưa phản hồi", reviews.filter((r) => !(r.replies || []).length).length],
+        ...[5, 4, 3, 2, 1].map((s) => [String(s), `${s}★`, reviews.filter((r) => Math.round(r.rating) === s).length])]
+        .map(([k, l, n]) => `<button type="button" class="filter-chip ${reviewStarFilter === k ? "is-active" : ""}" data-review-filter="${k}">${l} <span class="filter-chip__n">${n}</span></button>`).join("");
+
+      const rows = shown.map((r) => {
+        const replies = (r.replies || []).map((rp) => `<div class="admin-review__reply"><strong>${escapeHTML(uName(rp.userId))}:</strong> ${escapeHTML(rp.text)}</div>`).join("");
+        return `
+          <tr data-review-id="${escapeHTML(String(r.id))}">
+            <td style="white-space:nowrap">${new Date(r.createdAt).toLocaleDateString("vi-VN")}</td>
+            <td><a href="product-detail.html?id=${encodeURIComponent(r.productId)}" target="_blank" rel="noopener">${escapeHTML(pName(r.productId))}</a></td>
+            <td>${escapeHTML(uName(r.userId))}</td>
+            <td style="color:#d4a017;white-space:nowrap">${stars(r.rating)}</td>
+            <td style="min-width:240px">${escapeHTML(r.comment || "")}${replies}
+              <form class="admin-review__form" data-admin-reply="${escapeHTML(String(r.id))}" hidden>
+                <input type="text" maxlength="300" placeholder="Phản hồi từ shop..." required>
+                <button class="btn btn--primary btn--sm" type="submit">Gửi</button>
+              </form>
+            </td>
+            <td class="admin-table__actions">
+              <button class="btn btn--sm" data-review-reply="${escapeHTML(String(r.id))}">Phản hồi</button>
+              <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-review-del="${escapeHTML(String(r.id))}">Xóa</button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      panel.innerHTML = `
+        <div class="sale-panel-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="filter-chips">${filters}</div>
+          <span class="muted">Điểm trung bình: <strong>${avg.toFixed(1)}★</strong> / ${reviews.length} đánh giá</span>
+        </div>
+        <div class="admin-table-wrap">
+          ${shown.length ? `<table class="admin-table">
+            <thead><tr><th>Ngày</th><th>Sản phẩm</th><th>Khách</th><th>Sao</th><th>Nội dung & phản hồi</th><th></th></tr></thead>
+            <tbody>${rows}</tbody></table>` : `<p class="muted">Không có đánh giá nào.</p>`}
+        </div>`;
+
+      panel.querySelectorAll("[data-review-filter]").forEach((b) => b.addEventListener("click", () => { reviewStarFilter = b.dataset.reviewFilter; renderReviewsPanel(); }));
+      panel.querySelectorAll("[data-review-reply]").forEach((b) => b.addEventListener("click", () => {
+        const f = panel.querySelector(`[data-admin-reply="${CSS.escape(b.dataset.reviewReply)}"]`);
+        f.hidden = !f.hidden; if (!f.hidden) f.querySelector("input").focus();
+      }));
+      panel.querySelectorAll("[data-admin-reply]").forEach((f) => f.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const r = reviews.find((x) => String(x.id) === f.dataset.adminReply);
+        const text = f.querySelector("input").value.trim();
+        if (!r || !text) return;
+        try {
+          await updateReview(r.id, { replies: [...(r.replies || []), { id: Date.now().toString(36), userId: String(user.id), text, createdAt: new Date().toISOString() }] });
+          showToast("Đã gửi phản hồi");
+          renderReviewsPanel();
+        } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
+      }));
+      panel.querySelectorAll("[data-review-del]").forEach((b) => b.addEventListener("click", async () => {
+        if (!confirm("Xóa đánh giá này? (không thể hoàn tác)")) return;
+        try { await deleteReview(b.dataset.reviewDel); showToast("Đã xóa đánh giá"); renderReviewsPanel(); }
+        catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
+      }));
+    }
+
+    // ----- Dashboard dài hạn: tháng / quý / năm -----
+    // Thống kê: toàn bộ nằm ở js/admin-dashboard.js (bộ lọc thời gian, chỉ số chính, các khối)
+    let dashboard = null;
+    let dashOrders = [];
+    function loadDashboard(allOrders, products = [], users = [], categories = []) {
+      dashOrders = allOrders;
+      dashboard = initAdminDashboard(document.getElementById("dashRoot"), { orders: allOrders, products, users, categories });
+    }
+
+    function initExportButtons() {
+      const bind = (id, fn) => document.getElementById(id)?.addEventListener("click", fn);
+      const now = () => new Date();
+
+      // Xuất đúng khoảng thời gian đang chọn ở bộ lọc thống kê
+      const rangeOrders = () => {
+        const r = dashboard?.getRange();
+        return r ? dashOrders.filter((o) => { const d = new Date(o.createdAt); return d >= r.from && d < r.to; }) : dashOrders;
+      };
+      const rangeName = () => (dashboard?.getRange().label || "TatCa").replace(/[^0-9A-Za-zÀ-ỹ]+/g, "_");
+      bind("exportRangeExcel", async () => exportToExcel(rangeOrders(), `DoanhThu_${rangeName()}.xlsx`));
+      bind("exportRangeTxt", async () => exportToTxt(rangeOrders(), `DoanhThu_${rangeName()}.txt`));
+      bind("exportMonthExcel", async () => exportToExcel(await getOrdersInRange("month"), `DoanhThu_Thang_${now().getMonth() + 1}_${now().getFullYear()}.xlsx`));
+      bind("exportMonthTxt", async () => exportToTxt(await getOrdersInRange("month"), `DoanhThu_Thang_${now().getMonth() + 1}_${now().getFullYear()}.txt`));
+      bind("exportQuarterExcel", async () => exportToExcel(await getOrdersInRange("quarter"), `DoanhThu_Quy_${Math.floor(now().getMonth() / 3) + 1}_${now().getFullYear()}.xlsx`));
+      bind("exportQuarterTxt", async () => exportToTxt(await getOrdersInRange("quarter"), `DoanhThu_Quy_${Math.floor(now().getMonth() / 3) + 1}_${now().getFullYear()}.txt`));
+      bind("exportYearExcel", async () => exportToExcel(await getOrdersInRange("year"), `DoanhThu_Nam_${now().getFullYear()}.xlsx`));
+      bind("exportYearTxt", async () => exportToTxt(await getOrdersInRange("year"), `DoanhThu_Nam_${now().getFullYear()}.txt`));
+    }
+
+    function initImport() {
+      document.getElementById("importProductBtn")?.addEventListener("click", async () => {
+        const fileInput = document.getElementById("importProductFile");
+        const file = fileInput.files[0];
+        if (!file) { alert("Vui lòng chọn file Excel trước."); return; }
+        try {
+          const result = await importProductsFromExcel(file);
+          alert(`Đã nhập ${result.success}/${result.total} sản phẩm.\nSố dòng lỗi/bỏ qua: ${result.errors}`);
+          location.reload();
+        } catch (err) {
+          alert("Lỗi nhập file: " + err.message);
+        }
+      });
+
+      document.getElementById("downloadTemplate")?.addEventListener("click", () => {
+        downloadProductTemplate();
+      });
+    }
+
+    // Đơn hàng: cùng vòng đời & quy tắc với trang nhân viên (js/order-flow.js) — không đổi trạng thái tùy ý
+    function renderOrders() {
+      // Admin không có tab duyệt thanh toán riêng → giữ nút duyệt tiền ở đây (vẫn chỉ 1 nơi)
+      renderOrderManager(document.getElementById("panelOrders"), user, { badgeId: "adminOrderBadge" });
+    }
+
+    // ----- Panel sản phẩm (CRUD đầy đủ qua UI admin) -----
+    function renderProducts(products) {
+      const panel = document.getElementById("panelProducts");
+      const cats = window.__adminCategories || [];
+      const catName = (cid) => cats.find((c) => String(c.id) === String(cid))?.name || "—";
+
+      const rows = products.map((p) => {
+        const stockClass = p.stock <= 5 ? "stock-low" : "";
+        return `
+          <tr data-product-id="${escapeHTML(String(p.id))}">
+            <td>${escapeHTML(String(p.id))}</td>
+            <td>
+              <div class="admin-product-cell">
+                <img src="${escapeHTML(p.image)}" alt="" width="40" height="50" style="border-radius:4px;object-fit:cover;" data-fallback>
+                <span>${escapeHTML(p.name)}</span>
+              </div>
+            </td>
+            <td><em>${escapeHTML(p.scientificName || "—")}</em></td>
+            <td>${escapeHTML(catName(p.categoryId))}</td>
+            <td style="white-space:nowrap">${formatPrice(p.price)}${p.oldPrice > p.price ? `<br><s class="muted" style="font-size:12px">${formatPrice(p.oldPrice)}</s>` : ""}</td>
+            <td class="${stockClass}">${p.stock} chậu</td>
+            <td class="admin-table__actions">
+              <button class="btn btn--sm btn--ghost" data-edit-product="${escapeHTML(String(p.id))}">Sửa</button>
+              <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-del-product="${escapeHTML(String(p.id))}">Xóa</button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      panel.innerHTML = `
+        <div class="sale-panel-header">
+          <button class="btn btn--primary btn--sm" id="btnAddProduct">+ Thêm sản phẩm</button>
+        </div>
+        <div id="productFormWrap" hidden></div>
+        <div class="admin-table-wrap" style="margin-top:var(--sp-3)">
+          <table class="admin-table">
+            <thead>
+              <tr><th>ID</th><th>Tên</th><th>Khoa học</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Hành động</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+
+      document.getElementById("btnAddProduct").addEventListener("click", () => showProductForm(null, products));
+
+      panel.querySelectorAll("[data-edit-product]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const p = products.find((x) => String(x.id) === btn.dataset.editProduct);
+          if (p) showProductForm(p, products);
+        });
+      });
+
+      panel.querySelectorAll("[data-del-product]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const p = products.find((x) => String(x.id) === btn.dataset.delProduct);
+          if (!confirm(`Xóa sản phẩm "${p?.name}"?\nHành động này không thể khôi phục.`)) return;
+          try {
+            await deleteProduct(btn.dataset.delProduct);
+            showToast("Đã xóa sản phẩm");
+            renderProducts(await getProducts());
+          } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
+        });
+      });
+    }
+
+    // ----- Helper: Upload ảnh từ thiết bị (chỉ nhận ảnh, max 2MB, convert base64) -----
+    const ACCEPT_IMAGES = "image/png,image/jpeg,image/jpg,image/gif,image/webp,image/svg+xml";
+    const MAX_IMG_BYTES = 2 * 1024 * 1024; // 2MB
+
+    function initImageUploader(fileInputId, textInputId, previewImgId, defaultSrc) {
+      const fileInput = document.getElementById(fileInputId);
+      const textInput = document.getElementById(textInputId);
+      const previewImg = previewImgId ? document.getElementById(previewImgId) : null;
+
+      if (textInput && previewImg) {
+        textInput.addEventListener("input", () => {
+          previewImg.src = textInput.value || defaultSrc || "assets/placeholder.svg";
+        });
+      }
+
+      if (!fileInput) return;
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Ràng buộc 1: Chỉ nhận định dạng ảnh (JPG/PNG/GIF/WEBP/SVG)
+        const okTypes = ["image/png","image/jpeg","image/jpg","image/gif","image/webp","image/svg+xml"];
+        if (!file.type.startsWith("image/") || !okTypes.includes(file.type)) {
+          alert(`❌ Không hợp lệ: "${file.name}"\nChỉ cho phép ảnh định dạng JPG, PNG, GIF, WEBP, hoặc SVG.`);
+          e.target.value = "";
+          return;
+        }
+
+        // Ràng buộc 2: Max 2MB để tránh db.json quá nặng
+        if (file.size > MAX_IMG_BYTES) {
+          const mb = (file.size / 1024 / 1024).toFixed(2);
+          alert(`❌ Ảnh "${file.name}" quá lớn (${mb} MB).\nTối đa 2 MB — hãy nén ảnh trước khi tải lên.`);
+          e.target.value = "";
+          return;
+        }
+
+        const applyData = (dataUrl) => {
+          if (textInput) textInput.value = dataUrl;
+          if (previewImg) previewImg.src = dataUrl;
+          showToast(`✓ Đã tải ảnh "${file.name}" (${(dataUrl.length / 1024).toFixed(0)} KB sau nén)`);
+        };
+        if (file.type === "image/svg+xml") {
+          const reader = new FileReader();
+          reader.onload = (ev) => applyData(ev.target.result);
+          reader.onerror = () => { alert("Lỗi đọc file. Vui lòng thử ảnh khác."); e.target.value = ""; };
+          reader.readAsDataURL(file);
+        } else {
+          // json-server chỉ nhận request ≤ 100KB → nén ảnh trước khi lưu
+          compressImageToDataURL(file, { maxChars: 85000, maxSide: 1000 })
+            .then(applyData)
+            .catch(() => { alert("Không xử lý được ảnh này. Vui lòng thử ảnh khác."); e.target.value = ""; });
+        }
+      });
+    }
+
+    function showProductForm(product, allProducts) {
+      const wrap = document.getElementById("productFormWrap");
+      const isEdit = !!product;
+      const cats = window.__adminCategories || [];
+      const catOptions = cats.map((c) => `<option value="${escapeHTML(String(c.id))}" ${String(product?.categoryId) === String(c.id) ? "selected" : ""}>${escapeHTML(c.name)}</option>`).join("");
+      wrap.innerHTML = `
+        <div class="sale-form">
+          <h3 class="dash-section-title" style="margin-top:0">${isEdit ? "Sửa sản phẩm" : "Thêm sản phẩm mới"}</h3>
+          <form id="productForm" autocomplete="off">
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="pr_name">Tên sản phẩm *</label>
+                <input id="pr_name" name="name" type="text" required value="${escapeHTML(product?.name || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pr_sci">Tên khoa học</label>
+                <input id="pr_sci" name="scientificName" type="text" value="${escapeHTML(product?.scientificName || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pr_price">Giá bán (VND) * <span class="muted" id="pr_priceNote" style="font-weight:400"></span></label>
+                <input id="pr_price" name="price" type="number" min="0" required value="${product?.price ?? ""}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pr_oldprice">Giá trước giảm (VND) <span class="muted" style="font-weight:400">(để trống = không giảm giá riêng)</span></label>
+                <input id="pr_oldprice" name="oldPrice" type="number" min="0" value="${product?.oldPrice ?? ""}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pr_stock">Tồn kho *</label>
+                <input id="pr_stock" name="stock" type="number" min="0" required value="${product?.stock ?? 10}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pr_cat">Danh mục *</label>
+                <select id="pr_cat" name="categoryId" required><option value="">— Chọn —</option>${catOptions}</select>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label>Nhãn sản phẩm <span class="muted" style="font-weight:400">(quản lý danh sách nhãn ở mục “Nhãn sản phẩm”)</span></label>
+                <div id="pr_labels">${renderLabelPicker(product)}</div>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="pr_img">Ảnh sản phẩm *</label>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <input id="pr_img" name="image" type="text" required value="${escapeHTML(product?.image || "assets/img/p1.jpg")}" placeholder="Dán URL ảnh hoặc chọn file bên phải" style="flex:1;min-width:220px">
+                  <label for="pr_file" class="btn btn--ghost btn--sm" style="cursor:pointer;margin:0">📁 Tải ảnh từ máy</label>
+                  <input id="pr_file" type="file" accept="${ACCEPT_IMAGES}" style="display:none">
+                </div>
+                <small class="muted" style="font-size:12px">Chỉ nhận JPG, PNG, GIF, WEBP, SVG — tối đa 2 MB.</small>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label>Xem trước</label>
+                <img id="pr_preview" src="${escapeHTML(product?.image || "assets/img/p1.jpg")}" alt="" style="width:120px;height:150px;object-fit:cover;border-radius:8px;border:1px solid var(--rule)" data-fallback>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="pr_desc">Mô tả ngắn</label>
+                <input id="pr_desc" name="description" type="text" value="${escapeHTML(product?.description || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label>Kích cỡ & giá theo size <span class="muted" style="font-weight:400">(để trống = sản phẩm chỉ có 1 giá)</span></label>
+                <div class="variant-editor">
+                  <div class="variant-editor__head"><span>Tên size *</span><span>Chiều cao</span><span>Ø chậu</span><span>Giá (VND) *</span><span></span></div>
+                  <div id="pr_variants"></div>
+                  <button class="btn btn--ghost btn--sm" type="button" id="pr_addVariant">+ Thêm size</button>
+                </div>
+              </div>
+            </div>
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">${isEdit ? "Lưu thay đổi" : "Tạo sản phẩm"}</button>
+              <button class="btn btn--ghost" type="button" id="btnCancelProduct">Hủy</button>
+            </div>
+          </form>
+        </div>`;
+
+      wrap.hidden = false;
+      wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      initImageUploader("pr_file", "pr_img", "pr_preview", "assets/img/p1.jpg");
+
+      // ----- Trình sửa size: giá bán chính luôn = giá size rẻ nhất (thẻ sản phẩm & trang chi tiết không lệch nhau) -----
+      const vBox = document.getElementById("pr_variants");
+      const priceInput = document.getElementById("pr_price");
+      const priceNote = document.getElementById("pr_priceNote");
+      const addVariantRow = (v = {}) => {
+        const row = document.createElement("div");
+        row.className = "variant-editor__row";
+        row.innerHTML = `
+          <input type="text" data-v="label" placeholder="VD: Nhỏ — 15cm" value="${escapeHTML(v.label || "")}">
+          <input type="text" data-v="height" placeholder="15cm" value="${escapeHTML(v.height || "")}">
+          <input type="text" data-v="potDiameter" placeholder="10cm" value="${escapeHTML(v.potDiameter || "")}">
+          <input type="number" data-v="price" min="0" placeholder="145000" value="${v.price ?? ""}">
+          <button type="button" class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-v-del title="Xóa size">✕</button>`;
+        vBox.appendChild(row);
+      };
+      const readVariants = () => Array.from(vBox.querySelectorAll(".variant-editor__row")).map((r) => ({
+        label: r.querySelector('[data-v="label"]').value.trim(),
+        height: r.querySelector('[data-v="height"]').value.trim(),
+        potDiameter: r.querySelector('[data-v="potDiameter"]').value.trim(),
+        price: Number(r.querySelector('[data-v="price"]').value) || 0,
+      })).filter((v) => v.label || v.price);
+      const syncPrice = () => {
+        const prices = readVariants().map((v) => v.price).filter((p) => p > 0);
+        if (prices.length) {
+          priceInput.value = Math.min(...prices);
+          priceInput.readOnly = true;
+          priceNote.textContent = "(tự lấy theo size rẻ nhất)";
+        } else {
+          priceInput.readOnly = false;
+          priceNote.textContent = "";
+        }
+      };
+      (product?.variants || []).forEach(addVariantRow);
+      syncPrice();
+      document.getElementById("pr_addVariant").addEventListener("click", () => { addVariantRow(); syncPrice(); });
+      vBox.addEventListener("input", syncPrice);
+      vBox.addEventListener("click", (e) => {
+        if (!e.target.closest("[data-v-del]")) return;
+        e.target.closest(".variant-editor__row").remove();
+        syncPrice();
+      });
+
+      document.getElementById("btnCancelProduct").addEventListener("click", () => { wrap.hidden = true; });
+
+      document.getElementById("productForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = {
+          name: fd.get("name").trim(),
+          scientificName: fd.get("scientificName").trim(),
+          price: Number(fd.get("price")),
+          stock: Number(fd.get("stock")),
+          categoryId: fd.get("categoryId"),
+          image: fd.get("image").trim(),
+          description: fd.get("description").trim(),
+        };
+        if (!data.name || !data.price || !data.categoryId || !data.image) {
+          alert("Vui lòng điền đầy đủ các trường bắt buộc (*).");
+          return;
+        }
+        // Nhãn đã chọn + 2 trường cũ (difficulty, petSafe) được suy ra từ nhãn để chatbot / gợi ý chọn cây dùng tiếp
+        data.labelIds = readLabelPicker(e.target);
+        Object.assign(data, legacyFields(data.labelIds, undefined, undefined, product));
+        const variants = readVariants();
+        if (variants.some((v) => !v.label || !(v.price > 0))) {
+          alert("Mỗi size cần có Tên size và Giá lớn hơn 0.");
+          return;
+        }
+        if (new Set(variants.map((v) => v.label.toLowerCase())).size !== variants.length) {
+          alert("Tên các size không được trùng nhau (giỏ hàng phân biệt size theo tên).");
+          return;
+        }
+        data.variants = variants;
+        if (variants.length) data.price = Math.min(...variants.map((v) => v.price));
+        const oldPrice = Number(fd.get("oldPrice")) || 0;
+        if (oldPrice && oldPrice <= data.price) {
+          alert("Giá trước giảm phải lớn hơn giá bán (hoặc để trống nếu không giảm).");
+          return;
+        }
+        data.oldPrice = oldPrice || null;
+        if (!isEdit) data.addedDate = new Date().toISOString();
+        try {
+          if (isEdit) {
+            await updateProduct(product.id, data);
+            showToast("Đã cập nhật sản phẩm");
+          } else {
+            await createProduct(data);
+            showToast("Đã tạo sản phẩm mới");
+          }
+          wrap.hidden = true;
+          renderProducts(await getProducts());
+        } catch (err) {
+          showToast("Lỗi lưu: " + err.message, { icon: "alert" });
+        }
+      });
+    }
+
+    // "2026-12-24" hoặc ISO → "24/12/2026"
+    function fmtD(d) {
+      if (!d) return "…";
+      return new Date(d.length <= 10 ? d + "T00:00:00" : d).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+    }
+
+    // ----- Panel Banner (quản lý slideshow trang chủ) -----
+    function loadBannersPanel(banners) {
+      const panel = document.getElementById("panelBanners");
+      const sorted = [...banners].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      // Trạng thái hiển thị trên trang chủ + lý do (cùng quy tắc với js/banner.js)
+      function bannerVisibility(b) {
+        const now = new Date();
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const promo = b.promotionId ? (window.__adminPromotions || []).find((x) => String(x.id) === String(b.promotionId)) : null;
+        const promoRunning = promo && promo.isActive && new Date(promo.startDate) <= now && new Date(promo.endDate) >= now;
+        const hasDates = !!(b.startDate || b.endDate);
+        let eligible = false, reason = "", warn = "";
+        if (!b.isActive) reason = "Đang ẩn (bấm Hiện để bật)";
+        else if (hasDates) {
+          const start = b.startDate ? new Date(b.startDate + "T00:00:00") : null;
+          const end = b.endDate ? new Date(b.endDate + "T23:59:59") : null;
+          if (start && today < start) reason = `Chưa tới lịch — sẽ hiện từ ${fmtD(b.startDate)}`;
+          else if (end && today > end) reason = `Đã qua lịch (hết ${fmtD(b.endDate)})`;
+          else { eligible = true; reason = `Theo lịch ${fmtD(b.startDate)} → ${fmtD(b.endDate)}`; }
+          if (b.promotionId && !promo) warn = "Khuyến mãi gắn kèm đã bị xóa";
+          else if (eligible && promo && !promoRunning) warn = `Khuyến mãi "${promo.name}" chưa chạy trong lúc banner hiện — khách thấy quảng cáo giảm giá nhưng không được giảm`;
+        } else if (b.promotionId) {
+          if (!promo) reason = "Khuyến mãi gắn kèm đã bị xóa";
+          else if (promoRunning) { eligible = true; reason = `Theo khuyến mãi "${promo.name}" (đang chạy)`; }
+          else reason = `Chờ khuyến mãi "${promo.name}" (${fmtD(promo.startDate)} → ${fmtD(promo.endDate)})`;
+        } else reason = "Chưa đặt lịch và chưa gắn khuyến mãi — không hiện";
+        return { eligible, reason, warn, end: hasDates ? b.endDate : promo?.endDate };
+      }
+      // Trang chủ chỉ hiện 1 banner: banner đủ điều kiện kết thúc sớm nhất, rồi theo thứ tự
+      const vis = new Map(banners.map((b) => [String(b.id), bannerVisibility(b)]));
+      const winner = banners.filter((b) => vis.get(String(b.id)).eligible).sort((a, b) => {
+        const ea = vis.get(String(a.id)).end, eb = vis.get(String(b.id)).end;
+        const ta = ea ? new Date(ea).getTime() : Infinity, tb = eb ? new Date(eb).getTime() : Infinity;
+        return ta !== tb ? ta - tb : (a.order || 0) - (b.order || 0);
+      })[0];
+      function bannerScheduleChip(b) {
+        const v = vis.get(String(b.id));
+        const isWinner = winner && String(winner.id) === String(b.id);
+        const status = isWinner
+          ? `<span class="chip chip--active">✅ Đang hiện trên trang chủ</span>`
+          : v.eligible
+            ? `<span class="chip chip--mid">⏸ Đủ điều kiện — trang chủ chỉ hiện 1 banner, đang nhường banner khác</span>`
+            : `<span class="chip chip--plain">⏸ Không hiện</span>`;
+        return `<div style="margin-top:4px;display:grid;gap:4px">${status}
+          <small class="muted">${escapeHTML(v.reason)}</small>
+          ${v.warn ? `<small style="color:#b23b2a">⚠ ${escapeHTML(v.warn)}</small>` : ""}</div>`;
+      }
+
+      const rows = sorted.map((b) => `
+        <tr data-banner-id="${escapeHTML(String(b.id))}">
+          <td style="width:120px">
+            <img src="${escapeHTML(b.image || "")}" alt="" style="width:100px;height:60px;object-fit:cover;border-radius:6px;border:1px solid var(--rule);" data-fallback>
+          </td>
+          <td>
+            <strong>${escapeHTML(b.title || "—")}</strong>
+            <div class="muted" style="margin:4px 0 0;max-width:360px">${escapeHTML(b.description || "")}</div>
+          </td>
+          <td><code style="font-size:12px">${escapeHTML(b.image || "")}</code></td>
+          <td style="text-align:center">${b.order ?? "—"}</td>
+          <td style="min-width:220px">
+            ${bannerScheduleChip(b)}
+          </td>
+          <td class="admin-table__actions">
+            <button class="btn btn--sm btn--ghost" data-edit-banner="${escapeHTML(String(b.id))}">Sửa</button>
+            <button class="btn btn--sm btn--ghost" data-toggle-banner="${escapeHTML(String(b.id))}" data-active="${b.isActive}">${b.isActive ? "Ẩn" : "Hiện"}</button>
+            <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-del-banner="${escapeHTML(String(b.id))}">Xóa</button>
+          </td>
+        </tr>
+      `).join("");
+
+      panel.innerHTML = `
+        <h2 style="margin:0 0 var(--sp-2)">Quản Lý Banner</h2>
+        <p class="muted">Quản lý các banner trình chiếu slideshow tại trang chủ.</p>
+        <div class="sale-panel-header">
+          <button class="btn btn--primary btn--sm" id="btnAddBanner">+ Thêm banner</button>
+        </div>
+        <div id="bannerFormWrap" hidden></div>
+        <h3 class="dash-section-title" style="margin-top:var(--sp-5)">Danh Sách Banner Trang Chủ</h3>
+        <div class="admin-table-wrap">
+          ${banners.length ? `
+            <table class="admin-table">
+              <thead>
+                <tr><th>Preview</th><th>Tiêu đề / Mô tả</th><th>Đường dẫn file</th><th>Thứ tự</th><th>Trạng thái</th><th>Hành động</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>` : `<p class="muted">Chưa có banner nào.</p>`}
+        </div>`;
+
+      document.getElementById("btnAddBanner").addEventListener("click", () => showBannerForm(null, banners));
+
+      panel.querySelectorAll("[data-edit-banner]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const b = banners.find((x) => String(x.id) === btn.dataset.editBanner);
+          if (b) showBannerForm(b, banners);
+        });
+      });
+
+      panel.querySelectorAll("[data-toggle-banner]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const active = btn.dataset.active === "true";
+          try {
+            await updateBanner(btn.dataset.toggleBanner, { isActive: !active });
+            showToast(`Đã ${!active ? "hiện" : "ẩn"} banner`);
+            loadBannersPanel(await getBanners().catch(() => []));
+          } catch { showToast("Lỗi cập nhật", { icon: "alert" }); }
+        });
+      });
+
+      panel.querySelectorAll("[data-del-banner]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const b = banners.find((x) => String(x.id) === btn.dataset.delBanner);
+          if (!confirm(`Xóa banner "${b?.title}"?`)) return;
+          try {
+            await deleteBanner(btn.dataset.delBanner);
+            showToast("Đã xóa banner");
+            loadBannersPanel(await getBanners().catch(() => []));
+          } catch { showToast("Lỗi xóa", { icon: "alert" }); }
+        });
+      });
+    }
+
+    function showBannerForm(banner, allBanners) {
+      const wrap = document.getElementById("bannerFormWrap");
+      const isEdit = !!banner;
+      const nextOrder = (allBanners || []).reduce((m, b) => Math.max(m, b.order || 0), 0) + 1;
+
+      wrap.innerHTML = `
+        <div class="sale-form">
+          <h3 class="dash-section-title" style="margin-top:0">${isEdit ? "Sửa banner" : "Thêm banner mới"}</h3>
+          <form id="bannerForm" autocomplete="off">
+            <div class="sale-form__grid">
+              <div class="sale-form__group sale-form__full">
+                <label for="bf_title">Tiêu đề *</label>
+                <input id="bf_title" name="title" type="text" required value="${escapeHTML(banner?.title || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="bf_desc">Mô tả</label>
+                <input id="bf_desc" name="description" type="text" value="${escapeHTML(banner?.description || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="bf_img">Ảnh banner *</label>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                  <input id="bf_img" name="image" type="text" required value="${escapeHTML(banner?.image || "assets/img/p1.jpg")}" placeholder="Dán URL ảnh hoặc chọn file bên phải" style="flex:1;min-width:220px">
+                  <label for="bf_file" class="btn btn--ghost btn--sm" style="cursor:pointer;margin:0">📁 Tải ảnh từ máy</label>
+                  <input id="bf_file" type="file" accept="${ACCEPT_IMAGES}" style="display:none">
+                </div>
+                <small class="muted" style="font-size:12px">Chỉ nhận JPG, PNG, GIF, WEBP, SVG — tối đa 2 MB.</small>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label>Xem trước</label>
+                <img id="bf_preview" src="${escapeHTML(banner?.image || "assets/img/p1.jpg")}" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid var(--rule)" data-fallback>
+              </div>
+              <div class="sale-form__group">
+                <label for="bf_link">Đường dẫn khi click</label>
+                <input id="bf_link" name="link" type="text" value="${escapeHTML(banner?.link || "index.html")}" placeholder="index.html">
+              </div>
+              <div class="sale-form__group">
+                <label for="bf_order">Thứ tự hiển thị</label>
+                <input id="bf_order" name="order" type="number" min="0" value="${banner?.order ?? nextOrder}">
+              </div>
+              <div class="sale-form__group">
+                <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="isActive" ${banner?.isActive !== false ? "checked" : ""}>
+                  Hiện banner này trên trang chủ
+                </label>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="bf_promo">🏷️ Gắn với khuyến mãi (khuyên dùng khi banner nói về giảm giá)</label>
+                <select id="bf_promo" name="promotionId">
+                  <option value="">— Không gắn (dùng lịch bên dưới) —</option>
+                  ${(window.__adminPromotions || []).map((p) => `<option value="${escapeHTML(String(p.id))}" ${String(banner?.promotionId || "") === String(p.id) ? "selected" : ""}>${escapeHTML(p.name)} (−${p.discountPercent}%, ${new Date(p.startDate).toLocaleDateString("vi-VN")} → ${new Date(p.endDate).toLocaleDateString("vi-VN")})</option>`).join("")}
+                </select>
+                <small class="muted" style="font-size:12px">Nếu gắn mà <strong>không đặt ngày</strong> bên dưới: banner tự hiện đúng lúc khuyến mãi chạy (giá sản phẩm giảm thật). Nếu có đặt ngày: banner hiện theo ngày bạn đặt.</small>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label>⏰ Lịch hiển thị trên trang chủ</label>
+                <small class="muted" style="font-size:12px;margin-bottom:6px;display:block">Banner hiện từ ngày → đến hết ngày đã chọn rồi tự tắt (VD Giáng Sinh 20/12 → 26/12). Để trống cả hai và không gắn khuyến mãi thì banner chỉ được lưu, không hiện ở trang chủ.</small>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <span style="flex:1;min-width:140px">
+                    <label for="bf_start" style="font-size:12px">Từ ngày</label>
+                    <input id="bf_start" name="startDate" type="date" value="${banner?.startDate ? banner.startDate.slice(0,10) : ""}">
+                  </span>
+                  <span style="flex:1;min-width:140px">
+                    <label for="bf_end" style="font-size:12px">Đến hết ngày</label>
+                    <input id="bf_end" name="endDate" type="date" value="${banner?.endDate ? banner.endDate.slice(0,10) : ""}">
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">${isEdit ? "Lưu thay đổi" : "Tạo banner"}</button>
+              <button class="btn btn--ghost" type="button" id="btnCancelBanner">Hủy</button>
+            </div>
+          </form>
+        </div>`;
+
+      wrap.hidden = false;
+      wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      initImageUploader("bf_file", "bf_img", "bf_preview", "assets/img/p1.jpg");
+
+      document.getElementById("btnCancelBanner").addEventListener("click", () => { wrap.hidden = true; });
+
+      document.getElementById("bannerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = {
+          title: fd.get("title").trim(),
+          description: fd.get("description").trim(),
+          image: fd.get("image").trim(),
+          link: fd.get("link").trim() || "index.html",
+          order: Number(fd.get("order")) || 0,
+          isActive: fd.has("isActive"),
+          startDate: fd.get("startDate") || "",
+          endDate: fd.get("endDate") || "",
+          promotionId: fd.get("promotionId") || "",
+        };
+        if (!data.title || !data.image) { alert("Vui lòng điền Tiêu đề và Đường dẫn ảnh."); return; }
+        if (data.startDate && data.endDate && data.startDate > data.endDate) { alert("Ngày bắt đầu phải trước hoặc bằng ngày kết thúc."); return; }
+        // Ngày banner lệch lịch khuyến mãi gắn kèm → khách sẽ thấy quảng cáo giảm giá mà không được giảm
+        const linked = data.promotionId ? (window.__adminPromotions || []).find((p) => String(p.id) === data.promotionId) : null;
+        if (linked && (data.startDate || data.endDate)) {
+          const bStart = data.startDate ? new Date(data.startDate + "T00:00:00") : new Date(0);
+          const bEnd = data.endDate ? new Date(data.endDate + "T23:59:59") : new Date(8.64e15);
+          const pStart = new Date(linked.startDate), pEnd = new Date(linked.endDate);
+          if (bStart < pStart || bEnd > pEnd) {
+            const ok = confirm(
+              `Lịch banner (${fmtD(data.startDate)} → ${fmtD(data.endDate)}) nằm ngoài lịch khuyến mãi "${linked.name}" (${fmtD(linked.startDate)} → ${fmtD(linked.endDate)}).\n\n` +
+              `Trong những ngày lệch, khách sẽ thấy banner nói về giảm giá nhưng giá KHÔNG được giảm.\n\n` +
+              `Bấm OK để vẫn lưu, hoặc Hủy để sửa lại (đổi ngày, bỏ gắn, hoặc sửa lịch khuyến mãi ở tab Khuyến mãi).`
+            );
+            if (!ok) return;
+          }
+        }
+        try {
+          if (isEdit) {
+            await updateBanner(banner.id, data);
+            showToast("Đã cập nhật banner");
+          } else {
+            await createBanner(data);
+            showToast("Đã tạo banner mới");
+          }
+          wrap.hidden = true;
+          loadBannersPanel(await getBanners().catch(() => []));
+        } catch (err) {
+          showToast("Lỗi lưu: " + err.message, { icon: "alert" });
+        }
+      });
+    }
+
+
+    // ----- Quản lý Khuyến mãi -----
+    const TYPE_LABELS = { flash_sale: "Flash Sale", holiday: "Ngày lễ", seasonal: "Theo mùa" };
+
+    function toDatetimeLocal(isoStr) {
+      if (!isoStr) return "";
+      const d = new Date(isoStr);
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function fmtDateVN(isoStr) {
+      if (!isoStr) return "—";
+      return new Date(isoStr).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    }
+
+    function loadSalePanel(promos) {
+      window.__adminPromotions = promos;
+      const panel = document.getElementById("panelSale");
+      const now = new Date();
+
+      const rows = promos.map((p) => {
+        const isRunning = p.isActive && new Date(p.startDate) <= now && new Date(p.endDate) >= now;
+        const statusBadge = isRunning
+          ? `<span class="chip chip--active">Đang chạy</span>`
+          : p.isActive
+          ? `<span class="chip chip--plain">Lên lịch</span>`
+          : `<span class="chip chip--alert">Tắt</span>`;
+        return `
+          <tr data-promo-id="${escapeHTML(String(p.id))}">
+            <td>${escapeHTML(p.name)}</td>
+            <td>${escapeHTML(TYPE_LABELS[p.type] || p.type)}</td>
+            <td><strong>${p.discountPercent}%</strong></td>
+            <td>${fmtDateVN(p.startDate)}</td>
+            <td>${fmtDateVN(p.endDate)}</td>
+            <td>${statusBadge}</td>
+            <td class="admin-table__actions">
+              <button class="btn btn--sm btn--ghost" data-edit-promo="${escapeHTML(String(p.id))}">Sửa</button>
+              <button class="btn btn--sm btn--ghost" data-toggle-promo="${escapeHTML(String(p.id))}" data-active="${p.isActive}">${p.isActive ? "Tắt" : "Bật"}</button>
+              <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-del-promo="${escapeHTML(String(p.id))}">Xóa</button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      panel.innerHTML = `
+        <div class="sale-panel-header">
+          <button class="btn btn--primary btn--sm" id="btnAddPromo">+ Thêm khuyến mãi</button>
+        </div>
+        <div id="promoFormWrap" hidden></div>
+        <div class="admin-table-wrap" style="margin-top:var(--sp-3)">
+          ${promos.length ? `
+            <table class="admin-table">
+              <thead>
+                <tr><th>Tên</th><th>Loại</th><th>Giảm</th><th>Bắt đầu</th><th>Kết thúc</th><th>Trạng thái</th><th>Hành động</th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>` : `<p class="muted">Chưa có chương trình khuyến mãi nào.</p>`}
+        </div>`;
+
+      document.getElementById("btnAddPromo").addEventListener("click", () => showPromoForm(null));
+
+      panel.querySelectorAll("[data-edit-promo]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const promo = promos.find((p) => String(p.id) === btn.dataset.editPromo);
+          if (promo) showPromoForm(promo);
+        });
+      });
+
+      panel.querySelectorAll("[data-toggle-promo]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const active = btn.dataset.active === "true";
+          try {
+            await updatePromotion(btn.dataset.togglePromo, { isActive: !active });
+            showToast(`Đã ${!active ? "bật" : "tắt"} khuyến mãi`);
+            loadSalePanel(await getPromotions().catch(() => []));
+          } catch { showToast("Lỗi cập nhật", { icon: "alert" }); }
+        });
+      });
+
+      panel.querySelectorAll("[data-del-promo]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const promo = promos.find((p) => String(p.id) === btn.dataset.delPromo);
+          if (!confirm(`Xóa khuyến mãi "${escapeHTML(promo?.name || "")}"?`)) return;
+          try {
+            await deletePromotion(btn.dataset.delPromo);
+            showToast("Đã xóa khuyến mãi");
+            loadSalePanel(await getPromotions().catch(() => []));
+          } catch { showToast("Lỗi xóa", { icon: "alert" }); }
+        });
+      });
+    }
+
+    function showPromoForm(promo) {
+      const wrap = document.getElementById("promoFormWrap");
+      const isEdit = !!promo;
+      const typeOptions = Object.entries(TYPE_LABELS)
+        .map(([val, label]) => `<option value="${val}" ${promo?.type === val ? "selected" : ""}>${label}</option>`)
+        .join("");
+
+      wrap.innerHTML = `
+        <div class="sale-form">
+          <h3 class="dash-section-title" style="margin-top:0">${isEdit ? "Sửa khuyến mãi" : "Thêm khuyến mãi mới"}</h3>
+          <form id="promoForm" autocomplete="off">
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="pf_name">Tên chương trình *</label>
+                <input id="pf_name" name="name" type="text" required value="${escapeHTML(promo?.name || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pf_type">Loại</label>
+                <select id="pf_type" name="type">${typeOptions}</select>
+              </div>
+              <div class="sale-form__group">
+                <label for="pf_discount">% Giảm giá * (1–100)</label>
+                <input id="pf_discount" name="discountPercent" type="number" min="1" max="100" required value="${promo?.discountPercent ?? ""}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pf_scope">Áp dụng cho</label>
+                <select id="pf_scope" name="appliesTo">
+                  <option value="all">Toàn bộ sản phẩm</option>
+                  ${(window.__adminCategories || []).map((c) => `<option value="category:${escapeHTML(String(c.id))}" ${promo?.appliesTo === "category:" + c.id ? "selected" : ""}>Danh mục: ${escapeHTML(c.name)}</option>`).join("")}
+                </select>
+              </div>
+              <div class="sale-form__group">
+                <label for="pf_start">Ngày bắt đầu *</label>
+                <input id="pf_start" name="startDate" type="datetime-local" required value="${toDatetimeLocal(promo?.startDate)}">
+              </div>
+              <div class="sale-form__group">
+                <label for="pf_end">Ngày kết thúc *</label>
+                <input id="pf_end" name="endDate" type="datetime-local" required value="${toDatetimeLocal(promo?.endDate)}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="pf_banner">Nội dung banner (hiện trên trang chủ)</label>
+                <input id="pf_banner" name="banner" type="text" value="${escapeHTML(promo?.banner || "")}" placeholder="Ví dụ: 🍂 Flash Sale Mùa Thu — Giảm X%">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="pf_desc">Mô tả chi tiết</label>
+                <input id="pf_desc" name="description" type="text" value="${escapeHTML(promo?.description || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="isActive" ${promo?.isActive !== false ? "checked" : ""}>
+                  Kích hoạt ngay
+                </label>
+              </div>
+            </div>
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">${isEdit ? "Lưu thay đổi" : "Tạo mới"}</button>
+              <button class="btn btn--ghost" type="button" id="btnCancelPromo">Hủy</button>
+            </div>
+          </form>
+        </div>`;
+
+      wrap.hidden = false;
+      wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      document.getElementById("btnCancelPromo").addEventListener("click", () => { wrap.hidden = true; });
+
+      document.getElementById("promoForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const startVal = fd.get("startDate");
+        const endVal = fd.get("endDate");
+        const data = {
+          name: fd.get("name").trim(),
+          type: fd.get("type"),
+          discountPercent: Number(fd.get("discountPercent")),
+          startDate: startVal ? new Date(startVal).toISOString() : "",
+          endDate: endVal ? new Date(endVal).toISOString() : "",
+          banner: fd.get("banner").trim(),
+          description: fd.get("description").trim(),
+          appliesTo: fd.get("appliesTo") || "all",
+          isActive: fd.has("isActive"),
+        };
+        if (!data.name || !data.discountPercent || !data.startDate || !data.endDate) {
+          alert("Vui lòng điền đầy đủ các trường bắt buộc (*).");
+          return;
+        }
+        if (new Date(data.endDate) <= new Date(data.startDate)) {
+          alert("Ngày kết thúc phải sau ngày bắt đầu.");
+          return;
+        }
+        try {
+          if (isEdit) {
+            await updatePromotion(promo.id, data);
+            showToast("Đã cập nhật khuyến mãi");
+          } else {
+            await createPromotion(data);
+            showToast("Đã tạo khuyến mãi mới");
+            // Thông báo SALE cho toàn bộ khách (web + email) nếu đang bật
+            if (data.isActive && confirm(`Gửi thông báo khuyến mãi "${data.name}" (−${data.discountPercent}%) đến tất cả khách hàng?`)) {
+              try {
+                const { notifyAllCustomers } = await import("./js/notify.js");
+                const n = await notifyAllCustomers({
+                  title: `🎉 ${data.name} — Giảm ${data.discountPercent}%`,
+                  body: data.description || `Ưu đãi giảm ${data.discountPercent}% đang diễn ra. Mua sắm ngay!`,
+                  type: "sale", link: "index.html",
+                });
+                showToast(`Đã gửi thông báo khuyến mãi tới ${n} khách`);
+              } catch (err) { showToast("Lỗi gửi thông báo: " + err.message, { icon: "alert" }); }
+            }
+          }
+          wrap.hidden = true;
+          loadSalePanel(await getPromotions().catch(() => []));
+        } catch (err) {
+          showToast("Lỗi lưu: " + err.message, { icon: "alert" });
+        }
+      });
+    }
+
+    // ----- Panel Tài khoản: quản lý user + nhân viên (đổi role, khóa, xóa, thêm NV) -----
+    let _userFilter = "all";
+    const ROLE_LABEL = { user: "Khách", staff: "Nhân viên", admin: "Admin" };
+
+    function renderUsers(users) {
+      const panel = document.getElementById("panelUsers");
+      const ROLES = ["user", "staff", "admin"];
+      const meId = String(user?.id);
+
+      const counts = {
+        all: users.length,
+        user: users.filter((u) => u.role === "user").length,
+        staff: users.filter((u) => u.role === "staff").length,
+        admin: users.filter((u) => u.role === "admin").length,
+      };
+      const filtered = _userFilter === "all" ? users : users.filter((u) => u.role === _userFilter);
+
+      const oneMonthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+      const rows = filtered.map((u) => {
+        const isSelf = String(u.id) === meId;
+        const roleOptions = ROLES.map((r) => `<option value="${r}" ${u.role === r ? "selected" : ""}>${ROLE_LABEL[r]}</option>`).join("");
+        const created = u.createdAt ? new Date(u.createdAt).toLocaleDateString("vi-VN") : "—";
+        const isNew = u.createdAt && new Date(u.createdAt).getTime() > oneMonthAgo && u.role === "user";
+        const locked = !!u.locked;
+        const statusBadge = locked
+          ? `<span class="chip chip--alert">🔒 Đã khóa</span>`
+          : `<span class="chip chip--active">Hoạt động</span>`;
+        const newBadge = isNew ? ` <span class="chip chip--mid">Mới</span>` : "";
+        const wallet = u.role === "user" ? formatPrice(Number(u.walletBalance) || 0) : "—";
+        return `
+          <tr data-user-id="${escapeHTML(String(u.id))}" class="${locked ? "is-locked-row" : ""}">
+            <td>${escapeHTML(String(u.id))}</td>
+            <td><strong>${escapeHTML(u.name)}</strong>${isSelf ? ` <span class="chip chip--mid">Bạn</span>` : ""}${newBadge}</td>
+            <td>${escapeHTML(u.email)}</td>
+            <td>${escapeHTML(u.phone || "—")}</td>
+            <td><select class="admin-status" data-role-select ${isSelf ? "disabled title='Không thể đổi vai trò của chính mình'" : ""}>${roleOptions}</select></td>
+            <td style="white-space:nowrap">${created}</td>
+            <td style="text-align:right">${wallet}</td>
+            <td>${statusBadge}</td>
+            <td class="admin-table__actions">
+              <button class="btn btn--sm btn--primary" data-save-user="${escapeHTML(String(u.id))}" ${isSelf ? "disabled" : ""}>Lưu</button>
+              <button class="btn btn--sm btn--ghost" data-lock-user="${escapeHTML(String(u.id))}" ${isSelf ? "disabled title='Không thể khóa chính mình'" : ""}>${locked ? "Mở khóa" : "Khóa"}</button>
+              <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-del-user="${escapeHTML(String(u.id))}" ${isSelf ? "disabled" : ""}>Xóa</button>
+            </td>
+          </tr>`;
+      }).join("") || `<tr><td colspan="9" class="muted" style="text-align:center;padding:1.5rem">Không có tài khoản nào thuộc nhóm này.</td></tr>`;
+
+      const chip = (key, label) => `<button class="filter-chip ${_userFilter === key ? "is-active" : ""}" data-user-filter="${key}">${label} <span class="filter-chip__n">${counts[key]}</span></button>`;
+
+      panel.innerHTML = `
+        <div class="users-toolbar">
+          <div class="filter-chips">
+            ${chip("all", "Tất cả")}${chip("user", "Khách")}${chip("staff", "Nhân viên")}${chip("admin", "Admin")}
+          </div>
+          <button class="btn btn--primary btn--sm" id="btnAddStaff">+ Thêm nhân viên</button>
+        </div>
+        <div id="addStaffWrap" hidden></div>
+        <p class="muted">Admin đổi vai trò, <strong>khóa/mở</strong> (chặn đăng nhập) hoặc xóa tài khoản. Tài khoản của chính bạn được bảo vệ.</p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>ID</th><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Ngày tạo</th><th>Ví</th><th>Trạng thái</th><th>Hành động</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+
+      // Lọc theo vai trò
+      panel.querySelectorAll("[data-user-filter]").forEach((b) => {
+        b.addEventListener("click", () => { _userFilter = b.dataset.userFilter; renderUsers(users); });
+      });
+
+      // Thêm nhân viên
+      document.getElementById("btnAddStaff").addEventListener("click", () => toggleAddStaffForm(users));
+
+      panel.querySelector("tbody").addEventListener("click", async (e) => {
+        const row = e.target.closest("tr");
+        if (!row || !row.dataset.userId) return;
+        const uid = row.dataset.userId;
+        const u = users.find((x) => String(x.id) === String(uid));
+
+        if (e.target.closest("[data-save-user]")) {
+          const role = row.querySelector("[data-role-select]").value;
+          try {
+            await updateUser(uid, { role });
+            showToast(`Đã cập nhật vai trò "${u?.name}" → ${ROLE_LABEL[role]}`);
+            renderUsers(await getUsers());
+          } catch (err) { showToast("Lỗi cập nhật: " + err.message, { icon: "alert" }); }
+        } else if (e.target.closest("[data-lock-user]")) {
+          const newLocked = !u?.locked;
+          if (!confirm(`${newLocked ? "KHÓA" : "MỞ KHÓA"} tài khoản "${u?.name}" (${u?.email})?\n${newLocked ? "Tài khoản bị khóa sẽ không đăng nhập được." : ""}`)) return;
+          try {
+            await updateUser(uid, { locked: newLocked });
+            showToast(`Đã ${newLocked ? "khóa" : "mở khóa"} tài khoản "${u?.name}"`);
+            renderUsers(await getUsers());
+          } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
+        } else if (e.target.closest("[data-del-user]")) {
+          if (!confirm(`Xóa tài khoản "${u?.name}" (${u?.email})?\nHành động này không thể khôi phục.`)) return;
+          try {
+            await deleteUser(uid);
+            showToast("Đã xóa tài khoản");
+            renderUsers(await getUsers());
+          } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
+        }
+      });
+    }
+
+    // Form thêm nhanh 1 tài khoản nhân viên
+    function toggleAddStaffForm(users) {
+      const wrap = document.getElementById("addStaffWrap");
+      if (!wrap.hidden) { wrap.hidden = true; wrap.innerHTML = ""; return; }
+      wrap.hidden = false;
+      wrap.innerHTML = `
+        <div class="sale-form" style="margin-bottom:1rem">
+          <form id="addStaffForm" autocomplete="off">
+            <h3 class="dash-section-title" style="margin-top:0">Tạo tài khoản nhân viên mới</h3>
+            <div class="sale-form__grid">
+              <div class="sale-form__group"><label>Họ tên *</label><input name="name" required></div>
+              <div class="sale-form__group"><label>Email *</label><input name="email" type="email" required></div>
+              <div class="sale-form__group"><label>Mật khẩu *</label><input name="password" type="text" value="staff123" required></div>
+              <div class="sale-form__group"><label>Số điện thoại</label><input name="phone"></div>
+            </div>
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">Tạo nhân viên</button>
+              <button class="btn btn--ghost" type="button" id="cancelAddStaff">Hủy</button>
+            </div>
+          </form>
+        </div>`;
+      document.getElementById("cancelAddStaff").addEventListener("click", () => toggleAddStaffForm(users));
+      document.getElementById("addStaffForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const email = fd.get("email").trim().toLowerCase();
+        if (users.some((u) => (u.email || "").toLowerCase() === email)) {
+          alert("Email này đã tồn tại. Chọn email khác."); return;
+        }
+        const newStaff = {
+          name: fd.get("name").trim(), email,
+          password: fd.get("password"), phone: fd.get("phone").trim(),
+          role: "staff", avatar: "", address: "", walletBalance: 0, favorites: [],
+          locked: false, createdAt: new Date().toISOString(),
+        };
+        try {
+          await createUser(newStaff);
+          showToast(`Đã tạo nhân viên "${newStaff.name}"`);
+          document.getElementById("addStaffWrap").hidden = true;
+          renderUsers(await getUsers());
+        } catch (err) { showToast("Lỗi tạo nhân viên: " + err.message, { icon: "alert" }); }
+      });
+    }
+
+    // ----- Panel Nhật ký NV: xem mọi thao tác nhân viên (minh bạch, chống gian lận) -----
+    const AUDIT_LABEL = {
+      confirm_payment: "✓ Duyệt thanh toán", reject_payment: "✗ Từ chối thanh toán",
+      confirm_topup: "✓ Duyệt nạp ví", reject_topup: "✗ Từ chối nạp ví",
+      update_order_status: "↻ Đổi trạng thái đơn", update_stock: "📦 Cập nhật tồn kho",
+      order_approve_payment: "✓ Duyệt thanh toán", order_reject_payment: "✗ Từ chối thanh toán",
+      order_ship: "🚚 Giao cho vận chuyển", order_mark_delivered: "📦 Xác nhận đã giao",
+      order_delivery_failed: "✗ Giao thất bại", order_shop_cancel: "✗ Hủy đơn",
+      order_approve_return: "↩ Duyệt hoàn hàng", order_reject_return: "✗ Từ chối hoàn hàng",
+      order_receive_return: "↩ Nhận lại hàng hoàn", order_refund_confirm: "💸 Hoàn tiền",
+      order_refund_decline: "✗ Không hoàn tiền",
+    };
+    let _auditLoaded = false;
+    async function renderAudit() {
+      const panel = document.getElementById("panelAudit");
+      panel.innerHTML = `<div class="state"><p>Đang tải nhật ký...</p></div>`;
+      let logs = [];
+      try { logs = await getAuditLog(); } catch (err) {
+        panel.innerHTML = `<div class="state"><p>Lỗi tải nhật ký: ${escapeHTML(err.message)}</p></div>`; return;
+      }
+      logs = logs.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      _auditLoaded = true;
+
+      if (!logs.length) {
+        panel.innerHTML = `
+          <p class="muted">Mọi thao tác nhạy cảm của nhân viên (duyệt/từ chối thanh toán, nạp ví, đổi trạng thái đơn, sửa tồn kho) được ghi lại tại đây để admin giám sát.</p>
+          <div class="state"><p>Chưa có thao tác nào được ghi nhận.</p></div>`;
+        return;
+      }
+
+      const rows = logs.map((l) => {
+        const dt = new Date(l.createdAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+        const label = AUDIT_LABEL[l.action] || l.action;
+        const isReject = /reject/.test(l.action);
+        return `
+          <tr>
+            <td style="white-space:nowrap">${dt}</td>
+            <td><strong>${escapeHTML(l.staffName || "—")}</strong><br><span class="muted" style="font-size:.78rem">#${escapeHTML(String(l.staffId || "?"))}</span></td>
+            <td><span class="chip ${isReject ? "chip--alert" : "chip--active"}">${label}</span></td>
+            <td>${escapeHTML(l.detail || "")}</td>
+          </tr>`;
+      }).join("");
+
+      // Thống kê nhanh theo nhân viên
+      const byStaff = {};
+      logs.forEach((l) => { byStaff[l.staffName || l.staffId] = (byStaff[l.staffName || l.staffId] || 0) + 1; });
+      const statChips = Object.entries(byStaff)
+        .map(([name, n]) => `<span class="chip chip--plain">${escapeHTML(name)}: ${n} thao tác</span>`).join(" ");
+
+      panel.innerHTML = `
+        <div class="users-toolbar">
+          <p class="muted" style="margin:0">Giám sát minh bạch: ${logs.length} thao tác được ghi. ${statChips}</p>
+          <button class="btn btn--ghost btn--sm" id="btnRefreshAudit">↻ Làm mới</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Thời gian</th><th>Nhân viên</th><th>Hành động</th><th>Chi tiết</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      document.getElementById("btnRefreshAudit").addEventListener("click", renderAudit);
+    }
+
+    // ----- Panel Danh mục (CRUD) -----
+    function loadCategoriesPanel(categories, products) {
+      const panel = document.getElementById("panelCategories");
+      const rows = categories.map((c) => {
+        const used = (products || []).filter((p) => String(p.categoryId) === String(c.id)).length;
+        return `
+          <tr data-cat-id="${escapeHTML(String(c.id))}">
+            <td>${escapeHTML(String(c.id))}</td>
+            <td><strong>${escapeHTML(c.name)}</strong></td>
+            <td><em>${escapeHTML(c.description || "—")}</em></td>
+            <td style="text-align:center">${used}</td>
+            <td class="admin-table__actions">
+              <button class="btn btn--sm btn--ghost" data-edit-cat="${escapeHTML(String(c.id))}">Sửa</button>
+              <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-del-cat="${escapeHTML(String(c.id))}" ${used > 0 ? "title='Danh mục đang có sản phẩm, chuyển SP trước khi xóa'" : ""}>Xóa</button>
+            </td>
+          </tr>`;
+      }).join("");
+
+      panel.innerHTML = `
+        <div class="sale-panel-header">
+          <button class="btn btn--primary btn--sm" id="btnAddCategory">+ Thêm danh mục</button>
+        </div>
+        <div id="categoryFormWrap" hidden></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>ID</th><th>Tên danh mục</th><th>Mô tả</th><th>SP</th><th>Hành động</th></tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+
+      document.getElementById("btnAddCategory").addEventListener("click", () => showCategoryForm(null));
+
+      panel.querySelectorAll("[data-edit-cat]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const c = categories.find((x) => String(x.id) === btn.dataset.editCat);
+          if (c) showCategoryForm(c);
+        });
+      });
+
+      panel.querySelectorAll("[data-del-cat]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.delCat;
+          const c = categories.find((x) => String(x.id) === id);
+          const used = (products || []).filter((p) => String(p.categoryId) === String(id)).length;
+          if (used > 0) {
+            alert(`Không thể xóa — danh mục "${c?.name}" đang có ${used} sản phẩm. Hãy chuyển các sản phẩm sang danh mục khác trước.`);
+            return;
+          }
+          if (!confirm(`Xóa danh mục "${c?.name}"?`)) return;
+          try {
+            await deleteCategory(id);
+            showToast("Đã xóa danh mục");
+            const [cats, prods] = await Promise.all([getCategories(), getProducts()]);
+            window.__adminCategories = cats;
+            loadCategoriesPanel(cats, prods);
+          } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
+        });
+      });
+    }
+
+    function showCategoryForm(category) {
+      const wrap = document.getElementById("categoryFormWrap");
+      const isEdit = !!category;
+      wrap.innerHTML = `
+        <div class="sale-form">
+          <h3 class="dash-section-title" style="margin-top:0">${isEdit ? "Sửa danh mục" : "Thêm danh mục mới"}</h3>
+          <form id="categoryForm" autocomplete="off">
+            <div class="sale-form__grid">
+              <div class="sale-form__group sale-form__full">
+                <label for="cf_name">Tên danh mục *</label>
+                <input id="cf_name" name="name" type="text" required value="${escapeHTML(category?.name || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="cf_desc">Mô tả ngắn</label>
+                <input id="cf_desc" name="description" type="text" value="${escapeHTML(category?.description || "")}">
+              </div>
+            </div>
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">${isEdit ? "Lưu" : "Tạo mới"}</button>
+              <button class="btn btn--ghost" type="button" id="btnCancelCat">Hủy</button>
+            </div>
+          </form>
+        </div>`;
+      wrap.hidden = false;
+      wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      document.getElementById("btnCancelCat").addEventListener("click", () => { wrap.hidden = true; });
+
+      document.getElementById("categoryForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = { name: fd.get("name").trim(), description: fd.get("description").trim() };
+        if (!data.name) { alert("Vui lòng nhập tên danh mục."); return; }
+        try {
+          if (isEdit) {
+            await updateCategory(category.id, data);
+            showToast("Đã cập nhật danh mục");
+          } else {
+            await createCategory(data);
+            showToast("Đã tạo danh mục mới");
+          }
+          wrap.hidden = true;
+          const [cats, prods] = await Promise.all([getCategories(), getProducts()]);
+          window.__adminCategories = cats;
+          loadCategoriesPanel(cats, prods);
+        } catch (err) { showToast("Lỗi lưu: " + err.message, { icon: "alert" }); }
+      });
+    }
+
+    // ----- Panel Mã giảm giá (CRUD + trạng thái + xóa mềm) -----
+    const COUPON_STATUS = {
+      active:    { label: "Dùng được",    chip: "chip--active" },
+      scheduled: { label: "Chưa bắt đầu", chip: "chip--mid" },
+      expired:   { label: "Hết hạn",      chip: "chip--alert" },
+      exhausted: { label: "Hết lượt",     chip: "chip--alert" },
+      paused:    { label: "Tạm ngưng",    chip: "chip--mid" },
+      deleted:   { label: "Đã xóa",       chip: "chip--alert" },
+    };
+    function couponStatus(c, now = new Date()) {
+      if (c.deletedAt) return "deleted";
+      if (c.isActive === false) return "paused";
+      if (c.startDate && new Date(c.startDate) > now) return "scheduled";
+      if (c.expiryDate && new Date(c.expiryDate) < now) return "expired";
+      if ((c.usageLimit || 0) > 0 && (c.usedCount || 0) >= c.usageLimit) return "exhausted";
+      return "active";
+    }
+    let couponFilter = "all";
+
+    function loadCouponsPanel(coupons) {
+      const panel = document.getElementById("panelCoupons");
+      const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("vi-VN") : "";
+      const withStatus = coupons.map((c) => ({ c, st: couponStatus(c) }));
+      const counts = withStatus.reduce((m, x) => (m[x.st] = (m[x.st] || 0) + 1, m), {});
+      const shown = withStatus.filter((x) => couponFilter === "all" || x.st === couponFilter);
+
+      const rows = shown.map(({ c, st }) => {
+        const id = escapeHTML(String(c.id));
+        const used = c.usedCount || 0;
+        const limit = c.usageLimit || 0;
+        const period = (c.startDate || c.expiryDate)
+          ? `${fmtDate(c.startDate) || "Ngay khi tạo"} → ${fmtDate(c.expiryDate) || "Không giới hạn"}`
+          : "Không giới hạn";
+        const s = COUPON_STATUS[st];
+        const actions = st === "deleted"
+          ? `<button class="btn btn--sm" data-restore-coupon="${id}">Khôi phục</button>`
+          : `<button class="btn btn--sm" data-edit-coupon="${id}">Sửa</button>
+             <button class="btn btn--sm" data-toggle-coupon="${id}">${c.isActive === false ? "Kích hoạt" : "Ngưng"}</button>
+             <button class="btn btn--sm" style="color:var(--stamp,#c0392b)" data-del-coupon="${id}">Xóa</button>`;
+        return `
+          <tr data-coupon-id="${id}" class="${st === "deleted" ? "is-locked-row" : ""}">
+            <td><code><strong>${escapeHTML(c.code)}</strong></code></td>
+            <td>${c.discountPercent}%</td>
+            <td>${formatPrice(c.minOrder || 0)}</td>
+            <td>${c.maxDiscount ? formatPrice(c.maxDiscount) : "—"}</td>
+            <td>${used}/${limit || "∞"}</td>
+            <td style="white-space:nowrap">${period}</td>
+            <td><span class="chip ${s.chip}">${s.label}</span></td>
+            <td class="admin-table__actions">${actions}</td>
+          </tr>`;
+      }).join("");
+
+      const chips = [["all", "Tất cả", coupons.length], ...Object.entries(COUPON_STATUS).map(([k, v]) => [k, v.label, counts[k] || 0])]
+        .map(([k, label, n]) => `<button type="button" class="filter-chip ${couponFilter === k ? "is-active" : ""}" data-coupon-filter="${k}">${label} <span class="filter-chip__n">${n}</span></button>`)
+        .join("");
+
+      panel.innerHTML = `
+        <div class="sale-panel-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="filter-chips">${chips}</div>
+          <button class="btn btn--primary btn--sm" id="btnAddCoupon">+ Thêm mã giảm giá</button>
+        </div>
+        <div id="couponFormWrap" hidden></div>
+        <div class="admin-table-wrap">
+          ${shown.length ? `
+            <table class="admin-table">
+              <thead>
+                <tr><th>Mã</th><th>Giảm</th><th>Đơn tối thiểu</th><th>Giảm tối đa</th><th>Lượt dùng</th><th>Thời gian hiệu lực</th><th>Trạng thái</th><th></th></tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>` : `<p class="muted">Không có mã giảm giá nào${couponFilter === "all" ? "" : " ở trạng thái này"}.</p>`}
+        </div>`;
+
+      const reload = async () => loadCouponsPanel(await getCoupons().catch(() => []));
+      const find = (id) => coupons.find((x) => String(x.id) === id);
+
+      document.getElementById("btnAddCoupon").addEventListener("click", () => showCouponForm(null, coupons));
+      panel.querySelectorAll("[data-coupon-filter]").forEach((b) => b.addEventListener("click", () => {
+        couponFilter = b.dataset.couponFilter;
+        loadCouponsPanel(coupons);
+      }));
+      panel.querySelectorAll("[data-edit-coupon]").forEach((b) => b.addEventListener("click", () => showCouponForm(find(b.dataset.editCoupon), coupons)));
+      panel.querySelectorAll("[data-toggle-coupon]").forEach((b) => b.addEventListener("click", async () => {
+        const c = find(b.dataset.toggleCoupon);
+        try {
+          await updateCoupon(c.id, { isActive: c.isActive === false });
+          showToast(c.isActive === false ? `Đã kích hoạt lại mã ${c.code}` : `Đã tạm ngưng mã ${c.code}`);
+          reload();
+        } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
+      }));
+      panel.querySelectorAll("[data-del-coupon]").forEach((b) => b.addEventListener("click", async () => {
+        const c = find(b.dataset.delCoupon);
+        if (!confirm(`Xóa mã "${c?.code}"?\nMã sẽ chuyển sang trạng thái "Đã xóa" (khách không dùng được) và có thể khôi phục.`)) return;
+        try {
+          await updateCoupon(c.id, { deletedAt: new Date().toISOString() });
+          showToast(`Đã xóa mã ${c.code} (có thể khôi phục)`);
+          reload();
+        } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
+      }));
+      panel.querySelectorAll("[data-restore-coupon]").forEach((b) => b.addEventListener("click", async () => {
+        const c = find(b.dataset.restoreCoupon);
+        try {
+          await updateCoupon(c.id, { deletedAt: null });
+          showToast(`Đã khôi phục mã ${c.code}`);
+          reload();
+        } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
+      }));
+    }
+
+    function toDatetimeLocalDate(iso) {
+      if (!iso) return "";
+      const d = new Date(iso);
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    function showCouponForm(coupon, allCoupons = []) {
+      const wrap = document.getElementById("couponFormWrap");
+      const isEdit = !!coupon;
+      wrap.innerHTML = `
+        <div class="sale-form">
+          <h3 class="dash-section-title" style="margin-top:0">${isEdit ? "Sửa mã" : "Thêm mã giảm giá"}</h3>
+          <form id="couponForm" autocomplete="off">
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="cp_code">Mã giảm giá * <span class="muted" style="font-weight:400">(VIẾT HOA)</span></label>
+                <input id="cp_code" name="code" type="text" required value="${escapeHTML(coupon?.code || "")}" style="text-transform:uppercase">
+              </div>
+              <div class="sale-form__group">
+                <label for="cp_percent">% Giảm *</label>
+                <input id="cp_percent" name="discountPercent" type="number" min="1" max="100" required value="${coupon?.discountPercent ?? 10}">
+              </div>
+              <div class="sale-form__group">
+                <label for="cp_min">Đơn tối thiểu (VND)</label>
+                <input id="cp_min" name="minOrder" type="number" min="0" value="${coupon?.minOrder ?? 0}">
+              </div>
+              <div class="sale-form__group">
+                <label for="cp_max">Giảm tối đa (VND)</label>
+                <input id="cp_max" name="maxDiscount" type="number" min="0" value="${coupon?.maxDiscount ?? 0}">
+              </div>
+              <div class="sale-form__group">
+                <label for="cp_limit">Số lượt dùng tối đa</label>
+                <input id="cp_limit" name="usageLimit" type="number" min="0" value="${coupon?.usageLimit ?? 100}">
+              </div>
+              <div class="sale-form__group">
+                <label for="cp_start">Áp dụng từ ngày <span class="muted" style="font-weight:400">(trống = ngay)</span></label>
+                <input id="cp_start" name="startDate" type="date" value="${toDatetimeLocalDate(coupon?.startDate)}">
+              </div>
+              <div class="sale-form__group">
+                <label for="cp_expiry">Ngày hết hạn <span class="muted" style="font-weight:400">(trống = không giới hạn)</span></label>
+                <input id="cp_expiry" name="expiryDate" type="date" value="${toDatetimeLocalDate(coupon?.expiryDate)}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="cp_desc">Mô tả</label>
+                <input id="cp_desc" name="description" type="text" value="${escapeHTML(coupon?.description || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="requireNewUser" ${coupon?.requireNewUser ? "checked" : ""}>
+                  Chỉ cho tài khoản mới
+                </label>
+              </div>
+              <div class="sale-form__group">
+                <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="isActive" ${coupon?.isActive !== false ? "checked" : ""}>
+                  Kích hoạt
+                </label>
+              </div>
+            </div>
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">${isEdit ? "Lưu" : "Tạo mới"}</button>
+              <button class="btn btn--ghost" type="button" id="btnCancelCoupon">Hủy</button>
+            </div>
+          </form>
+        </div>`;
+      wrap.hidden = false;
+      wrap.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      document.getElementById("btnCancelCoupon").addEventListener("click", () => { wrap.hidden = true; });
+
+      document.getElementById("couponForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const data = {
+          code: fd.get("code").trim().toUpperCase(),
+          discountPercent: Number(fd.get("discountPercent")),
+          minOrder: Number(fd.get("minOrder")) || 0,
+          maxDiscount: Number(fd.get("maxDiscount")) || 0,
+          usageLimit: Number(fd.get("usageLimit")) || 0,
+          usedCount: coupon?.usedCount || 0,
+          startDate: fd.get("startDate") ? new Date(fd.get("startDate") + "T00:00:00").toISOString() : "",
+          expiryDate: fd.get("expiryDate") ? new Date(fd.get("expiryDate") + "T23:59:59").toISOString() : "",
+          description: fd.get("description").trim(),
+          requireNewUser: fd.has("requireNewUser"),
+          isActive: fd.has("isActive"),
+        };
+        if (!data.code || !data.discountPercent) { alert("Vui lòng điền mã và %."); return; }
+        if (!(data.discountPercent >= 1 && data.discountPercent <= 100)) { alert("% giảm phải từ 1 đến 100."); return; }
+        // Mã mới / đổi tên: chỉ chữ không dấu, số, gạch — khách gõ được trên mọi bàn phím
+        if ((!isEdit || data.code !== String(coupon.code || "").toUpperCase()) && !/^[A-Z0-9_-]{3,20}$/.test(data.code)) {
+          alert("Mã chỉ gồm 3–20 ký tự: chữ cái KHÔNG dấu, số, gạch ngang hoặc gạch dưới (VD: CHAOBAN, SALE-10)."); return;
+        }
+        // Mô tả ghi một % khác với % giảm thật → dễ nhập nhầm (khách đọc mô tả, hệ thống trừ theo %)
+        const descPct = (data.description.match(/(\d{1,3})\s*%/) || [])[1];
+        if (descPct && Number(descPct) !== data.discountPercent &&
+            !confirm(`Mô tả ghi "${descPct}%" nhưng % giảm đang là ${data.discountPercent}%.\nKhách sẽ được giảm ${data.discountPercent}%. Vẫn lưu?`)) return;
+        if (data.discountPercent >= 50 &&
+            !confirm(`Mã này giảm tới ${data.discountPercent}%${data.maxDiscount ? ` (tối đa ${data.maxDiscount.toLocaleString("vi-VN")}₫)` : " và KHÔNG giới hạn số tiền giảm"}. Bạn chắc chắn?`)) return;
+        if (data.startDate && data.expiryDate && new Date(data.startDate) > new Date(data.expiryDate)) {
+          alert("Ngày bắt đầu phải trước hoặc bằng ngày hết hạn."); return;
+        }
+        const dup = allCoupons.find((x) => x.code?.toUpperCase() === data.code && String(x.id) !== String(coupon?.id));
+        if (dup) {
+          alert(`Mã "${data.code}" đã tồn tại${dup.deletedAt ? " (đang ở trạng thái Đã xóa — hãy Khôi phục thay vì tạo mới)" : ""}.`);
+          return;
+        }
+        try {
+          if (isEdit) {
+            await updateCoupon(coupon.id, data);
+            showToast(`Đã lưu mã ${data.code}`);
+          } else {
+            await createCoupon(data);
+            showToast("Đã tạo mã giảm giá");
+          }
+          wrap.hidden = true;
+          loadCouponsPanel(await getCoupons().catch(() => []));
+        } catch (err) { showToast("Lỗi lưu: " + err.message, { icon: "alert" }); }
+      });
+    }
+
+    // ----- Panel Cài đặt chung (shop info + ngưỡng ship) -----
+    function loadSettingsPanel(settings) {
+      const panel = document.getElementById("panelSettings");
+      const s = settings || {};
+      panel.innerHTML = `
+        <h2 style="margin:0 0 var(--sp-2)">Cài đặt chung của cửa hàng</h2>
+        <p class="muted">Thông tin dùng cho footer, trang hero, và hóa đơn PDF. Thay đổi áp dụng ngay sau khi lưu.</p>
+        <div class="sale-form">
+          <form id="settingsForm" autocomplete="off">
+            <h3 class="dash-section-title" style="margin-top:0">Thông tin shop</h3>
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="st_name">Tên shop</label>
+                <input id="st_name" name="shopName" type="text" value="${escapeHTML(s.shopName || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_tag">Tagline</label>
+                <input id="st_tag" name="tagline" type="text" value="${escapeHTML(s.tagline || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="st_addr">Địa chỉ</label>
+                <input id="st_addr" name="address" type="text" value="${escapeHTML(s.address || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_phone">Số điện thoại</label>
+                <input id="st_phone" name="phone" type="text" value="${escapeHTML(s.phone || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_zalo">Zalo</label>
+                <input id="st_zalo" name="zalo" type="text" value="${escapeHTML(s.zalo || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_email">Email</label>
+                <input id="st_email" name="email" type="text" value="${escapeHTML(s.email || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_hours">Giờ mở cửa</label>
+                <input id="st_hours" name="openHours" type="text" value="${escapeHTML(s.openHours || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="st_intro">Giới thiệu footer</label>
+                <input id="st_intro" name="footerIntro" type="text" value="${escapeHTML(s.footerIntro || "")}">
+              </div>
+            </div>
+
+            <h3 class="dash-section-title">Gửi email thật (EmailJS)</h3>
+            <p class="muted" style="margin:0 0 .5rem">
+              Dán 3 khóa lấy từ <a href="https://dashboard.emailjs.com" target="_blank" rel="noopener">dashboard.emailjs.com</a>.
+              Để trống = chỉ lưu vào "hộp thư" mô phỏng (không gửi Gmail thật).
+            </p>
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="st_ejs_pk">Public Key</label>
+                <input id="st_ejs_pk" name="emailjsPublicKey" type="text" placeholder="VD: AbC12d_XyZ..." value="${escapeHTML(s.emailjsPublicKey || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_ejs_sid">Service ID</label>
+                <input id="st_ejs_sid" name="emailjsServiceId" type="text" placeholder="VD: service_xxxx" value="${escapeHTML(s.emailjsServiceId || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_ejs_tid">Template ID</label>
+                <input id="st_ejs_tid" name="emailjsTemplateId" type="text" placeholder="VD: template_xxxx" value="${escapeHTML(s.emailjsTemplateId || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="st_ejs_test">Gửi email thử tới</label>
+                <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                  <input id="st_ejs_test" type="email" placeholder="email-cua-ban@gmail.com" style="flex:1;min-width:200px">
+                  <button class="btn btn--ghost" type="button" id="btnTestEmail">✉ Gửi thử</button>
+                </div>
+                <small class="muted" id="testEmailMsg" style="display:block;margin-top:.35rem"></small>
+              </div>
+            </div>
+
+            <h3 class="dash-section-title">Giao hàng</h3>
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="st_ship">Phí giao hàng (VND)</label>
+                <input id="st_ship" name="shipFee" type="number" min="0" value="${s.shipFee ?? 30000}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_free">Miễn phí ship từ (VND)</label>
+                <input id="st_free" name="freeShipThreshold" type="number" min="0" value="${s.freeShipThreshold ?? 300000}">
+              </div>
+            </div>
+
+            <h3 class="dash-section-title">Lịch giao hàng (dùng để tính "Dự kiến giao")</h3>
+            <p class="muted" style="margin:0 0 .5rem">
+              Ngày giao dự kiến của mỗi đơn = ngày bắt đầu xử lý (theo giờ chốt) + ngày chuẩn bị + ngày vận chuyển, chỉ đếm ngày làm việc.
+              Nhân viên vẫn hẹn được ngày cụ thể cho từng đơn bằng nút <strong>Hẹn ngày giao</strong>.
+            </p>
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="st_cut">Giờ chốt đơn trong ngày (0–24)</label>
+                <input id="st_cut" name="cutoffHour" type="number" min="0" max="24" value="${s.cutoffHour ?? 16}">
+                <small class="muted">Thanh toán trước giờ này → đóng gói trong ngày. 24 = không chốt giờ.</small>
+              </div>
+              <div class="sale-form__group">
+                <label for="st_prep">Thời gian chuẩn bị (ngày làm việc)</label>
+                <input id="st_prep" name="prepDays" type="number" min="0" max="14" value="${s.prepDays ?? 0}">
+                <small class="muted">0 = giao cho vận chuyển ngay trong ngày bắt đầu xử lý.</small>
+              </div>
+              <div class="sale-form__group">
+                <label for="st_smin">Vận chuyển nhanh nhất (ngày)</label>
+                <input id="st_smin" name="shipDaysMin" type="number" min="0" max="14" value="${s.shipDaysMin ?? 1}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_smax">Vận chuyển chậm nhất (ngày)</label>
+                <input id="st_smax" name="shipDaysMax" type="number" min="0" max="21" value="${s.shipDaysMax ?? 2}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_auto">Tự hoàn tất sau khi giao (ngày)</label>
+                <input id="st_auto" name="autoCompleteDays" type="number" min="1" max="14" value="${s.autoCompleteDays ?? 3}">
+                <small class="muted">Khách không bấm "Đã nhận" / "Chưa nhận" → đơn tự hoàn tất; nhắc khách trước 24 giờ.</small>
+              </div>
+              <div class="sale-form__group">
+                <label style="flex-direction:row;align-items:center;gap:8px;cursor:pointer">
+                  <input type="checkbox" name="deliverSunday" ${s.deliverSunday ? "checked" : ""}> Có giao hàng Chủ nhật
+                </label>
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="st_closed">Ngày nghỉ không giao</label>
+                <input id="st_closed" name="closedDates" type="text" placeholder="VD: 01/01, 30/04, 01/05, 02/09, 17/02/2026" value="${escapeHTML(s.closedDates || "")}">
+                <small class="muted">"dd/mm" = nghỉ hằng năm · "dd/mm/yyyy" = nghỉ một lần (vd. các ngày Tết âm lịch). Cách nhau bằng dấu phẩy.</small>
+              </div>
+            </div>
+
+            <h3 class="dash-section-title">Chú thích Hero (trang chủ)</h3>
+            <div class="sale-form__grid">
+              <div class="sale-form__group">
+                <label for="st_h1">Nhãn ô 1 (số = tổng SP cây)</label>
+                <input id="st_h1" name="heroFactLabel1" type="text" value="${escapeHTML(s.heroFactLabel1 || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_h2v">Giá trị ô 2</label>
+                <input id="st_h2v" name="heroFactValue2" type="text" value="${escapeHTML(s.heroFactValue2 || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_h2l">Nhãn ô 2</label>
+                <input id="st_h2l" name="heroFactLabel2" type="text" value="${escapeHTML(s.heroFactLabel2 || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_h3v">Giá trị ô 3</label>
+                <input id="st_h3v" name="heroFactValue3" type="text" value="${escapeHTML(s.heroFactValue3 || "")}">
+              </div>
+              <div class="sale-form__group">
+                <label for="st_h3l">Nhãn ô 3</label>
+                <input id="st_h3l" name="heroFactLabel3" type="text" value="${escapeHTML(s.heroFactLabel3 || "")}">
+              </div>
+              <div class="sale-form__group sale-form__full">
+                <label for="st_copy">Dòng copyright footer</label>
+                <input id="st_copy" name="copyrightNote" type="text" value="${escapeHTML(s.copyrightNote || "")}">
+              </div>
+            </div>
+
+            <div class="sale-form__actions">
+              <button class="btn btn--primary" type="submit">💾 Lưu toàn bộ cài đặt</button>
+            </div>
+          </form>
+        </div>`;
+
+      document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const patch = {};
+        const NUM = { shipFee: [0, 1e9, 30000], freeShipThreshold: [0, 1e10, 300000], cutoffHour: [0, 24, 16], prepDays: [0, 14, 0], shipDaysMin: [0, 14, 1], shipDaysMax: [0, 21, 2], autoCompleteDays: [1, 14, 3] };
+        for (const [k, v] of fd.entries()) {
+          if (k === "deliverSunday") continue;
+          if (NUM[k]) {
+            const [lo, hi, dflt] = NUM[k];
+            const n = Math.round(Number(v));
+            patch[k] = Number.isFinite(n) && String(v).trim() !== "" ? Math.min(hi, Math.max(lo, n)) : dflt;
+          } else patch[k] = String(v || "").trim();
+        }
+        patch.deliverSunday = fd.has("deliverSunday");
+        if (patch.shipDaysMax < patch.shipDaysMin) {
+          alert("Ngày vận chuyển chậm nhất phải lớn hơn hoặc bằng ngày nhanh nhất."); return;
+        }
+        const badDates = (patch.closedDates || "").split(/[,;\n]+/).map((t) => t.trim()).filter(Boolean)
+          .filter((t) => !/^(0?[1-9]|[12]\d|3[01])\/(0?[1-9]|1[0-2])(\/\d{4})?$/.test(t));
+        if (badDates.length) { alert(`Ngày nghỉ không đúng dạng dd/mm hoặc dd/mm/yyyy: ${badDates.join(", ")}`); return; }
+        try {
+          await updateSettings(patch);
+          showToast("✓ Đã lưu cài đặt. Reload trang chủ để thấy thay đổi.");
+          loadSettingsPanel(await getSettings().catch(() => patch));
+        } catch (err) { showToast("Lỗi lưu: " + err.message, { icon: "alert" }); }
+      });
+
+      // ----- Nút "Gửi thử" email: lưu khóa hiện tại rồi gửi 1 email test -----
+      document.getElementById("btnTestEmail")?.addEventListener("click", async () => {
+        const msgEl = document.getElementById("testEmailMsg");
+        const to = document.getElementById("st_ejs_test").value.trim();
+        const pk = document.getElementById("st_ejs_pk").value.trim();
+        const sid = document.getElementById("st_ejs_sid").value.trim();
+        const tid = document.getElementById("st_ejs_tid").value.trim();
+        if (!to) { msgEl.textContent = "⚠ Nhập email nhận thử trước."; return; }
+        if (!pk || !sid || !tid) { msgEl.textContent = "⚠ Cần nhập đủ Public Key + Service ID + Template ID."; return; }
+        msgEl.textContent = "⏳ Đang lưu khóa và gửi email thử...";
+        try {
+          // Lưu khóa để email.js đọc được, rồi làm mới cache của email.js
+          await updateSettings({ emailjsPublicKey: pk, emailjsServiceId: sid, emailjsTemplateId: tid });
+          const emailMod = await import("./js/email.js");
+          emailMod.clearSettingsCache?.();
+          const res = await emailMod.sendEmail({
+            to,
+            subject: "✅ Email thử từ Lá & Sỏi",
+            body: "Xin chào!\n\nĐây là email thử nghiệm. Nếu bạn nhận được thư này nghĩa là EmailJS đã hoạt động — hệ thống sẽ tự gửi thông báo đơn hàng, hóa đơn, có hàng lại và khuyến mãi về email khách.\n\n— Lá & Sỏi",
+            type: "test",
+          });
+          if (res.sentVia === "emailjs") {
+            msgEl.textContent = "✓ Đã gửi email thật! Kiểm tra hộp thư (cả mục Spam/Quảng cáo).";
+          } else {
+            msgEl.textContent = "⚠ Chưa gửi được qua EmailJS (chỉ lưu hộp thư mô phỏng). Kiểm tra lại 3 khóa và xem Console (F12) để biết lỗi.";
+          }
+        } catch (err) {
+          msgEl.textContent = "✗ Lỗi: " + err.message;
+        }
+      });
+    }
+
+  </script>
+</body>
+</html>

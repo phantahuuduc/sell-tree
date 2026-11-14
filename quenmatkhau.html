@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Quên Mật Khẩu — Tiệm Cây Lá & Sỏi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <script type="importmap">{ "imports": { "axios": "https://esm.sh/axios@1.7.9" } }</script>
+</head>
+<body class="page-auth">
+  <div class="auth">
+    <div class="auth__visual">
+      <img src="assets/img/p9.jpg" alt="Cây xanh" width="800" height="1000">
+      <figcaption><span>Khôi phục quyền truy cập tài khoản của bạn.</span></figcaption>
+    </div>
+    <main class="auth__main" id="mainContent">
+      <div class="auth__top">
+        <a class="brand" href="index.html">
+          <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          <span class="brand__text">Lá & Sỏi</span>
+        </a>
+        <a class="auth__back" href="login.html">← Về đăng nhập</a>
+      </div>
+      <div class="auth__card">
+        <h1>Quên mật khẩu</h1>
+        <ol class="otp-steps" aria-label="Các bước">
+          <li class="is-active" data-step-dot="1">Email</li>
+          <li data-step-dot="2">Mã OTP</li>
+          <li data-step-dot="3">Mật khẩu mới</li>
+        </ol>
+        <div class="form-summary" id="formSummary" role="alert" hidden></div>
+
+        <!-- Bước 1: nhập email -->
+        <form class="auth__form" id="forgotForm" novalidate>
+          <p class="muted">Nhập email đăng ký, chúng tôi sẽ gửi <strong>mã xác nhận 6 số</strong> về email của bạn.</p>
+          <div class="field">
+            <label for="email">Địa chỉ Email</label>
+            <input type="email" id="email" name="email" placeholder="an@gmail.com" autocomplete="email" required>
+            <div class="field__error" id="emailError" aria-live="polite"></div>
+          </div>
+          <button class="btn btn--primary" id="submitBtn" type="submit">Gửi mã xác nhận</button>
+        </form>
+
+        <!-- Bước 2: nhập OTP -->
+        <form class="auth__form" id="otpForm" novalidate hidden>
+          <p class="muted" id="otpIntro"></p>
+          <div class="otp-boxes" id="otpBoxes" role="group" aria-label="Mã xác nhận 6 số">
+            <input inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Số thứ 1">
+            <input inputmode="numeric" maxlength="1" aria-label="Số thứ 2">
+            <input inputmode="numeric" maxlength="1" aria-label="Số thứ 3">
+            <input inputmode="numeric" maxlength="1" aria-label="Số thứ 4">
+            <input inputmode="numeric" maxlength="1" aria-label="Số thứ 5">
+            <input inputmode="numeric" maxlength="1" aria-label="Số thứ 6">
+          </div>
+          <div class="field__error" id="otpError" aria-live="polite"></div>
+          <div id="otpDemo"></div>
+          <button class="btn btn--primary" id="otpBtn" type="submit">Xác nhận mã</button>
+          <p class="otp-resend">Không nhận được mã? <button type="button" class="btn btn--text" id="resendBtn" disabled>Gửi lại mã</button> <span id="resendTimer"></span></p>
+          <p class="otp-resend"><button type="button" class="btn btn--text" id="changeEmailBtn">← Đổi email khác</button></p>
+        </form>
+
+        <!-- Bước 3: mật khẩu mới -->
+        <form class="auth__form" id="newPwForm" novalidate hidden>
+          <p class="muted" id="newPwIntro"></p>
+          <div class="field">
+            <label for="newPassword">Mật khẩu mới</label>
+            <input type="password" id="newPassword" placeholder="••••••••" autocomplete="new-password" required>
+            <div class="pw-meter"><span class="pw-meter__bar pw-meter__bar--empty"></span></div>
+            <div class="pw-meter__text" id="pwStrengthText" aria-live="polite"></div>
+            <div class="field__error" id="pwError" aria-live="polite"></div>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Xác nhận mật khẩu mới</label>
+            <input type="password" id="confirmPassword" placeholder="••••••••" autocomplete="new-password" required>
+            <div class="field__error" id="confirmError" aria-live="polite"></div>
+          </div>
+          <button class="btn btn--primary" id="newPwBtn" type="submit">Đặt lại mật khẩu</button>
+        </form>
+        <p class="auth__switch">Nhớ ra rồi? <a href="login.html">Đăng nhập</a></p>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="js/forgot-password.js"></script>
+</body>
+</html>

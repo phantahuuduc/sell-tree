@@ -1,0 +1,23 @@
+// TỰ SINH bởi tools/make-webp.py — đừng sửa tay. Ảnh gốc nào đã có bản WebP trong assets/img/webp/.
+export const WEBP_READY = new Set([
+  "assets/img/p1.jpg",
+  "assets/img/p10.jpg",
+  "assets/img/p11.jpg",
+  "assets/img/p12.jpg",
+  "assets/img/p13.jpg",
+  "assets/img/p14.jpg",
+  "assets/img/p15.jpg",
+  "assets/img/p16.jpg",
+  "assets/img/p17.jpg",
+  "assets/img/p18.jpg",
+  "assets/img/p19.jpg",
+  "assets/img/p2.jpg",
+  "assets/img/p20.jpg",
+  "assets/img/p3.jpg",
+  "assets/img/p4.jpg",
+  "assets/img/p5.jpg",
+  "assets/img/p6.jpg",
+  "assets/img/p7.jpg",
+  "assets/img/p8.jpg",
+  "assets/img/p9.jpg",
+]);

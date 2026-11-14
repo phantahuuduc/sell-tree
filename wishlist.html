@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Yêu Thích — Tiệm Cây Lá & Sỏi</title>
+  <meta name="description" content="Danh sách cây cảnh bạn đã lưu yêu thích tại Lá & Sỏi.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <script type="importmap">{ "imports": { "axios": "https://esm.sh/axios@1.7.9" } }</script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Bỏ qua đến nội dung chính</a>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="index.html" aria-label="Lá & Sỏi — Về trang chủ">
+        <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          aria-hidden="true">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        </svg>
+        <span class="brand__text">Lá & Sỏi</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="index.html">Cây cảnh</a>
+        <a href="index.html#plantQuiz">Cây đầu tiên</a>
+        <a href="#footer">Liên hệ</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="account" data-account>
+          <!-- JavaScript sẽ điền tên user hoặc link đăng nhập -->
+        </div>
+
+        <a class="cart-link" href="cart.html" aria-label="Giỏ hàng trống">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="8" cy="21" r="1" />
+            <circle cx="19" cy="21" r="1" />
+            <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+          </svg>
+          <span class="cart-badge" data-cart-count hidden>0</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobilePanel"
+          aria-label="Mở menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Panel menu mobile -->
+  <div class="mobile-panel" id="mobilePanel" aria-hidden="true">
+    <div class="mobile-panel__scrim" data-close></div>
+    <div class="mobile-panel__sheet">
+      <div class="mobile-panel__head">
+        <span class="brand">Lá & Sỏi</span>
+        <button class="btn btn--ghost" type="button" data-close aria-label="Đóng menu">✕</button>
+      </div>
+      <nav>
+        <a href="index.html">Trang chủ sản phẩm</a>
+        <a href="index.html#plantQuiz">Gợi ý chọn cây</a>
+        <a href="cart.html">Giỏ hàng</a>
+      </nav>
+      <div class="account" data-account></div>
+    </div>
+  </div>
+
+  <main class="container profile-page" id="mainContent">
+    <div class="wishlist-head">
+      <h1>Yêu thích của tôi</h1>
+      <span class="wishlist-count" id="wishlistCount" aria-live="polite"></span>
+    </div>
+    <p class="wishlist-sync" id="wishlistSync" hidden>
+      <span>💡 Danh sách đang lưu <strong>trên máy này</strong>. Đăng nhập để giữ danh sách trên mọi thiết bị.</span>
+      <a class="btn btn--primary btn--sm" href="login.html">Đăng nhập để đồng bộ</a>
+    </p>
+    <ul class="wishlist-grid" id="wishlistGrid" aria-label="Sản phẩm yêu thích"></ul>
+  </main>
+
+  <footer class="site-footer" id="footer">
+    <div class="container"><div class="site-footer__note"><p data-site="copyrightNote">© 2026 Lá & Sỏi</p></div></div>
+  </footer>
+
+  <script type="module" src="js/wishlist.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <title>Đăng Nhập — Tiệm Cây Lá & Sỏi</title>
+  <meta name="description" content="Đăng nhập tài khoản Lá & Sỏi để quản lý đơn hàng cây cảnh và lưu danh sách yêu thích.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,500;0,600;1,400&display=swap&subset=vietnamese" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <script type="importmap">
+    {
+      "imports": {
+        "axios": "https://esm.sh/axios@1.7.9"
+      }
+    }
+  </script>
+</head>
+<body class="page-auth">
+  <div class="auth">
+    <!-- Cột trái desktop: Ảnh cây lớn tràn viền -->
+    <div class="auth__visual">
+      <img src="assets/img/p1.jpg" alt="Chậu Trầu Bà Lỗ tại vườn Củ Chi" width="800" height="1000">
+      <figcaption>
+        <em>Monstera adansonii</em>
+        <span>Mỗi cây đều qua 3 tuần dưỡng trước khi trao tận tay bạn.</span>
+      </figcaption>
+    </div>
+
+    <!-- Cột phải: Form đăng nhập -->
+    <main class="auth__main" id="mainContent">
+      <div class="auth__top">
+        <a class="brand" href="index.html">
+          <svg class="brand__mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          <span class="brand__text">Lá & Sỏi</span>
+        </a>
+        <a class="auth__back" href="index.html">← Về trang chủ</a>
+      </div>
+
+      <div class="auth__card">
+        <h1>Đăng nhập</h1>
+        <p>Mời bạn nhập thông tin để truy cập tài khoản người trồng cây.</p>
+
+        <div class="form-summary" id="formSummary" role="alert" hidden></div>
+
+        <form class="auth__form" id="loginForm" novalidate>
+          <div class="field">
+            <label for="email">Địa chỉ Email</label>
+            <input type="email" id="email" name="email" placeholder="an@gmail.com" autocomplete="email" required>
+            <div class="field__error" id="emailError" aria-live="polite"></div>
+          </div>
+
+          <div class="field">
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+            <div class="field__error" id="passwordError" aria-live="polite"></div>
+          </div>
+
+          <div style="text-align:right;margin:-4px 0 12px">
+            <a href="quenmatkhau.html" class="auth__forgot" style="font-size:13px">Quên mật khẩu?</a>
+          </div>
+
+          <button class="btn btn--primary" id="submitBtn" type="submit">Đăng nhập</button>
+        </form>
+
+        <p class="auth__switch">
+          Chưa có tài khoản? <a href="dangky.html">Đăng ký ngay</a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>

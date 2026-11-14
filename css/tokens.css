@@ -1,0 +1,71 @@
+/* ==========================================================
+   tokens.css — Biến thiết kế dùng chung cho toàn bộ website
+   Hướng thiết kế: "Phiếu Tiêu Bản" (Herbarium Sheet)
+   Mọi màu/cỡ chữ/khoảng cách đều lấy từ đây, không viết số cứng ở file khác.
+   ========================================================== */
+:root {
+  /* ---- Màu ---- (hướng mới: kem ấm + xanh lá tươi, cảm hứng Plantzone/Botanical) */
+  --paper:      #F3F0E7;  /* kem ấm, sáng & mời gọi hơn nền xám cũ */
+  --paper-deep: #EAE5D8;  /* nền section xen kẽ, ngả be */
+  --paper-lift: #FCFBF6;  /* mặt card — trắng kem ấm */
+  --ink:        #1C2A1E;  /* mực xanh-đen cho chữ */
+  --ink-soft:   #5C675A;  /* chữ phụ — tương phản tốt trên --paper */
+  --specimen:   #2F6B3C;  /* xanh lá tươi hơn — màu thương hiệu */
+  --specimen-dark: #245230; /* trạng thái nhấn của nút chính */
+  --specimen-tint: #DCE6D4; /* nền chip, rãnh thanh đo */
+  --leaf-light: #6FA368;  /* xanh lá sáng — điểm nhấn phụ, gradient */
+  --accent-soft: #E8F0E2; /* nền mảng nhạt (section ưu đãi, badge) */
+  --stamp:      #B5473C;  /* đỏ đất nung — ấm & cao cấp hơn đỏ thuần */
+  --gold:       #C8A24A;  /* vàng đồng — sao đánh giá, điểm nhấn nhỏ */
+  --tape:       rgba(214, 203, 168, 0.82); /* băng keo giấy dán nhãn */
+  --rule:       rgba(28, 42, 30, 0.12);
+  --rule-strong: rgba(28, 42, 30, 0.26);
+
+  /* ---- Font ---- */
+  --font-display: "Lora", Georgia, "Times New Roman", serif;
+  --font-ui: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
+
+  /* ---- Thang chữ (tỉ lệ 1.25) ---- */
+  --step--1: clamp(0.80rem, 0.78rem + 0.1vw, 0.86rem);
+  --step-0:  clamp(1.00rem, 0.96rem + 0.2vw, 1.06rem);
+  --step-1:  clamp(1.25rem, 1.18rem + 0.35vw, 1.40rem);
+  --step-2:  clamp(1.56rem, 1.44rem + 0.6vw, 1.85rem);
+  --step-3:  clamp(1.95rem, 1.74rem + 1.05vw, 2.44rem);
+  --step-4:  clamp(2.44rem, 2.08rem + 1.8vw, 3.25rem);
+
+  /* ---- Khoảng cách ---- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 72px; --sp-9: 104px;
+  --container: 1240px;
+  --gutter: clamp(16px, 4vw, 40px);
+
+  /* ---- Bóng đổ: mềm & khuếch tán hơn, ngả xanh lá ---- */
+  --shadow-rest:  0 1px 2px rgba(28,42,30,.05);
+  --shadow-lift:  0 4px 10px -4px rgba(28,42,30,.10), 0 16px 32px -12px rgba(28,42,30,.12);
+  --shadow-float: 0 8px 20px -8px rgba(28,42,30,.12), 0 30px 60px -16px rgba(28,42,30,.18);
+
+  /* ---- Bo góc phân cấp (mềm hơn, hướng e-commerce hiện đại) ---- */
+  --r-sm: 3px;   /* nhãn giấy tiêu bản (giữ sắc nét) */
+  --r-md: 10px;  /* ảnh, input */
+  --r-lg: 16px;  /* modal, form card */
+  --r-card: 18px;/* thẻ sản phẩm */
+  --r-pill: 999px;/* nút pill, chip lọc */
+
+  /* ---- Three.js layer: glass & glow ---- */
+  --glass-bg: rgba(252, 251, 246, 0.86);
+  --glass-blur: 10px;
+  --glass-border: rgba(47, 107, 60, 0.14);
+  --glow-specimen: rgba(47, 107, 60, 0.22);
+  --glow-stamp: rgba(181, 71, 60, 0.15);
+
+  /* ---- Chuyển động ---- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft:   cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 180ms;
+  --dur-mid:  320ms;
+  --dur-slow: 620ms;
+  --dur-xslow: 800ms;
+
+  --header-h: 68px;
+}

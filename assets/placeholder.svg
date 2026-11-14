@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500" role="img" aria-label="Ảnh cây tạm thời chưa tải được">
+  <rect width="400" height="500" fill="#EDEEE8"/>
+  <g fill="none" stroke="#2E5E3A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".55">
+    <path d="M200 360 V220"/>
+    <path d="M200 250 C150 250 120 215 118 170 C165 170 198 200 200 250 Z"/>
+    <path d="M200 225 C245 225 275 192 280 148 C235 148 203 176 200 225 Z"/>
+    <path d="M160 360 H240 L230 400 H170 Z"/>
+  </g>
+</svg>
