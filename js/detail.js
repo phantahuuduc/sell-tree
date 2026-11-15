@@ -9,6 +9,7 @@ import { markFavorites, initFavoriteButtons } from "./favorites.js";
 import { flyToCart } from "./fx.js";
 import { ensureLabels, labelChipsHtml } from "./labels.js";
 import { ensurePromotions, getPriceInfo } from "./sale.js";
+import { careCardHtml, accessoryCardHtml, initCareCard } from "./care-card.js";
 import {
   initPage,
   renderProductCard,
@@ -34,51 +35,9 @@ function detailPriceHtml(product, basePrice) {
   }${pi.promo ? `<small class="info__promo">🔥 ${escapeHTML(pi.promo.name)}</small>` : ""}`;
 }
 
-// Render thanh đo M5 với animation đếm số %
+// Phiếu chăm sóc: hiệu ứng chạy một lần khi cuộn tới (xem js/care-card.js). Giữ tên cũ để nơi gọi không đổi.
 function initCareBars(container) {
-  const careCard = container.querySelector(".care-card");
-  if (!careCard) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        observer.unobserve(entry.target);
-
-        // Chạy animation thanh fill
-        container.querySelectorAll(".care-row__fill").forEach((fill, index) => {
-          const targetPct = fill.dataset.targetPct;
-          fill.style.setProperty("--delay", `${index * 120}ms`);
-          // Trượt bằng transform (không đổi width → không reflow); dải màu rộng 100% nằm trong khung overflow:hidden
-          const pct = Math.max(0, Math.min(100, Number(targetPct) || 0));
-          fill.style.transform = `translateX(${pct - 100}%)`;
-        });
-
-        // Chạy animation đếm số %
-        container.querySelectorAll(".care-row__pct").forEach((pctEl, index) => {
-          const target = Number(pctEl.dataset.targetPct || 0);
-          let start = 0;
-          const duration = 620;
-          const startTime = performance.now() + index * 120;
-
-          function step(now) {
-            if (now < startTime) {
-              requestAnimationFrame(step);
-              return;
-            }
-            const progress = Math.min((now - startTime) / duration, 1);
-            const current = Math.floor(progress * target);
-            pctEl.textContent = `${current}%`;
-            if (progress < 1) requestAnimationFrame(step);
-          }
-          requestAnimationFrame(step);
-        });
-      });
-    },
-    { threshold: 0.2 }
-  );
-
-  observer.observe(careCard);
+  initCareCard(container);
 }
 
 // Bố cục chi tiết sản phẩm
@@ -86,55 +45,10 @@ function renderDetailView(product, categoryName, relatedProducts) {
   const isAccessory = !product.careLevel || !product.specs;
   const isOutOfStock = Number(product.stock) <= 0;
 
-  // Khối chỉ số chăm sóc (M5 — ngôi sao của trang này)
-  let careSection = "";
-  if (!isAccessory) {
-    const isAlert = product.difficulty === "Cần chú ý";
-    careSection = `
-      <section class="care-card ${isAlert ? "is-alert" : ""}" aria-label="Phiếu chỉ số chăm sóc">
-        <div class="care-card__head">
-          <h2>Phiếu chăm sóc thực vật</h2>
-          <span>${specimenCode(product.id)}</span>
-        </div>
-
-        <div class="care-row">
-          ${ICONS.water}
-          <span class="care-row__label">Tưới nước</span>
-          <div class="care-row__bar"><span class="care-row__fill" data-target-pct="${product.careLevel.water}"></span></div>
-          <span class="care-row__pct" data-target-pct="${product.careLevel.water}">0%</span>
-          <span class="care-row__text">${escapeHTML(product.specs.water)}</span>
-        </div>
-
-        <div class="care-row">
-          ${ICONS.sun}
-          <span class="care-row__label">Ánh sáng</span>
-          <div class="care-row__bar"><span class="care-row__fill" data-target-pct="${product.careLevel.light}"></span></div>
-          <span class="care-row__pct" data-target-pct="${product.careLevel.light}">0%</span>
-          <span class="care-row__text">${escapeHTML(product.specs.light)}</span>
-        </div>
-
-        <div class="care-row">
-          ${ICONS.humidity}
-          <span class="care-row__label">Độ ẩm</span>
-          <div class="care-row__bar"><span class="care-row__fill" data-target-pct="${product.careLevel.humidity}"></span></div>
-          <span class="care-row__pct" data-target-pct="${product.careLevel.humidity}">0%</span>
-          <span class="care-row__text">${escapeHTML(product.specs.humidity)}</span>
-        </div>
-
-        <div class="care-card__pot">
-          <strong>Kích thước phù hợp:</strong> ${escapeHTML(product.specs.potSize)}
-        </div>
-      </section>`;
-  } else {
-    careSection = `
-      <section class="care-card" aria-label="Thông tin sản phẩm phụ kiện">
-        <div class="care-card__head">
-          <h2>Hồ sơ dụng cụ vườn</h2>
-          <span>${specimenCode(product.id)}</span>
-        </div>
-        <p class="care-card__note">Sản phẩm dùng kèm khi trồng và chăm sóc cây cảnh trong nhà. Phù hợp cho cả người mới bắt đầu.</p>
-      </section>`;
-  }
+  // Khối chỉ số chăm sóc (M5 — ngôi sao của trang này): phiếu kiểu nhãn tiêu bản, mỗi chỉ số một hình vẽ (js/care-card.js)
+  const careSection = isAccessory
+    ? accessoryCardHtml(product, specimenCode(product.id))
+    : careCardHtml(product, specimenCode(product.id));
 
   // Khối 4 sản phẩm cùng danh mục
   const relatedHtml = relatedProducts.length

@@ -24,6 +24,13 @@
   --rank-2-tint: #E5EAE2;
   --rank-3:      #94583A;  /* đất nung nhạt — hạng 3 */
   --rank-3-tint: #F1E3D8;
+  /* Phiếu chăm sóc / lịch tuần đầu (trang chi tiết) */
+  --label-paper:   #FBF8EE;  /* giấy nhãn tiêu bản, ấm hơn --paper-lift một chút */
+  --care-water:    #3F7FA6;  /* giọt nước, ngày tưới */
+  --care-water-tint: #E2EEF4;
+  --care-sun:      #C98A1B;  /* nắng, cửa sổ */
+  --care-sun-tint: #F7ECD3;
+  --care-dew:      #8DB9CF;  /* giọt sương đọng trên lá */
   --tape:       rgba(214, 203, 168, 0.82); /* băng keo giấy dán nhãn */
   --rule:       rgba(28, 42, 30, 0.12);
   --rule-strong: rgba(28, 42, 30, 0.26);

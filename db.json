@@ -1358,14 +1358,17 @@
       "phone": "0912345678",
       "address": "12 Trần Hưng Đạo, P. Cầu Ông Lãnh, Q.1, TP.HCM",
       "walletBalance": 1375000,
-      "favorites": [],
+      "favorites": [
+        "1"
+      ],
       "resetToken": "",
       "resetTokenExpiry": "",
       "resetOtpHash": "",
       "resetOtpExpiry": "",
       "resetOtpAttempts": 0,
       "resetOtpSentAt": "",
-      "passwordChangedAt": "2026-11-11T00:51:21.811Z"
+      "passwordChangedAt": "2026-11-11T00:51:21.811Z",
+      "careJournal": null
     },
     {
       "id": "3",

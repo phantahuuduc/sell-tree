@@ -154,6 +154,8 @@ CayXinh/
     ├── dash-kit.js              # Ô phiếu số liệu + biểu đồ cột "luống cây" dùng chung cho Quản trị và Nhân viên
     ├── slide-marker.js          # Dấu "đang chọn" trượt giữa các thẻ phân trang / nút chọn kỳ
     ├── detail-extras.js         # Trang chi tiết: thanh mua dính, lịch chăm sóc tuần đầu, thường mua cùng
+    ├── care-card.js             # Phiếu chăm sóc kiểu nhãn tiêu bản: lịch tưới 4 tuần, sơ đồ phòng (đặt ở đâu), giọt sương độ ẩm, chậu cạnh ly cà phê
+    ├── care-week.js             # Lịch tuần đầu: chọn ngày nhận cây → ngày thật, ô "Đã làm" (lưu theo tài khoản / trình duyệt), tải file .ics
     ├── shop-extras.js           # Giỏ hàng trượt + menu danh mục dưới "Sản phẩm"
     ├── search-suggest.js        # Gợi ý tức thì dưới ô tìm kiếm
     ├── img-manifest.js          # (tự sinh) danh sách ảnh đã có bản WebP

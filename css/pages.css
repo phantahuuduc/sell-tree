@@ -2880,3 +2880,177 @@
   .aud-staff:hover { transform: none; }
 }
 .aud--still .aud-group__tl { animation: none; }
+
+/* ======================================================
+   Trang chi tiết › Phiếu chăm sóc kiểu nhãn tiêu bản (js/care-card.js)
+   Giấy nhãn, đường kẻ mảnh, tên khoa học in nghiêng, con dấu mã tiêu bản. Mỗi chỉ số một hình vẽ SVG.
+   Hiệu ứng: thêm .is-armed lúc dựng, .is-in khi cuộn tới — chỉ transform / opacity, chạy một lần.
+   ====================================================== */
+.care-card.cc {
+  position: relative; padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 27px, color-mix(in srgb, var(--rule) 55%, transparent) 27px 28px),
+    var(--label-paper);
+  border: 1px solid var(--rule-strong); border-radius: var(--r-sm);
+  box-shadow: var(--shadow-lift);
+}
+.care-card.cc::before {                       /* viền kép mảnh như khung nhãn */
+  content: ""; position: absolute; inset: 6px; border: 1px solid var(--rule); border-radius: 2px; pointer-events: none;
+}
+.care-card.cc::after {                        /* băng keo giấy */
+  content: ""; position: absolute; top: -9px; left: 50%; width: 92px; height: 18px; margin-left: -46px;
+  background: var(--tape); transform: rotate(-2deg); pointer-events: none;
+}
+.cc-head { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-3); padding-bottom: var(--sp-3); margin-bottom: var(--sp-2); border-bottom: 1px solid var(--ink); }
+.cc-kicker { margin: 0 0 2px; font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--specimen); }
+.cc-name { margin: 0; font-family: var(--font-display); font-size: var(--step-1); line-height: 1.2; color: var(--ink); }
+.cc-sci { margin: 2px 0 0; font-size: .9rem; color: var(--ink-soft); }
+.cc-stamp {
+  flex: none; width: 78px; height: 78px; border-radius: 50%; display: grid; place-content: center; justify-items: center; gap: 1px;
+  border: 1.5px solid var(--specimen); outline: 1px dashed var(--specimen); outline-offset: -6px;
+  color: var(--specimen-dark); transform: rotate(-9deg); background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+}
+.cc-stamp small { font-size: 12px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.cc-stamp b { font-family: var(--font-display); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.care-card.cc.is-alert .cc-stamp { border-color: var(--stamp); outline-color: var(--stamp); color: var(--stamp); }
+
+.cc-rows { display: grid; }
+.cc-row { display: grid; grid-template-columns: minmax(0, 176px) minmax(0, 1fr); gap: var(--sp-4); align-items: center; padding: var(--sp-3) 0; border-bottom: 1px dashed var(--rule-strong); }
+.cc-row:last-child { border-bottom: 0; }
+.cc-row__fig { display: grid; place-items: center; min-width: 0; }
+.cc-row__fig svg { max-width: 100%; height: auto; overflow: visible; }
+.cc-row__label { display: flex; align-items: center; gap: .4rem; margin: 0 0 3px; font-family: var(--font-ui); font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.cc-ico { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.cc-row--water .cc-row__label { color: var(--care-water); }
+.cc-row--light .cc-row__label { color: var(--care-sun); }
+.cc-row--humid .cc-row__label { color: color-mix(in srgb, var(--care-water) 75%, var(--specimen)); }
+.cc-row--pot .cc-row__label { color: var(--specimen); }
+.cc-row__value { margin: 0; font-size: 1rem; color: var(--ink); }
+.cc-row__value b { font-family: var(--font-display); font-weight: 600; }
+.cc-row__note { margin: 4px 0 0; font-size: .86rem; line-height: 1.5; color: var(--ink-soft); }
+.cc-spots { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 2px; font-size: .84rem; }
+.cc-spots li { display: flex; align-items: baseline; gap: .4rem; color: var(--ink-soft); opacity: .7; }
+.cc-spots li span[aria-hidden] { flex: none; width: 19px; height: 19px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12px; font-weight: 700; border: 1px dashed var(--rule-strong); }
+.cc-spots li.is-on { color: var(--ink); opacity: 1; font-weight: 600; }
+.cc-spots li.is-on span[aria-hidden] { border: 0; background: var(--specimen); color: var(--paper-lift); }
+.cc-plain { margin: var(--sp-3) 0 0; font-size: .9rem; color: var(--ink-soft); }
+.cc-plain b { color: var(--ink); }
+.cc-foot { display: flex; justify-content: space-between; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-2); padding-top: var(--sp-2); border-top: 1px solid var(--ink); font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+
+/* --- Hình vẽ --- */
+.cc-cell { fill: color-mix(in srgb, var(--paper-lift) 70%, transparent); stroke: var(--rule-strong); stroke-width: 1; }
+.cc-cell.is-on { fill: var(--care-water-tint); stroke: var(--care-water); }
+.cc-drop__shape { fill: var(--care-water); }
+.cc-room { fill: color-mix(in srgb, var(--paper-lift) 85%, transparent); stroke: var(--ink-soft); stroke-width: 1.2; }
+.cc-window { fill: var(--care-sun-tint); stroke: var(--care-sun); stroke-width: 1.5; }
+.cc-ray { stroke: var(--care-sun); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .7; fill: none; }
+.cc-spot circle { fill: var(--paper-lift); stroke: var(--rule-strong); stroke-width: 1.3; stroke-dasharray: 3 3; }
+.cc-spot text { font: 600 12px var(--font-ui); fill: var(--ink-soft); }
+.cc-spot.is-on circle { fill: var(--specimen); stroke: none; }
+.cc-spot__tick { fill: none; stroke: var(--paper-lift); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.cc-leaf { fill: var(--accent-soft); stroke: var(--specimen); stroke-width: 1.6; }
+.cc-vein { fill: none; stroke: var(--specimen); stroke-width: 1.2; opacity: .6; }
+.cc-dew { fill: var(--care-dew); stroke: var(--care-water); stroke-width: .8; }
+.cc-mist { fill: none; stroke: var(--care-dew); stroke-width: 2; stroke-linecap: round; }
+.cc-ground { stroke: var(--ink-soft); stroke-width: 1; }
+.cc-cup path { fill: var(--paper-lift); stroke: var(--ink-soft); stroke-width: 1.4; }
+.cc-cup .cc-cup__handle, .cc-cup .cc-steam { fill: none; }
+.cc-cup .cc-steam { stroke: var(--rule-strong); }
+.cc-pot { fill: color-mix(in srgb, var(--rank-3) 30%, var(--paper-lift)); stroke: var(--rank-3); stroke-width: 1.4; }
+.cc-pot--glass { fill: color-mix(in srgb, var(--care-water-tint) 70%, transparent); stroke: var(--care-water); }
+.cc-pot__rim { fill: color-mix(in srgb, var(--rank-3) 45%, var(--paper-lift)); stroke: var(--rank-3); stroke-width: 1.2; }
+.cc-water { stroke: var(--care-water); stroke-width: 1.4; stroke-dasharray: 4 3; }
+.cc-hanger { fill: none; stroke: var(--ink-soft); stroke-width: 1.2; }
+.cc-sprout { fill: none; stroke: var(--specimen); stroke-width: 2; stroke-linecap: round; }
+.cc-cap { font: 600 12px var(--font-ui); fill: var(--ink-soft); }
+
+/* --- Hiệu ứng một lần khi cuộn tới (chỉ transform / opacity) --- */
+.cc.is-armed .cc-drop, .cc.is-armed .cc-spot.is-on, .cc.is-armed .cc-ray, .cc.is-armed .cc-dew, .cc.is-armed .cc-potgroup {
+  opacity: 0; transition: opacity 420ms var(--ease-out), transform 520ms var(--ease-spring);
+  transform-box: fill-box; transform-origin: center;
+}
+.cc.is-armed .cc-drop { transform: scale(.4); transition-delay: calc(var(--d) * 70ms + 120ms); }
+.cc.is-armed .cc-spot.is-on { transform: scale(.5); transition-delay: calc(var(--d) * 110ms + 380ms); }
+.cc.is-armed .cc-ray { transform: translateX(-6px); transition-delay: calc(var(--d) * 90ms + 300ms); }
+.cc.is-armed .cc-dew { transform: translateY(-10px); transition-delay: calc(var(--d) * 120ms + 600ms); }
+.cc.is-armed .cc-potgroup { transform: scaleY(.6); transform-origin: center bottom; transition-delay: 820ms; }
+.cc.is-armed.is-in .cc-drop, .cc.is-armed.is-in .cc-spot.is-on, .cc.is-armed.is-in .cc-dew, .cc.is-armed.is-in .cc-potgroup { opacity: 1; transform: none; }
+.cc.is-armed.is-in .cc-ray { opacity: .7; transform: none; }
+
+@media (max-width: 599px) {
+  .care-card.cc { padding: var(--sp-4) var(--sp-3) var(--sp-3); }
+  .cc-row { grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+  .cc-row__fig { justify-items: start; place-items: start; }
+  .cc-stamp { width: 72px; height: 72px; }
+}
+
+/* ======================================================
+   Trang chi tiết › Lịch chăm sóc tuần đầu (js/care-week.js)
+   ====================================================== */
+.care-week.cw { margin: var(--sp-6) 0 var(--sp-5); }
+.cw-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--sp-3); }
+.cw-head h2 { margin: 0 0 4px; }
+.cw-progress { flex: none; display: grid; justify-items: center; gap: 2px; text-align: center; }
+.cw-progress__text { font-size: .8rem; color: var(--ink-soft); white-space: nowrap; }
+.cw-progress__text b { color: var(--specimen-dark); font-family: var(--font-display); font-size: 1.05rem; }
+.cw-sprout__pot { fill: color-mix(in srgb, var(--rank-3) 30%, var(--paper-lift)); stroke: var(--rank-3); stroke-width: 1.4; }
+.cw-sprout__soil { stroke: var(--rank-3); stroke-width: 2; }
+.cw-sprout__stem { stroke: var(--specimen); stroke-width: 2.4; stroke-linecap: round; fill: none; }
+.cw-sprout__leaf { fill: var(--leaf-light); stroke: var(--specimen); stroke-width: 1.2; opacity: 0; transform-box: fill-box; transform-origin: center bottom; transform: scale(.3); transition: opacity 320ms var(--ease-out), transform 420ms var(--ease-spring); }
+.cw-sprout[data-stage="1"] .cw-sprout__leaf--1,
+.cw-sprout[data-stage="2"] :is(.cw-sprout__leaf--1, .cw-sprout__leaf--2),
+.cw-sprout[data-stage="3"] :is(.cw-sprout__leaf--1, .cw-sprout__leaf--2, .cw-sprout__leaf--3),
+.cw-sprout[data-stage="4"] .cw-sprout__leaf { opacity: 1; transform: none; }
+
+.cw-tools {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3);
+  margin: 0 0 var(--sp-4); padding: var(--sp-3); border: 1px dashed var(--rule-strong); border-radius: var(--r-md); background: var(--paper-lift);
+}
+.cw-date { display: inline-flex; align-items: center; gap: .5rem; font-size: .88rem; font-weight: 600; color: var(--ink); }
+.cw-date input { min-height: 38px; padding: 6px 10px; border: 1px solid var(--rule-strong); border-radius: var(--r-md); background: var(--paper); font: inherit; font-weight: 400; color: var(--ink); }
+.cw-date input:focus-visible { outline: 2px solid var(--specimen); outline-offset: 2px; }
+.cw-ics { margin-left: auto; }
+.cw-ics:disabled { opacity: .55; cursor: not-allowed; }
+.cw-why { flex-basis: 100%; margin: 0; font-size: .82rem; color: var(--ink-soft); }
+.cw-why:empty { display: none; }
+
+.cw-list.care-week__list::before { left: 19px; top: 18px; bottom: 18px; }
+.cw-step.cw-step { grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--sp-3); padding: 10px 12px 10px 0; border-radius: var(--r-md); }
+.cw-step__dot {
+  position: relative; z-index: 1; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--paper-lift); border: 2px solid var(--specimen); color: var(--specimen);
+}
+.cw-step__dot svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cw-step__body { min-width: 0; }
+.cw-step__when { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .5rem; margin: 0 0 3px; }
+.cw-step__day.care-week__day { justify-self: start; font-size: .75rem; }
+.cw-step__day.is-small { background: var(--specimen-tint); color: var(--specimen-dark); }
+.cw-step__date { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: var(--ink); }
+.cw-step__today { padding: 2px 8px; border-radius: var(--r-pill); background: var(--care-sun); color: var(--paper-lift); font-size: .75rem; font-weight: 700; }
+.cw-step.is-today { background: var(--care-sun-tint); box-shadow: inset 3px 0 0 var(--care-sun); }
+.cw-step.is-today .cw-step__dot { border-color: var(--care-sun); color: var(--care-sun); }
+.cw-step.is-done .cw-step__dot { background: var(--specimen); border-color: var(--specimen); color: var(--paper-lift); }
+.cw-step.is-done strong { color: var(--ink-soft); }
+.cw-step.is-past .cw-step__date { color: var(--ink-soft); }
+
+.cw-check { align-self: center; display: inline-flex; align-items: center; gap: .4rem; padding: 6px 10px; border: 1px solid var(--rule-strong); border-radius: var(--r-pill); background: var(--paper-lift); font-size: .84rem; font-weight: 600; color: var(--ink); cursor: pointer; white-space: nowrap; }
+.cw-check input { width: 18px; height: 18px; margin: 0; accent-color: var(--specimen); }
+.cw-check:has(input:focus-visible) { outline: 2px solid var(--specimen); outline-offset: 2px; }
+.cw-step.is-done .cw-check { background: var(--accent-soft); border-color: var(--specimen); color: var(--specimen-dark); }
+
+/* Hiện dần (một lần) */
+.cw--anim .cw-step { animation: cwIn 480ms var(--ease-out) both; animation-delay: calc(var(--i) * 90ms); }
+@keyframes cwIn { from { opacity: 0; transform: translateY(8px); } }
+
+@media (max-width: 599px) {
+  .cw-head { align-items: flex-start; }
+  .cw-ics { margin-left: 0; flex: 1 1 100%; }
+  .cw-step.cw-step { grid-template-columns: 40px minmax(0, 1fr); }
+  .cw-check { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc.is-armed :is(.cc-drop, .cc-spot.is-on, .cc-ray, .cc-dew, .cc-potgroup) { transition: none; opacity: 1; transform: none; }
+  .cw--anim .cw-step { animation: none; }
+  .cw-sprout__leaf { transition: none; }
+}
+.cc.is-still :is(.cc-drop, .cc-spot.is-on, .cc-dew, .cc-potgroup) { opacity: 1; transform: none; transition: none; }

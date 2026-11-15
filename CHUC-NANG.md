@@ -92,6 +92,8 @@ flowchart TD
   F -->|Có| G[Đặt trước + 🔔 báo có hàng]
 ```
 
+**Phiếu chăm sóc & lịch tuần đầu (11/2026):** phiếu chăm sóc vẽ mỗi chỉ số một kiểu — lịch tưới 4 tuần, sơ đồ "đặt ở đâu trong nhà", giọt sương độ ẩm, chậu cạnh ly cà phê — theo phong cách nhãn tiêu bản. Lịch tuần đầu: chọn ngày nhận cây → "Thứ Ba 17/11", tick "Đã làm" từng mốc (giữ lại khi quay lại; đăng nhập thì lưu theo tài khoản), tải file `.ics` để thêm vào lịch điện thoại. Sản phẩm không phải cây hiện "Hồ sơ dụng cụ vườn" (chậu vẽ theo tỉ lệ, giá thể quy đổi số chậu), không có lịch.
+
 ## 7. Yêu thích (wishlist)
 `favorites.js` (logic) · `wishlist.html` → `wishlist.js` (trang riêng) · icon ♥ kèm số lượng trên header mọi trang
 ```mermaid

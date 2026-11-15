@@ -334,6 +334,7 @@ erDiagram
 | `avatar` | string | | Ảnh base64 ≤2MB |
 | `walletBalance` | number | | Số dư ví (VND) |
 | `favorites` | array | | Mảng `productId` yêu thích |
+| `careJournal` | object | | *(tùy chọn, thêm 11/2026)* Nhật ký "Lịch chăm sóc tuần đầu" theo sản phẩm: `{ "<productId>": { start: "YYYY-MM-DD", done: ["d1","d23","d4","d7"], updatedAt } }`. Không có trường này thì trang vẫn chạy (khách chưa đăng nhập lưu tạm ở `localStorage` khóa `careweek_guest`, đăng nhập thì gộp vào đây) |
 | `locked` | bool | | Admin khóa → chặn đăng nhập |
 | `resetOtpHash` | string | | Băm SHA-256 của mã OTP quên mật khẩu (không lưu mã thô) |
 | `resetOtpExpiry` | ISO date | | Hạn mã OTP — **10 phút** |
