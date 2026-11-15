@@ -32,6 +32,8 @@ const STEP_ICON = {
   d7: '<path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/><path d="M9 12l2 2 4-4"/>',
 };
 export function careWeekSteps(product) {
+  // Ưu tiên dữ liệu admin đã chỉnh (careWeekSteps); fallback sang tính toán từ careLevel
+  if (Array.isArray(product?.careWeekSteps) && product.careWeekSteps.length) return product.careWeekSteps;
   const c = product?.careLevel;
   if (!c) return null;
   const light = Number(c.light) || 0, water = Number(c.water) || 0;
@@ -40,7 +42,6 @@ export function careWeekSteps(product) {
   const firstWater = water >= 67 ? "Tưới đẫm tới khi nước chảy ra lỗ thoát. Loài này ưa ẩm, đừng để đất khô hẳn."
     : water >= 34 ? "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
       : "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều.";
-  // Nhịp tưới lấy đúng câu trên phiếu chăm sóc (specs.water) để hai khối không nói khác nhau; thiếu thì suy từ careLevel
   const spec = String(product.specs?.water || "").trim();
   const rhythm = spec
     ? (/^thay/i.test(spec) ? spec.charAt(0).toLowerCase() + spec.slice(1) : `tưới ${spec.charAt(0).toLowerCase() + spec.slice(1)}`)
@@ -195,7 +196,8 @@ export function careWeekHtml(product) {
         <label class="cw-date"><span>Ngày nhận cây</span><input type="date" id="cwStart" aria-describedby="cwWhy"></label>
         <button type="button" class="btn btn--text btn--sm" id="cwToday">Hôm nay</button>
         <button type="button" class="btn btn--text btn--sm" id="cwClear">Bỏ ngày</button>
-        <button type="button" class="btn btn--ghost btn--sm cw-ics" id="cwIcs">📅 Thêm vào lịch điện thoại</button>
+        <button type="button" class="btn btn--ghost btn--sm cw-ics" id="cwIcs">📅 Tải file .ics</button>
+        <button type="button" class="btn btn--text btn--sm" id="cwGcal">🔗 Thêm Google Calendar</button>
         <p class="cw-why" id="cwWhy"></p>
       </div>
       <ol class="care-week__list cw-list">
@@ -299,12 +301,26 @@ export async function initCareWeek(section, product) {
     const ics = buildIcs(product, state.start, steps);
     if (!ics) return;
     const slug = removeAccents(product.name || "cay").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "cay";
-    const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    const fname = `lich-cham-soc-${slug}.ics`;
+    // data URI hoạt động trên cả mobile (Android/iOS) lẫn desktop
+    const dataUri = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
     const a = document.createElement("a");
-    a.href = url; a.download = `lich-cham-soc-${slug}.ics`;
+    a.href = dataUri; a.download = fname;
     document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 4000);
     if (suggested) persist();
     showToast("Đã tải lịch 4 mốc (.ics) — mở file để thêm vào lịch của bạn.");
+  });
+  // Nút phụ: thêm vào Google Calendar (hữu ích khi điện thoại không mở được .ics)
+  const gcalBtn = section.querySelector("#cwGcal");
+  if (gcalBtn) gcalBtn.addEventListener("click", () => {
+    const start = parseYmd(state.start);
+    if (!start || !steps?.length) { showToast("Chọn ngày bắt đầu trước."); return; }
+    const s0 = steps[0], sLast = steps[steps.length - 1];
+    const a = addDays(start, s0.from), b = addDays(start, sLast.to + 1);
+    const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+    const title = encodeURIComponent(`Chăm sóc ${product.name} — tuần đầu`);
+    const detail = encodeURIComponent(steps.map((s) => `${s.day}: ${s.title}\n${s.text}`).join("\n\n") + "\n\nLá & Sỏi 🌿");
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(a)}/${fmt(b)}&details=${detail}`;
+    window.open(url, "_blank", "noopener");
   });
 }

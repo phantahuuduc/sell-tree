@@ -81,6 +81,29 @@ export function potPlan(text) {
   return { cm, kind, compare };
 }
 
+// ---------- Đọc từ dữ liệu cấu trúc (careCard) khi text parse không ra ----------
+function waterPlanFromStruct(d) {
+  const days = Number(d.days); if (!(days > 0)) return null;
+  const hydro = !!d.hydro;
+  const marks = []; for (let k = 0; Math.round(k * days) < 28; k++) marks.push(Math.round(k * days));
+  const label = hydro ? "Thủy sinh" : days <= 3.6 ? "Ưa nước" : days <= 8 ? "Tưới vừa phải" : "Ít nước — chịu hạn";
+  return { days, hydro, marks, label, perMonth: Math.round(30 / days) };
+}
+function humidityFromStruct(d) {
+  const n = Number(d.level); if (!(n >= 0 && n <= 4)) return null;
+  const HUMID_WORDS = ["Rất khô", "Khô thoáng", "Vừa phải", "Ẩm", "Rất ẩm"];
+  const advice = n >= 3 ? "Phun sương lá 2–3 lần mỗi tuần, hoặc đặt chậu trên khay sỏi có nước."
+    : n === 2 ? "Độ ẩm phòng bình thường là đủ, không cần phun sương."
+      : "Không phun sương — để lá và đất khô thoáng, tránh úng.";
+  return { level: n, word: HUMID_WORDS[n], advice };
+}
+function potPlanFull(d) {
+  const cm = Number(d.cm); if (!(cm > 0)) return d;
+  const kind = d.kind || "pot", cup = 8, r = cm / cup;
+  const compare = r <= 1.15 ? "nhỏ cỡ một ly cà phê" : r < 1.75 ? `rộng chừng ${fmt1(r)} ly cà phê` : `rộng gần ${fmt1(r)} ly cà phê đặt cạnh nhau`;
+  return { cm, kind, compare };
+}
+
 // ---------- Hình vẽ (SVG nội tuyến, màu theo token CSS) ----------
 const ICON = {
   water: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
@@ -193,27 +216,28 @@ function row(key, ico, label, figure, value, note) {
 }
 
 export function careCardHtml(product, code) {
+  const cc = product.careCard || {};
   const s = product.specs || {}, c = product.careLevel || {};
   const isAlert = product.difficulty === "Cần chú ý";
   const rows = [];
 
-  const w = waterPlan(s.water, c.water);
+  const w = cc.water ? waterPlan(cc.water.text, null) || waterPlanFromStruct(cc.water) : waterPlan(s.water, c.water);
   if (w) rows.push(row("water", "water", "Tưới nước", waterSvg(w),
-    `<b>${escapeHTML(w.label)}</b> — ${escapeHTML(s.water || `khoảng ${fmt1(w.days)} ngày một lần`)}`,
+    `<b>${escapeHTML(w.label)}</b> — ${escapeHTML(cc.water?.text || s.water || `khoảng ${fmt1(w.days)} ngày một lần`)}`,
     w.hydro ? "Trồng trong nước: thay nước sạch mỗi tuần, giữ mực nước ngập rễ." : `Mỗi ô là một ngày trong 4 tuần · khoảng <b>${w.perMonth}</b> lần mỗi tháng. Thọc ngón tay xuống đất 2cm — còn ẩm thì chờ thêm.`));
 
-  const l = lightSpots(s.light, c.light);
-  if (l) rows.push(row("light", "sun", "Đặt ở đâu trong nhà?", lightSvg(l),
-    `<b>${escapeHTML(s.light || "Theo sơ đồ")}</b>`,
-    `<ul class="cc-spots">${LIGHT_SPOTS.map((t, i) => `<li class="${l.includes(i) ? "is-on" : ""}"><span aria-hidden="true">${i + 1}</span>${escapeHTML(t)}${l.includes(i) ? '<span class="visually-hidden"> — hợp</span>' : '<span class="visually-hidden"> — không nên</span>'}</li>`).join("")}</ul>`));
+  const lSpots = cc.light ? cc.light.spots : lightSpots(s.light, c.light);
+  if (lSpots) rows.push(row("light", "sun", "Đặt ở đâu trong nhà?", lightSvg(lSpots),
+    `<b>${escapeHTML(cc.light?.text || s.light || "Theo sơ đồ")}</b>`,
+    `<ul class="cc-spots">${LIGHT_SPOTS.map((t, i) => `<li class="${lSpots.includes(i) ? "is-on" : ""}"><span aria-hidden="true">${i + 1}</span>${escapeHTML(t)}${lSpots.includes(i) ? '<span class="visually-hidden"> — hợp</span>' : '<span class="visually-hidden"> — không nên</span>'}</li>`).join("")}</ul>`));
 
-  const h = humidityPlan(s.humidity, c.humidity);
+  const h = cc.humidity ? humidityFromStruct(cc.humidity) : humidityPlan(s.humidity, c.humidity);
   if (h) rows.push(row("humid", "mist", "Độ ẩm không khí", humiditySvg(h),
-    `<b>${escapeHTML(h.word)}</b>${s.humidity ? ` — ${escapeHTML(s.humidity)}` : ""}`, escapeHTML(h.advice)));
+    `<b>${escapeHTML(h.word)}</b>${(cc.humidity?.text || s.humidity) ? ` — ${escapeHTML(cc.humidity?.text || s.humidity)}` : ""}`, escapeHTML(h.advice)));
 
-  const p = potPlan(s.potSize);
-  if (p) rows.push(row("pot", "pot", "Kích thước chậu", potSvg(p, s.potSize),
-    `<b>${escapeHTML(s.potSize)}</b>`, `Vẽ theo cùng tỉ lệ với một ly cà phê: ${escapeHTML(p.compare)}.`));
+  const p = cc.pot ? cc.pot : potPlan(s.potSize);
+  if (p?.cm) rows.push(row("pot", "pot", "Kích thước chậu", potSvg(potPlanFull(p), cc.pot?.text || s.potSize),
+    `<b>${escapeHTML(cc.pot?.text || s.potSize || `${fmt1(p.cm)}cm`)}</b>`, `Vẽ theo cùng tỉ lệ với một ly cà phê: ${escapeHTML(potPlanFull(p).compare)}.`));
   else if (s.potSize) rows.push(`<p class="cc-plain"><b>Kích thước phù hợp:</b> ${escapeHTML(s.potSize)}</p>`);
 
   return `

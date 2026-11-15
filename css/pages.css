@@ -1501,7 +1501,13 @@
 .chip--active  { background: #d4edda; color: #155724; }
 .chip--inactive { background: var(--paper-lift); color: var(--ink-soft); }
 .admin-table__actions { white-space: nowrap; }
-@media (max-width: 768px) { .sale-form__grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+  .sale-form__grid { grid-template-columns: 1fr; }
+  #pr_careWrap fieldset { grid-template-columns: 1fr !important; }
+  #pr_weekSteps fieldset { grid-template-columns: 1fr !important; }
+  #pr_weekSteps fieldset input,
+  #pr_weekSteps fieldset textarea { grid-column: 1 !important; }
+}
 
 /* ======================================================
    V6: SALE BANNER + COUNTDOWN

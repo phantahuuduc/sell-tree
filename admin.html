@@ -592,6 +592,47 @@
                   <button class="btn btn--ghost btn--sm" type="button" id="pr_addVariant">+ Thêm size</button>
                 </div>
               </div>
+              <!-- ── Phiếu chăm sóc ── -->
+              <details class="sale-form__group sale-form__full" id="pr_careWrap">
+                <summary style="cursor:pointer;font-weight:600;margin-bottom:8px">🌿 Phiếu chăm sóc <span class="muted" style="font-weight:400">(bỏ trống = tự suy từ specs/careLevel)</span></summary>
+                <fieldset style="border:1px solid var(--rule);border-radius:8px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px">
+                  <legend style="font-weight:600;padding:0 6px">Tưới nước</legend>
+                  <div><label for="cc_wDays">Chu kỳ (ngày)</label><input id="cc_wDays" type="number" step="0.1" min="0" value="${product?.careCard?.water?.days ?? ""}"></div>
+                  <div><label for="cc_wText">Mô tả</label><input id="cc_wText" type="text" value="${escapeHTML(product?.careCard?.water?.text || "")}" placeholder="VD: 1–2 lần/tuần"></div>
+                  <div><label><input id="cc_wHydro" type="checkbox" ${product?.careCard?.water?.hydro ? "checked" : ""}> Thủy sinh</label></div>
+                </fieldset>
+                <fieldset style="border:1px solid var(--rule);border-radius:8px;padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px">
+                  <legend style="font-weight:600;padding:0 6px">Ánh sáng</legend>
+                  <div><label for="cc_lSpots">Vị trí (0–3, phân cách dấu phẩy)</label><input id="cc_lSpots" type="text" value="${(product?.careCard?.light?.spots || []).join(",")}" placeholder="VD: 1,2"></div>
+                  <div><label for="cc_lText">Mô tả</label><input id="cc_lText" type="text" value="${escapeHTML(product?.careCard?.light?.text || "")}" placeholder="VD: Nắng gián tiếp"></div>
+                </fieldset>
+                <fieldset style="border:1px solid var(--rule);border-radius:8px;padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px">
+                  <legend style="font-weight:600;padding:0 6px">Độ ẩm</legend>
+                  <div><label for="cc_hLevel">Mức (0–4)</label><input id="cc_hLevel" type="number" min="0" max="4" value="${product?.careCard?.humidity?.level ?? ""}"></div>
+                  <div><label for="cc_hText">Mô tả</label><input id="cc_hText" type="text" value="${escapeHTML(product?.careCard?.humidity?.text || "")}" placeholder="VD: Cao"></div>
+                </fieldset>
+                <fieldset style="border:1px solid var(--rule);border-radius:8px;padding:12px;margin-top:8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 16px">
+                  <legend style="font-weight:600;padding:0 6px">Chậu</legend>
+                  <div><label for="cc_pCm">Kích thước (cm)</label><input id="cc_pCm" type="number" step="0.1" min="0" value="${product?.careCard?.pot?.cm ?? ""}"></div>
+                  <div><label for="cc_pKind">Loại</label><select id="cc_pKind"><option value="pot" ${(product?.careCard?.pot?.kind || "pot") === "pot" ? "selected" : ""}>Chậu đất</option><option value="hanging" ${product?.careCard?.pot?.kind === "hanging" ? "selected" : ""}>Chậu treo</option><option value="vase" ${product?.careCard?.pot?.kind === "vase" ? "selected" : ""}>Bình thủy tinh</option></select></div>
+                  <div><label for="cc_pText">Mô tả</label><input id="cc_pText" type="text" value="${escapeHTML(product?.careCard?.pot?.text || "")}" placeholder="VD: Chậu đất 15cm"></div>
+                </fieldset>
+              </details>
+              <!-- ── Lịch tuần đầu ── -->
+              <details class="sale-form__group sale-form__full" id="pr_weekWrap">
+                <summary style="cursor:pointer;font-weight:600;margin-bottom:8px">📅 Lịch tuần đầu <span class="muted" style="font-weight:400">(4 mốc — bỏ trống = tự suy từ careLevel)</span></summary>
+                <div id="pr_weekSteps" style="display:grid;gap:8px">
+                  ${(product?.careWeekSteps || [{ key: "d1", from: 0, to: 0, day: "Ngày 1", title: "", text: "" }, { key: "d23", from: 1, to: 2, day: "Ngày 2–3", title: "", text: "" }, { key: "d4", from: 3, to: 3, day: "Ngày 4", title: "", text: "" }, { key: "d7", from: 6, to: 6, day: "Ngày 7", title: "", text: "" }]).map((s, i) => `
+                    <fieldset style="border:1px solid var(--rule);border-radius:8px;padding:10px;display:grid;grid-template-columns:auto 1fr 1fr;gap:6px 12px;align-items:center" data-cwi="${i}">
+                      <legend style="font-weight:600;padding:0 6px">${escapeHTML(s.day || "Mốc " + (i + 1))}</legend>
+                      <label>Key</label><input data-cw="key" type="text" value="${escapeHTML(s.key || "")}" style="grid-column:2/4">
+                      <label>Từ ngày</label><input data-cw="from" type="number" min="0" value="${s.from ?? ""}" style="max-width:80px"><input data-cw="to" type="number" min="0" value="${s.to ?? ""}" placeholder="Đến" style="max-width:80px">
+                      <label>Nhãn ngày</label><input data-cw="day" type="text" value="${escapeHTML(s.day || "")}" style="grid-column:2/4">
+                      <label>Tiêu đề</label><input data-cw="title" type="text" value="${escapeHTML(s.title || "")}" style="grid-column:2/4">
+                      <label>Nội dung</label><textarea data-cw="text" rows="2" style="grid-column:2/4">${escapeHTML(s.text || "")}</textarea>
+                    </fieldset>`).join("")}
+                </div>
+              </details>
             </div>
             <div class="sale-form__actions">
               <button class="btn btn--primary" type="submit">${isEdit ? "Lưu thay đổi" : "Tạo sản phẩm"}</button>
@@ -679,6 +720,38 @@
         }
         data.variants = variants;
         if (variants.length) data.price = Math.min(...variants.map((v) => v.price));
+        // ── careCard ──
+        const ccWrap = document.getElementById("pr_careWrap");
+        if (ccWrap.open) {
+          const cc = {};
+          const wDays = Number(document.getElementById("cc_wDays").value);
+          if (wDays > 0) {
+            const hydro = document.getElementById("cc_wHydro").checked;
+            const label = hydro ? "hydro" : wDays <= 3.6 ? "high" : wDays <= 8 ? "medium" : "low";
+            cc.water = { days: wDays, hydro, label, text: document.getElementById("cc_wText").value.trim() };
+          }
+          const lRaw = document.getElementById("cc_lSpots").value.trim();
+          if (lRaw) cc.light = { spots: lRaw.split(",").map(Number).filter((n) => n >= 0 && n <= 3), text: document.getElementById("cc_lText").value.trim() };
+          const hLvl = document.getElementById("cc_hLevel").value;
+          if (hLvl !== "") cc.humidity = { level: Number(hLvl), text: document.getElementById("cc_hText").value.trim() };
+          const pCm = Number(document.getElementById("cc_pCm").value);
+          if (pCm > 0) cc.pot = { cm: pCm, kind: document.getElementById("cc_pKind").value, text: document.getElementById("cc_pText").value.trim() };
+          if (Object.keys(cc).length) data.careCard = cc;
+        }
+        // ── careWeekSteps ──
+        const cwWrap = document.getElementById("pr_weekWrap");
+        if (cwWrap.open) {
+          const rows = Array.from(document.querySelectorAll("#pr_weekSteps [data-cwi]"));
+          const steps = rows.map((r) => ({
+            key: r.querySelector('[data-cw="key"]').value.trim(),
+            from: Number(r.querySelector('[data-cw="from"]').value) || 0,
+            to: Number(r.querySelector('[data-cw="to"]').value) || 0,
+            day: r.querySelector('[data-cw="day"]').value.trim(),
+            title: r.querySelector('[data-cw="title"]').value.trim(),
+            text: r.querySelector('[data-cw="text"]').value.trim(),
+          })).filter((s) => s.key && s.title);
+          if (steps.length) data.careWeekSteps = steps;
+        }
         const oldPrice = Number(fd.get("oldPrice")) || 0;
         if (oldPrice && oldPrice <= data.price) {
           alert("Giá trước giảm phải lớn hơn giá bán (hoặc để trống nếu không giảm).");

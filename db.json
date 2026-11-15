@@ -97,6 +97,63 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 4.7,
+          "hydro": false,
+          "label": "medium",
+          "text": "1–2 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            2
+          ],
+          "text": "Bán râm"
+        },
+        "humidity": {
+          "level": 3,
+          "text": "Cao"
+        },
+        "pot": {
+          "cm": 15.0,
+          "kind": "hanging",
+          "text": "Chậu treo 15cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1–2 lần/tuần."
+        }
       ]
     },
     {
@@ -169,6 +226,65 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 14.0,
+          "hydro": false,
+          "label": "low",
+          "text": "2 tuần 1 lần"
+        },
+        "light": {
+          "spots": [
+            1,
+            2,
+            3
+          ],
+          "text": "Mọi mức sáng"
+        },
+        "humidity": {
+          "level": 1,
+          "text": "Thấp"
+        },
+        "pot": {
+          "cm": 18.0,
+          "kind": "pot",
+          "text": "Chậu 18cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 tuần 1 lần."
+        }
       ]
     },
     {
@@ -240,6 +356,63 @@
       "labelIds": [
         "care-medium",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 3.5,
+          "hydro": false,
+          "label": "high",
+          "text": "2 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            2
+          ],
+          "text": "Bán râm"
+        },
+        "humidity": {
+          "level": 3,
+          "text": "Cao"
+        },
+        "pot": {
+          "cm": 15.0,
+          "kind": "pot",
+          "text": "Chậu 15cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Tưới đẫm tới khi nước chảy ra lỗ thoát. Loài này ưa ẩm, đừng để đất khô hẳn."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 lần/tuần."
+        }
       ]
     },
     {
@@ -312,6 +485,63 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 7.0,
+          "hydro": false,
+          "label": "medium",
+          "text": "1 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            2
+          ],
+          "text": "Bán râm"
+        },
+        "humidity": {
+          "level": 2,
+          "text": "Trung bình"
+        },
+        "pot": {
+          "cm": 14.0,
+          "kind": "hanging",
+          "text": "Chậu treo 14cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1 lần/tuần."
+        }
       ]
     },
     {
@@ -384,6 +614,64 @@
       "labelIds": [
         "care-medium",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 3.5,
+          "hydro": false,
+          "label": "high",
+          "text": "2 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            1,
+            2
+          ],
+          "text": "Sáng gián tiếp"
+        },
+        "humidity": {
+          "level": 3,
+          "text": "Cao"
+        },
+        "pot": {
+          "cm": 14.0,
+          "kind": "hanging",
+          "text": "Chậu treo 14cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 lần/tuần."
+        }
       ]
     },
     {
@@ -449,6 +737,63 @@
       "labelIds": [
         "care-easy",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 10.0,
+          "hydro": false,
+          "label": "low",
+          "text": "10 ngày 1 lần"
+        },
+        "light": {
+          "spots": [
+            0
+          ],
+          "text": "Nắng trực tiếp"
+        },
+        "humidity": {
+          "level": 1,
+          "text": "Thấp"
+        },
+        "pot": {
+          "cm": 8.0,
+          "kind": "pot",
+          "text": "Chậu 8cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt ở bậu cửa có nắng trực tiếp 3–4 tiếng mỗi ngày. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 10 ngày 1 lần."
+        }
       ]
     },
     {
@@ -514,6 +859,64 @@
       "labelIds": [
         "care-easy",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 10.0,
+          "hydro": false,
+          "label": "low",
+          "text": "10 ngày 1 lần"
+        },
+        "light": {
+          "spots": [
+            0,
+            1
+          ],
+          "text": "Nắng sáng"
+        },
+        "humidity": {
+          "level": 1,
+          "text": "Thấp"
+        },
+        "pot": {
+          "cm": 8.0,
+          "kind": "pot",
+          "text": "Chậu 8cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt ở bậu cửa có nắng trực tiếp 3–4 tiếng mỗi ngày. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 10 ngày 1 lần."
+        }
       ]
     },
     {
@@ -585,6 +988,63 @@
       "labelIds": [
         "care-medium",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 14.0,
+          "hydro": false,
+          "label": "low",
+          "text": "2 tuần 1 lần"
+        },
+        "light": {
+          "spots": [
+            1
+          ],
+          "text": "Nắng gián tiếp"
+        },
+        "humidity": {
+          "level": 1,
+          "text": "Thấp"
+        },
+        "pot": {
+          "cm": 12.0,
+          "kind": "hanging",
+          "text": "Chậu treo 12cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt ở bậu cửa có nắng trực tiếp 3–4 tiếng mỗi ngày. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 tuần 1 lần."
+        }
       ]
     },
     {
@@ -657,6 +1117,64 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 14.0,
+          "hydro": false,
+          "label": "low",
+          "text": "2 tuần 1 lần"
+        },
+        "light": {
+          "spots": [
+            0,
+            1
+          ],
+          "text": "Nắng sáng"
+        },
+        "humidity": {
+          "level": 1,
+          "text": "Thấp"
+        },
+        "pot": {
+          "cm": 16.0,
+          "kind": "pot",
+          "text": "Chậu 16cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt ở bậu cửa có nắng trực tiếp 3–4 tiếng mỗi ngày. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 tuần 1 lần."
+        }
       ]
     },
     {
@@ -722,6 +1240,63 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 21.0,
+          "hydro": false,
+          "label": "low",
+          "text": "3 tuần 1 lần"
+        },
+        "light": {
+          "spots": [
+            0
+          ],
+          "text": "Nắng gắt"
+        },
+        "humidity": {
+          "level": 0,
+          "text": "Rất thấp"
+        },
+        "pot": {
+          "cm": 10.0,
+          "kind": "pot",
+          "text": "Chậu 10cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt ở bậu cửa có nắng trực tiếp 3–4 tiếng mỗi ngày. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 3 tuần 1 lần."
+        }
       ]
     },
     {
@@ -793,6 +1368,64 @@
       "labelIds": [
         "care-medium",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 3.5,
+          "hydro": false,
+          "label": "high",
+          "text": "2 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            2,
+            3
+          ],
+          "text": "Râm mát"
+        },
+        "humidity": {
+          "level": 4,
+          "text": "Rất cao"
+        },
+        "pot": {
+          "cm": 14.0,
+          "kind": "pot",
+          "text": "Chậu 14cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt nơi râm mát, ánh sáng đèn phòng là đủ. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Tưới đẫm tới khi nước chảy ra lỗ thoát. Loài này ưa ẩm, đừng để đất khô hẳn."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 lần/tuần."
+        }
       ]
     },
     {
@@ -864,6 +1497,64 @@
       "labelIds": [
         "care-hard",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 2.8,
+          "hydro": false,
+          "label": "high",
+          "text": "2–3 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            2,
+            3
+          ],
+          "text": "Râm"
+        },
+        "humidity": {
+          "level": 4,
+          "text": "Rất cao"
+        },
+        "pot": {
+          "cm": 14.0,
+          "kind": "pot",
+          "text": "Chậu 14cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt nơi râm mát, ánh sáng đèn phòng là đủ. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Tưới đẫm tới khi nước chảy ra lỗ thoát. Loài này ưa ẩm, đừng để đất khô hẳn."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2–3 lần/tuần."
+        }
       ]
     },
     {
@@ -935,6 +1626,65 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 21.0,
+          "hydro": false,
+          "label": "low",
+          "text": "3 tuần 1 lần"
+        },
+        "light": {
+          "spots": [
+            1,
+            2,
+            3
+          ],
+          "text": "Mọi mức sáng"
+        },
+        "humidity": {
+          "level": 1,
+          "text": "Thấp"
+        },
+        "pot": {
+          "cm": 12.0,
+          "kind": "pot",
+          "text": "Chậu 12cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Chưa cần tưới. Loài này chịu hạn — tưới thưa an toàn hơn tưới nhiều."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 3 tuần 1 lần."
+        }
       ]
     },
     {
@@ -1006,6 +1756,64 @@
       "labelIds": [
         "care-easy",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 7.0,
+          "hydro": false,
+          "label": "medium",
+          "text": "1 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            1,
+            2
+          ],
+          "text": "Sáng gián tiếp"
+        },
+        "humidity": {
+          "level": 2,
+          "text": "Trung bình"
+        },
+        "pot": {
+          "cm": 12.0,
+          "kind": "hanging",
+          "text": "Chậu treo 12cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1 lần/tuần."
+        }
       ]
     },
     {
@@ -1077,6 +1885,64 @@
       "labelIds": [
         "care-easy",
         "safe-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 7.0,
+          "hydro": false,
+          "label": "medium",
+          "text": "1 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            1,
+            2
+          ],
+          "text": "Sáng gián tiếp"
+        },
+        "humidity": {
+          "level": 2,
+          "text": "Trung bình"
+        },
+        "pot": {
+          "cm": 22.0,
+          "kind": "pot",
+          "text": "Chậu 22cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1 lần/tuần."
+        }
       ]
     },
     {
@@ -1149,6 +2015,63 @@
       "labelIds": [
         "care-easy",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 7,
+          "hydro": true,
+          "label": "hydro",
+          "text": "Thay nước mỗi tuần"
+        },
+        "light": {
+          "spots": [
+            2
+          ],
+          "text": "Bán râm"
+        },
+        "humidity": {
+          "level": 2,
+          "text": "Trung bình"
+        },
+        "pot": {
+          "cm": 12.0,
+          "kind": "vase",
+          "text": "Bình thủy tinh 12cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: thay nước mỗi tuần."
+        }
       ]
     },
     {
@@ -1220,6 +2143,63 @@
       "labelIds": [
         "care-medium",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 4.7,
+          "hydro": false,
+          "label": "medium",
+          "text": "1–2 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            2
+          ],
+          "text": "Bán râm"
+        },
+        "humidity": {
+          "level": 3,
+          "text": "Cao"
+        },
+        "pot": {
+          "cm": 16.0,
+          "kind": "pot",
+          "text": "Chậu 16cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1–2 lần/tuần."
+        }
       ]
     },
     {
@@ -1290,6 +2270,64 @@
       "labelIds": [
         "care-medium",
         "keep-from-pet"
+      ],
+      "careCard": {
+        "water": {
+          "days": 4.7,
+          "hydro": false,
+          "label": "medium",
+          "text": "1–2 lần/tuần"
+        },
+        "light": {
+          "spots": [
+            1,
+            2
+          ],
+          "text": "Sáng gián tiếp"
+        },
+        "humidity": {
+          "level": 3,
+          "text": "Cao"
+        },
+        "pot": {
+          "cm": 20.0,
+          "kind": "pot",
+          "text": "Chậu 20cm"
+        }
+      },
+      "careWeekSteps": [
+        {
+          "key": "d1",
+          "from": 0,
+          "to": 0,
+          "day": "Ngày 1",
+          "title": "Cho cây về chỗ ở",
+          "text": "Đặt gần cửa sổ, nơi sáng dịu — tránh nắng gắt buổi trưa. Chưa thay chậu, chưa bón phân."
+        },
+        {
+          "key": "d23",
+          "from": 1,
+          "to": 2,
+          "day": "Ngày 2–3",
+          "title": "Để cây làm quen",
+          "text": "Giữ nguyên vị trí, không xoay chậu. Vài lá già hơi rũ là bình thường sau vận chuyển."
+        },
+        {
+          "key": "d4",
+          "from": 3,
+          "to": 3,
+          "day": "Ngày 4",
+          "title": "Lần tưới đầu tiên",
+          "text": "Thọc ngón tay xuống đất 2cm: thấy khô thì tưới vừa đủ ẩm."
+        },
+        {
+          "key": "d7",
+          "from": 6,
+          "to": 6,
+          "day": "Ngày 7",
+          "title": "Kiểm tra & vào nhịp",
+          "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1–2 lần/tuần."
+        }
       ]
     },
     {
@@ -1405,7 +2443,7 @@
       "phone": "0123456789",
       "address": "12 Tan phu",
       "avatar": "",
-      "walletBalance": 142122500,
+      "walletBalance": 140375000,
       "favorites": [],
       "id": "Rl2Q1ihCm7c",
       "resetOtpHash": "9ebe58a37c4ee5f6c089272c34c10e8e1a3b4fc90e983f999a5275bbf5aa0016",
@@ -5690,6 +6728,62 @@
       "orderId": "Qi4FKUzJ3eg",
       "createdAt": "2026-11-14T14:14:15.383Z",
       "id": "mT8X49Am0DY"
+    },
+    {
+      "id": "reconcile-ia7HsBz6pAw",
+      "userId": "Rl2Q1ihCm7c",
+      "type": "deduction",
+      "amount": 1747500,
+      "status": "confirmed",
+      "orderId": "ia7HsBz6pAw",
+      "note": "Thu hồi hoàn tiền trùng đơn #ia7HsBz6pAw: 3 giao dịch thừa (_Ay7fRge0bI, cdl4yJrYc_M, mXG1D4XNl6w) × 582.500 ₫. Số dư trước: 142,122,500 → sau: 140,375,000",
+      "createdAt": "2026-11-16T10:00:00.000Z",
+      "confirmedBy": "system",
+      "confirmedAt": "2026-11-16T10:00:00.000Z"
+    },
+    {
+      "id": "reconcile-topup-70m",
+      "userId": "Rl2Q1ihCm7c",
+      "type": "topup",
+      "amount": 70000000,
+      "status": "confirmed",
+      "note": "Bổ sung giao dịch bị mất khi đối soát: nạp ví 70.000.000 ₫ lần 2 (nhật ký ghi lúc 17:01:23 ngày 10/11, số dư mới 140.000.000)",
+      "createdAt": "2026-11-10T17:01:23.000Z",
+      "confirmedBy": "3",
+      "confirmedAt": "2026-11-10T17:01:23.000Z"
+    },
+    {
+      "id": "reconcile-adj-2",
+      "userId": "2",
+      "type": "topup",
+      "amount": 245000,
+      "status": "confirmed",
+      "note": "Điều chỉnh đối soát số dư: chênh lệch +245,000 ₫ không xác định được nguồn, ghi nhận để lịch sử khớp số dư hiện tại",
+      "createdAt": "2026-11-16T10:00:00.000Z",
+      "confirmedBy": "system",
+      "confirmedAt": "2026-11-16T10:00:00.000Z"
+    },
+    {
+      "id": "reconcile-adj-4",
+      "userId": "4",
+      "type": "topup",
+      "amount": 415000,
+      "status": "confirmed",
+      "note": "Điều chỉnh đối soát số dư: chênh lệch +415,000 ₫ không xác định được nguồn, ghi nhận để lịch sử khớp số dư hiện tại",
+      "createdAt": "2026-11-16T10:00:00.000Z",
+      "confirmedBy": "system",
+      "confirmedAt": "2026-11-16T10:00:00.000Z"
+    },
+    {
+      "id": "reconcile-adj-Rl2Q1ihCm7c",
+      "userId": "Rl2Q1ihCm7c",
+      "type": "topup",
+      "amount": 125000,
+      "status": "confirmed",
+      "note": "Điều chỉnh đối soát số dư: chênh lệch +125,000 ₫ không xác định được nguồn, ghi nhận để lịch sử khớp số dư hiện tại",
+      "createdAt": "2026-11-16T10:00:00.000Z",
+      "confirmedBy": "system",
+      "confirmedAt": "2026-11-16T10:00:00.000Z"
     }
   ],
   "auditLog": [

@@ -154,8 +154,8 @@ CayXinh/
     ├── dash-kit.js              # Ô phiếu số liệu + biểu đồ cột "luống cây" dùng chung cho Quản trị và Nhân viên
     ├── slide-marker.js          # Dấu "đang chọn" trượt giữa các thẻ phân trang / nút chọn kỳ
     ├── detail-extras.js         # Trang chi tiết: thanh mua dính, lịch chăm sóc tuần đầu, thường mua cùng
-    ├── care-card.js             # Phiếu chăm sóc kiểu nhãn tiêu bản: lịch tưới 4 tuần, sơ đồ phòng (đặt ở đâu), giọt sương độ ẩm, chậu cạnh ly cà phê
-    ├── care-week.js             # Lịch tuần đầu: chọn ngày nhận cây → ngày thật, ô "Đã làm" (lưu theo tài khoản / trình duyệt), tải file .ics
+    ├── care-card.js             # Phiếu chăm sóc kiểu nhãn tiêu bản: đọc từ careCard (admin chỉnh) hoặc fallback text-parsing; lịch tưới 4 tuần, sơ đồ phòng, giọt sương, chậu cạnh ly cà phê
+    ├── care-week.js             # Lịch tuần đầu: đọc từ careWeekSteps hoặc fallback careLevel; tải .ics (data URI, tương thích mobile) + nút Google Calendar
     ├── shop-extras.js           # Giỏ hàng trượt + menu danh mục dưới "Sản phẩm"
     ├── search-suggest.js        # Gợi ý tức thì dưới ô tìm kiếm
     ├── img-manifest.js          # (tự sinh) danh sách ảnh đã có bản WebP
@@ -304,6 +304,20 @@ Trong cả hai trường hợp, nhân viên phải đối chiếu số dư ví v
 - Không có máy chủ chạy nền: **nhắc xác nhận nhận hàng** và **tự hoàn tất đơn** chỉ chạy khi có người mở trang đơn hàng (khách hoặc shop). *Hướng phát triển:* tác vụ định kỳ (cron) phía máy chủ.
 - Không có WebSocket — realtime dùng polling. *Hướng phát triển:* WebSocket / Server-Sent Events.
 - Public Key EmailJS lộ ở client là **bình thường và an toàn** (chỉ cho gửi, không đọc được hộp thư).
+
+### 8.5 Đối soát hoàn tiền trùng (11/2026)
+
+Phiên bản cũ chưa có cơ chế chống hoàn tiền nhiều lần cho cùng một đơn. Khi lệnh hủy đơn bị lặp (nhấn nhiều lần hoặc phản hồi mạng bị rớt), ví khách có thể được cộng hoàn tiền trùng. Lỗi đã được phát hiện qua đối soát, chặn bằng phiếu hoàn mã cố định (`rf-<orderId>`, xem `order-flow.js`), và xử lý bằng giao dịch điều chỉnh trong `walletTransactions` — không xóa giao dịch cũ, chỉ thêm bút toán thu hồi / ghi nhận chênh lệch.
+
+### 8.6 Phiếu chăm sóc do admin quản lý & sửa lỗi .ics mobile (11/2026)
+
+**Vấn đề 1 — .ics trên điện thoại:** Nút "Thêm vào lịch điện thoại" dùng `Blob URL + <a>.click()` không hoạt động trên một số trình duyệt mobile (Android báo "Không tìm thấy ứng dụng"). Đã chuyển sang `data:text/calendar` URI — tương thích rộng hơn. Thêm nút phụ "Thêm Google Calendar" mở trực tiếp Google Calendar web, hữu ích khi máy không mở được file .ics.
+
+**Vấn đề 2 — Dữ liệu phiếu chăm sóc:** Trước đây dữ liệu phiếu chăm sóc và lịch tuần đầu được suy ra từ text trong `specs` và `careLevel`. Nay mỗi sản phẩm có thể chứa 2 trường structured:
+- `careCard`: `{water, light, humidity, pot}` — dữ liệu phiếu chăm sóc
+- `careWeekSteps`: mảng 4 object `{key, from, to, day, title, text}` — 4 mốc lịch tuần đầu
+
+Cả `care-card.js` và `care-week.js` đều đọc trường structured trước, fallback sang text-parsing cũ nếu thiếu. Admin có thể chỉnh sửa qua form trong tab "Sản phẩm" (mục "Phiếu chăm sóc" và "Lịch tuần đầu" dạng `<details>` — mở ra để sửa, giữ đóng = không ghi đè).
 
 ---
 
