@@ -399,12 +399,13 @@ flowchart TD
   D --> E{Cây thứ k bán bằng<br/>cây thứ k+1?}
   E -->|Có| F[k = k - 1] --> E
   E -->|Không / k = 0| G{k > 0?}
-  G -->|Có| H[Hiện k cây dạng bục xếp hạng<br/>hạng 1 ở giữa · đồng hạng nếu bằng số]
-  G -->|Không| I[Ẩn mục - chưa có cây nào<br/>bán nhiều hơn hẳn]
-  H --> J{k < 3?}
-  J -->|Có| K[Ghi chú: các cây tiếp theo<br/>đang bán bằng nhau]
+  G -->|Có| H[Hiện k cây trên 'Bảng tin của tiệm'<br/>hạng 1 là thẻ lớn · con dấu thứ hạng · đồng hạng nếu bằng số]
+  G -->|Không| I[Đổi thành 'Tiệm chọn giúp bạn':<br/>tối đa 3 cây dễ chăm, còn hàng]
+  H --> J{Số bán từ 10 chậu trở lên?}
+  J -->|Có| K[Nêu con số: 'N chậu đã về nhà mới']
+  J -->|Không| M[Nói bằng lời:<br/>'Khách ghé tiệm hay chọn nhất dạo này']
 ```
-*Ví dụ: `[10, 8, 8, 8]` → 1 cây · `[10, 10, 8, 5]` → 3 cây (hai cây đầu đồng hạng 1) · `[9, 7, 5, 5]` → 2 cây · `[5, 5, 5, 5]` → ẩn. Trên điện thoại bục chuyển thành danh sách dọc.*
+*Ví dụ: `[10, 8, 8, 8]` → 1 cây · `[10, 10, 8, 5]` → 3 cây (hai cây đầu đồng hạng 1) · `[9, 7, 5, 5]` → 2 cây · `[5, 5, 5, 5]` → "Tiệm chọn giúp bạn". Bố cục: 1 cây → một khối ngang lớn; 2 cây → khối lớn + 1 thẻ đứng; 3 cây → khối lớn + 2 thẻ xếp chồng; điện thoại xếp dọc. Khách không thấy câu giải thích cách tính — chỉ có chữ "i" nhỏ cạnh phụ đề.*
 
 ---
 

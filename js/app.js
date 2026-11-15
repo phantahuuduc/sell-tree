@@ -25,12 +25,14 @@ import {
   formatPrice,
   ICONS,
   PLACEHOLDER,
+  specimenCode,
+  cardRatingHtml,
 } from "./ui.js";
 import { getActivePromotions, getCountdown, getNewArrivals, getBestSellers, topSellers, setActivePromotions, getPriceInfo, isPlant } from "./sale.js";
 import { markFavorites, initFavoriteButtons } from "./favorites.js";
 import { flyToCart } from "./fx.js";
 import { quizLightRange, quizWaterRange, quizLabels } from "./quiz.js";
-import { ensureLabels } from "./labels.js";
+import { ensureLabels, productLabels, labelChipsHtml } from "./labels.js";
 
 // Số sản phẩm mỗi trang (phân trang)
 const ITEMS_PER_PAGE = 8;
@@ -124,44 +126,134 @@ function priceHtml(p) {
   return pi.original ? `${formatPrice(pi.price)} <s>${formatPrice(pi.original)}</s>` : formatPrice(pi.price);
 }
 
-// ===== Sản Phẩm Bán Chạy: tối đa 3 cây, không cắt ngang nhóm hòa nhau (xem topSellers trong sale.js) =====
+// ===== "Bảng tin của tiệm": cây được khách thương nhất =====
+// CÁCH TÍNH KHÔNG ĐỔI: topSellers() trong sale.js (đếm số chậu của đơn isCompletedSale — cùng nguồn với doanh thu,
+// tối đa 3 cây, không cắt ngang nhóm hòa nhau). Ở đây chỉ lo phần trình bày:
+//   • 1 cây → một khối ngang lớn · 2 cây → khối lớn + 1 thẻ đứng · 3 cây → khối lớn + 2 thẻ xếp chồng.
+//   • Số bán chỉ nêu khi đủ lớn (LOVED_COUNT_FROM); còn thấp thì nói bằng lời ("khách hay chọn…") để không phản tác dụng.
+//   • Chưa có cây nào phân được hạng → đổi thành "Tiệm chọn giúp bạn" (mấy chậu dễ chăm, còn hàng) thay vì để trống.
+const LOVED_COUNT_FROM = 10;
+const HEART_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+
+// Câu đầu của phần mô tả — đủ để thẻ có "câu chuyện" mà không dài dòng
+function firstSentence(text, max = 140) {
+  const parts = String(text || "").trim().match(/[^.!?…]+[.!?…]+(\s|$)|[^.!?…]+$/g) || [];
+  let out = "";
+  for (const part of parts) {            // câu đầu quá cụt (vd "Gốc Đông Phi, họ Ráy.") thì lấy thêm câu kế
+    if (out && (out.length >= 45 || (out + part).length > max)) break;
+    out += part;
+  }
+  out = out.trim();
+  if (out.length > max) out = out.slice(0, out.lastIndexOf(" ", max)).replace(/[,;:—–-]\s*$/, "") + "…";
+  return out;
+}
+
+// Gợi ý của tiệm khi chưa có bảng xếp hạng: cây còn hàng, ưu tiên cây nổi bật rồi tới cây dễ chăm
+function shopPicks(products, categories, max = 3) {
+  const isEasy = (p) => productLabels(p, { groupId: "care" }).some((l) => l.id === "care-easy") || /^dễ/i.test(p.difficulty || "");
+  return (products || [])
+    .filter((p) => isPlant(p, categories) && Number(p.stock) > 0)
+    .map((p) => ({ p, score: (p.isFeatured ? 2 : 0) + (isEasy(p) ? 1 : 0) }))
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || String(a.p.name).localeCompare(String(b.p.name), "vi"))
+    .slice(0, max)
+    .map((x) => ({ product: x.p, totalSold: 0, rank: 0 }));
+}
+
+function lovedLine({ totalSold, rank, pick, product }) {
+  if (pick) {                             // mỗi chậu một lý do riêng: hợp đặt ở đâu (không lặp lại nhãn "Dễ chăm")
+    const places = (product.idealPlacement || []).slice(0, 2).map((x) => String(x).toLowerCase());
+    if (places.length) return `Hợp ${escapeHTML(places.join(", "))}`;
+    const care = productLabels(product, { groupId: "care" })[0];
+    return escapeHTML(care?.description || "Tiệm dưỡng sẵn ba tuần, về nhà là xanh.");
+  }
+  if (totalSold >= LOVED_COUNT_FROM) return `<b>${totalSold}</b> chậu đã về nhà mới`;
+  return rank === 1 ? "Khách ghé tiệm hay chọn nhất dạo này" : "Được nhiều khách mang về";
+}
+
+function lovedCardHtml(entry, i, pick) {
+  const { product: p, rank } = entry;
+  const hero = i === 0;
+  const url = `product-detail.html?id=${encodeURIComponent(p.id)}`;
+  const pi = getPriceInfo(p);
+  const stock = Number(p.stock);
+  const careChip = labelChipsHtml(p, { groupId: "care", limit: 1 });
+  const facts = [
+    p.specs?.light ? `<li>${ICONS.sun}<span>${escapeHTML(p.specs.light)}</span></li>` : "",
+    p.specs?.water ? `<li>${ICONS.water}<span>Tưới ${escapeHTML(p.specs.water)}</span></li>` : "",
+    careChip ? `<li>${careChip}</li>` : "",
+  ].join("");
+  const seal = pick
+    ? `<span class="loved-seal loved-seal--pick" aria-hidden="true">${ICONS.leaf}</span>`
+    : `<span class="loved-seal loved-seal--${rank}" aria-hidden="true"><small>Hạng</small><b>${rank}</b></span>`;
+  const kicker = !hero ? "" : `<p class="loved-card__kicker">${pick ? "Tiệm gợi ý trước tiên" : "Được thương nhất tiệm"}</p>`;
+  const pitch = hero ? firstSentence(p.description) : "";
+  const button = stock <= 0
+    ? `<button class="btn btn--ghost" type="button" data-add="${escapeHTML(p.id)}" data-backorder="1" title="Hết hàng — đặt trước, giao khi có hàng"><span class="btn__label">Đặt trước</span></button>`
+    : `<button class="btn ${hero ? "btn--primary" : "btn--ghost"}" type="button" data-add="${escapeHTML(p.id)}"><span class="btn__label" aria-live="polite">Thêm vào giỏ</span></button>`;
+  return `
+      <li class="loved__item${hero ? " loved__item--hero" : ""}" style="--i:${i}">
+        <article class="loved-card${hero ? " loved-card--hero" : ""}${pick ? " loved-card--pick" : ""}">
+          <div class="loved-card__media">
+            <img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.imageAlt || p.name)}" data-fallback loading="lazy" decoding="async" width="400" height="500">
+            ${seal}
+            ${pi.percent > 0 ? `<span class="badge-sale loved-card__sale">−${pi.percent}%</span>` : ""}
+            ${p.scientificName ? `<div class="specimen-tag" aria-hidden="true"><em>${escapeHTML(p.scientificName)}</em><span>${specimenCode(p.id)}</span></div>` : ""}
+          </div>
+          <div class="loved-card__body">
+            ${kicker}
+            <h3 class="loved-card__name"><a class="loved-card__link" href="${url}">${pick ? "" : `<span class="visually-hidden">Hạng ${rank}: </span>`}${escapeHTML(p.name)}</a></h3>
+            ${p.scientificName ? `<p class="loved-card__sci"><em>${escapeHTML(p.scientificName)}</em></p>` : ""}
+            ${pitch ? `<p class="loved-card__pitch">${escapeHTML(pitch)}</p>` : ""}
+            ${facts ? `<ul class="loved-card__facts">${facts}</ul>` : ""}
+            <p class="loved-card__love"><span class="loved-card__love-main">${HEART_ICON}<span>${lovedLine({ ...entry, pick })}</span></span>${cardRatingHtml(p.id)}${
+              stock > 0 && stock <= 5 ? `<span class="loved-card__low">Chỉ còn ${stock} chậu</span>` : ""}</p>
+            <div class="loved-card__foot">
+              <p class="loved-card__price">${formatPrice(pi.price)}${pi.original ? ` <s>${formatPrice(pi.original)}</s>` : ""}</p>
+              ${button}
+              <span class="loved-card__more" aria-hidden="true">Xem chi tiết <i>→</i></span>
+            </div>
+          </div>
+        </article>
+      </li>`;
+}
+
 function renderBestSellers(products, orders, categories = []) {
   const section = document.getElementById("bestSellers");
   const list = document.getElementById("bestSellersList");
   if (!section || !list) return;
 
-  const top = topSellers(products, orders, { max: 3, categories });
-  if (!top.length) { section.hidden = true; return; } // chưa có cây nào bán nhiều hơn hẳn các cây khác
+  let top = topSellers(products, orders, { max: 3, categories });
+  const pick = !top.length;                 // chưa có cây nào bán nhiều hơn hẳn → tiệm chọn giúp
+  if (pick) top = shopPicks(products, categories);
+  if (!top.length) { section.hidden = true; return; } // không có gì để gợi ý thì ẩn hẳn, không hiện khung trống
 
-  const most = top[0].totalSold;
-  const MEDAL = { 1: "🥇", 2: "🥈", 3: "🥉" };
-  const RANK_NAME = { 1: "Bán chạy nhất", 2: "Hạng 2", 3: "Hạng 3" };
+  const one = top.length === 1;
+  const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+  setText("lovedEyebrow", pick ? "Tiệm chọn giúp bạn" : "Bảng tin của tiệm");
+  setText("lovedTitle", pick ? (one ? "Một chậu dễ tính để bắt đầu" : "Mấy chậu dễ tính để bắt đầu") : "Cây được khách thương nhất");
+  setText("lovedSub", pick
+    ? "Chưa biết chọn cây nào? Mấy chậu này chịu được vài lần quên tưới, hợp người mới trồng."
+    : one
+      ? "Dạo này chậu này rời tiệm nhanh nhất — vừa gói xong lại có người hỏi."
+      : "Mấy chậu rời tiệm nhanh nhất dạo gần đây — vừa gói xong lại có người hỏi.");
+  const info = document.getElementById("lovedInfo");
+  if (info) info.hidden = pick;             // chú thích cách xếp chỉ có nghĩa khi đang xếp hạng
+
   section.hidden = false;
-  list.className = `podium podium--${top.length}`;
-  list.innerHTML = top.map(({ product: p, totalSold, rank }, i) => `
-      <li class="podium__item podium__item--r${rank}" style="--i:${i};--share:${(totalSold / most).toFixed(3)}">
-        <a href="product-detail.html?id=${encodeURIComponent(p.id)}" class="seller-card">
-          <div class="seller-card__img">
-            <img src="${escapeHTML(p.image)}" alt="${escapeHTML(p.name)}" data-fallback loading="lazy" width="200" height="250">
-            <span class="seller-card__rank" aria-hidden="true">${MEDAL[rank] || `#${rank}`}</span>
-          </div>
-          <div class="seller-card__info">
-            <span class="seller-card__tag">${RANK_NAME[rank] || `Hạng ${rank}`}${top.filter((x) => x.rank === rank).length > 1 ? " (đồng hạng)" : ""}</span>
-            <h3 class="seller-card__name">${escapeHTML(p.name)}</h3>
-            <span class="seller-card__sold">Đã bán <strong>${totalSold}</strong> chậu</span>
-            <span class="seller-card__bar" aria-hidden="true"><i></i></span>
-            <span class="seller-card__price">${priceHtml(p)}</span>
-          </div>
-        </a>
-      </li>`).join("");
-  const note = document.getElementById("bestSellersNote");
-  if (note) {
-    note.hidden = top.length >= 3;
-    note.textContent = top.length < 3
-      ? `Chỉ hiện ${top.length} cây vì các cây tiếp theo đang bán bằng nhau — chưa phân được hạng.`
-      : "";
-  }
+  list.className = `loved__list loved__list--${top.length}`;
+  list.innerHTML = top.map((entry, i) => lovedCardHtml(entry, i, pick)).join("");
   attachImageFallback(list);
+
+  // Hiện dần khi cuộn tới (thẻ lớn đi trước). Không có IntersectionObserver / bật giảm chuyển động → hiện sẵn.
+  if (!("IntersectionObserver" in window) || prefersReducedMotion()) return;
+  section.classList.add("loved--anim");
+  const io = new IntersectionObserver((entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    section.classList.add("is-in");
+    io.disconnect();
+  }, { threshold: 0.12 });
+  io.observe(section);
 }
 
 // Element DOM
@@ -603,7 +695,7 @@ function initPlantQuiz() {
 // Event delegation cho nút "Thêm vào giỏ" trên lưới sản phẩm (async)
 function initAddToCartHandler() {
   if (!productGrid) return;
-  productGrid.addEventListener("click", async (e) => {
+  const onAdd = async (e) => {
     const btn = e.target.closest("[data-add]");
     if (!btn || btn.disabled) return;
 
@@ -617,7 +709,7 @@ function initAddToCartHandler() {
     if (res.added === 0) { showToast(stockFullMessage(product), { icon: "alert" }); return; }
     animateAddButton(btn);
     // Ảnh sản phẩm bay vào icon giỏ; "hạ cánh" xong mới rung icon + nhảy số
-    flyToCart(btn.closest(".card")?.querySelector(".card__media img")).then(async () => {
+    flyToCart(btn.closest(".card, .loved-card")?.querySelector(".card__media img, .loved-card__media img")).then(async () => {
       await updateCartBadge();
       bumpCartIcon();
     });
@@ -625,7 +717,9 @@ function initAddToCartHandler() {
       image: product.image,
       link: { href: "cart.html", label: "Xem giỏ" },
     });
-  });
+  };
+  productGrid.addEventListener("click", onAdd);
+  document.getElementById("bestSellersList")?.addEventListener("click", onAdd); // thẻ ở "Bảng tin của tiệm"
 }
 
 // Khởi tạo trang chủ

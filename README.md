@@ -26,7 +26,7 @@
 | **Tài liệu** | PDF hóa đơn (jsPDF + font Việt), Excel báo cáo (SheetJS), Chart.js dashboards |
 | **Vòng đời đơn** | Một bộ luật duy nhất (`order-flow.js`) cho giao hàng · khiếu nại chưa nhận · hủy · hoàn hàng 7 ngày · hoàn tiền vào ví · tự hoàn tất sau N ngày (nhắc khách trước 24 giờ) |
 | **Giao hàng minh bạch** | Bắt buộc địa chỉ + SĐT người nhận khi đặt · **dự kiến giao** tính theo lịch làm việc của shop (giờ chốt, ngày chuẩn bị, ngày vận chuyển, bỏ Chủ nhật / ngày nghỉ) và giải thích cách tính cho khách · nhân viên **hẹn ngày giao** và báo **"Sắp tới bạn"** · thanh tiến trình đơn có xe chạy |
-| **Bán chạy** | Mục "Bán Chạy Nhất" tối đa 3 cây dạng bục xếp hạng, không cắt ngang nhóm bán bằng nhau |
+| **Bán chạy** | "Bảng tin của tiệm": tối đa 3 cây được khách thương nhất, không cắt ngang nhóm bán bằng nhau; chưa phân được hạng thì thành "Tiệm chọn giúp bạn" |
 | **An toàn dữ liệu** | Tồn kho tính chung mọi size, kiểm tra lại lúc đặt · hàng đợi ghi chống mất dữ liệu khi json-server chạy `--watch` · đọc lại đơn sau khi tạo |
 | **Minh bạch** | **Audit log** mọi thao tác nhạy cảm của nhân viên; mỗi đơn có **lịch sử từng bước** (ai · lúc nào · lý do) cho cả khách lẫn shop |
 | **Hiệu ứng vi mô** | Ảnh **bay vào giỏ** theo đường cong · tim nảy + hạt tim · tick vẽ dần + confetti khi đặt hàng · ripple nút · chuyển trang mờ dần · toast có thanh thời gian — viết tay bằng CSS/JS, tôn trọng `prefers-reduced-motion` |
@@ -219,8 +219,8 @@ Admin dán Public Key / Service ID / Template ID ở trang Cài đặt → hệ 
 - Nhân viên **Hẹn ngày giao** cho từng đơn (ngày hẹn thay cho ước tính) và bấm **Shipper sắp giao tới** → khách thấy "Sắp tới bạn"; cả hai đều gửi thông báo + email.
 - **Khách quên xác nhận:** đơn đã giao hiện đếm ngược; còn < 24 giờ → nhắc 1 lần; hết N ngày (mặc định 3) → tự hoàn tất; đơn tự hoàn tất vẫn cho báo "chưa nhận" trong 7 ngày.
 
-### 🔥 Bán chạy nhất
-Trang chủ hiện **tối đa 3 cây** bán nhiều nhất (đếm số chậu trong đơn đã thanh toán, bỏ phụ kiện), dạng bục xếp hạng. Không cắt ngang nhóm hòa nhau: số bán `[10, 8, 8, 8]` → chỉ hiện 1 cây; `[10, 10, 8, 5]` → 3 cây, hai cây đầu đồng hạng 1. Ít hơn 3 cây thì ghi rõ lý do.
+### 🌿 Cây được khách thương nhất (bán chạy)
+Trang chủ có "Bảng tin của tiệm — Cây được khách thương nhất": **tối đa 3 cây** bán nhiều nhất (đếm số chậu trong đơn đã thanh toán, bỏ phụ kiện; không cắt ngang nhóm hòa nhau: `[10, 8, 8, 8]` → 1 cây, `[10, 10, 8, 5]` → 3 cây, hai cây đầu đồng hạng 1). Bố cục co giãn theo số cây: 1 cây → một khối ngang lớn; 2–3 cây → cây hạng 1 lớn, các cây sau nhỏ hơn. Thứ hạng thể hiện bằng con dấu. Số bán chỉ nêu khi từ 10 chậu ("14 chậu đã về nhà mới"), thấp hơn thì nói bằng lời ("Khách ghé tiệm hay chọn nhất dạo này"). Chưa có cây nào phân được hạng → mục đổi thành "Tiệm chọn giúp bạn" (cây dễ chăm, còn hàng) thay vì để trống.
 
 ### 🔔 Thông báo realtime
 Chuông ở header (khách) — poll 10s, badge chưa đọc, dropdown với icon phân loại.

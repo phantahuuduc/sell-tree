@@ -1655,53 +1655,242 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ----- Bán chạy nhất: bục xếp hạng tối đa 3 cây (hạng 1 đứng giữa, cao hơn) ----- */
-.podium {
-  list-style: none; margin: 0 auto; padding: 0;
-  display: grid; gap: 1.25rem; align-items: end; justify-content: center;
-  grid-template-columns: repeat(var(--n, 3), minmax(0, 300px));
+/* ----- "Bảng tin của tiệm" — cây được khách thương nhất (tối đa 3) / tiệm chọn giúp bạn (khi chưa có hạng) -----
+   Bố cục co giãn theo số cây: 1 → một khối ngang lớn · 2 → khối lớn + 1 thẻ đứng · 3 → khối lớn + 2 thẻ ngang xếp chồng.
+   Thứ hạng thể hiện MỘT lần bằng con dấu (kiểu dấu "tiêu bản" ở hero). Chuyển động chỉ dùng transform / opacity. */
+.loved { padding: 2rem 0 2.75rem; }
+.loved__board {
+  position: relative;
+  padding: clamp(18px, 3vw, 36px);
+  border-radius: var(--r-lg);
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-rest);
 }
-.podium--1 { --n: 1; }
-.podium--2 { --n: 2; }
-.podium--3 { --n: 3; }
-.podium__item { min-width: 0; animation: podiumIn 600ms var(--ease-out) both; animation-delay: calc(var(--i) * 120ms); }
-@keyframes podiumIn { from { opacity: 0; transform: translateY(18px); } }
-/* 3 cây: hạng 1 ở giữa, nhô cao hơn hai bên */
-.podium--3 .podium__item:nth-child(1) { order: 2; }
-.podium--3 .podium__item:nth-child(2) { order: 1; }
-.podium--3 .podium__item:nth-child(3) { order: 3; }
-.podium__item .seller-card { display: block; height: 100%; }
-.podium__item--r1 .seller-card { border-color: #e2c26a; box-shadow: 0 14px 34px -16px rgba(170,128,30,.55), var(--shadow-rest); }
-.podium--3 .podium__item--r1 { transform: translateY(-14px); }
-.podium--3 .podium__item--r1.podium__item { animation-name: podiumInTop; }
-@keyframes podiumInTop { from { opacity: 0; transform: translateY(4px); } to { transform: translateY(-14px); } }
-.podium .seller-card__img { aspect-ratio: 4 / 3.6; }
-.podium .seller-card__rank { width: 2.4rem; height: 2.4rem; font-size: 1.3rem; background: rgba(255,255,255,.92); box-shadow: 0 4px 10px -4px rgba(0,0,0,.35); }
-.podium .seller-card__info { padding: .85rem 1rem 1rem; }
-.podium .seller-card__name { font-size: 1.05rem; font-family: var(--font-display); }
-.seller-card__tag {
-  display: inline-block; margin-bottom: .3rem; padding: .1rem .55rem; border-radius: 99px;
-  font-size: .7rem; font-weight: 700; letter-spacing: .02em; background: var(--specimen-tint, #e6f0e8); color: var(--specimen-dark, #24502f);
+.loved__board::before {               /* đường may viền bảng */
+  content: ""; position: absolute; inset: 7px; border-radius: calc(var(--r-lg) - 5px);
+  border: 1px dashed var(--rule-strong); opacity: .55; pointer-events: none;
 }
-.podium__item--r1 .seller-card__tag { background: #f6e7b8; color: #6d4c00; }
-.podium .seller-card__sold { font-size: .82rem; color: var(--ink-soft); margin-top: .35rem; }
-.podium .seller-card__sold strong { color: var(--stamp); font-size: .95rem; }
-/* Thanh so sánh số bán với cây hạng 1 */
-.seller-card__bar { display: block; height: 5px; margin-top: .4rem; border-radius: 99px; background: var(--rule, #e0ddd6); overflow: hidden; }
-.seller-card__bar i { display: block; height: 100%; width: calc(var(--share, 1) * 100%); border-radius: inherit; background: linear-gradient(90deg, #d99b3a, #E8C56A); transform-origin: left; animation: barGrow 900ms var(--ease-out) both; animation-delay: calc(var(--i) * 120ms + 300ms); }
-@keyframes barGrow { from { transform: scaleX(0); } }
-.podium__note { text-align: center; margin: 1rem 0 0; font-size: .85rem; }
-@media (max-width: 720px) {
-  .podium { grid-template-columns: minmax(0, 420px); gap: .9rem; align-items: stretch; }
-  .podium .podium__item { order: 0 !important; }
-  .podium--3 .podium__item--r1 { transform: none; }
-  .podium--3 .podium__item--r1.podium__item { animation-name: podiumIn; }
-  .podium .seller-card { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; }
-  .podium .seller-card__img { aspect-ratio: auto; width: 110px; height: 100%; min-height: 120px; }
-  .podium .seller-card__img img { position: absolute; inset: 0; }
+.loved__board::after {                /* mảnh băng keo giấy dán bảng lên tường */
+  content: ""; position: absolute; top: -9px; left: clamp(28px, 6vw, 72px);
+  width: 86px; height: 20px; background: var(--tape); transform: rotate(-3deg);
+  box-shadow: var(--shadow-rest); pointer-events: none;
+}
+.loved__head { position: relative; margin: 0 0 clamp(16px, 2.4vw, 26px); max-width: 62ch; }
+.loved__eyebrow {
+  margin: 0 0 .35rem; font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--specimen);
+}
+.loved__title { margin: 0; font-family: var(--font-display); font-size: var(--step-2); line-height: 1.15; color: var(--ink); }
+.loved__sub { margin: .5rem 0 0; color: var(--ink-soft); font-size: .95rem; line-height: 1.55; }
+/* Cách xếp hạng: chỉ là một chữ "i" nhỏ, rê chuột / focus / chạm mới hiện */
+.loved__info {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: .35rem; padding: 0;
+  vertical-align: middle; border-radius: 50%; border: 1px solid var(--rule-strong); background: transparent;
+  color: var(--ink-soft); font: italic 600 .72rem/1 var(--font-display); cursor: help;
+}
+.loved__info::after {
+  content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 6px); z-index: 5;
+  max-width: min(280px, 100%); padding: 6px 10px; border-radius: var(--r-md);
+  background: var(--ink); color: var(--paper-lift); font: 400 .78rem/1.4 var(--font-ui); text-align: left;
+  opacity: 0; transform: translateY(-4px); pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.loved__info:hover::after, .loved__info:focus-visible::after, .loved__info:focus::after { opacity: 1; transform: none; }
+.loved__info:focus-visible { outline: 2px solid var(--specimen); outline-offset: 2px; }
+
+.loved__list {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: clamp(14px, 2vw, 22px);
+  grid-template-columns: minmax(0, 1fr);
+}
+.loved__list--2, .loved__list--3 { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); }
+.loved__list--3 { grid-template-rows: repeat(2, minmax(0, 1fr)); }
+.loved__list--3 .loved__item--hero { grid-row: 1 / span 2; }
+.loved__item { position: relative; min-width: 0; display: flex; }
+
+/* --- Thẻ --- */
+.loved-card {
+  position: relative; isolation: isolate;
+  display: grid; grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+  width: 100%; min-width: 0;
+  border-radius: var(--r-card); background: var(--paper-lift);
+  border: 1px solid var(--glass-border); box-shadow: var(--shadow-rest);
+  transition: transform var(--dur-mid) var(--ease-out);
+}
+.loved-card::before {                 /* bóng "nhấc lên": chỉ đổi opacity, không animate box-shadow */
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  box-shadow: var(--shadow-float); opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-mid) var(--ease-out);
+}
+.loved-card__media {
+  position: relative; overflow: hidden; min-height: 168px;
+  border-radius: var(--r-card) 0 0 var(--r-card); background: var(--specimen-tint);
+}
+.loved-card__media img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.loved-card__sale { position: absolute; top: var(--sp-3); right: var(--sp-3); z-index: 2; }
+/* Thẻ nhỏ ảnh hẹp: nhãn giảm giá xuống góc dưới để không đè con dấu; nhãn tiêu bản chỉ hé ở thẻ lớn */
+.loved-card:not(.loved-card--hero) .loved-card__sale { top: auto; right: auto; bottom: 10px; left: 10px; }
+.loved-card:not(.loved-card--hero) .specimen-tag { display: none; }
+.loved-card__body { display: flex; flex-direction: column; gap: .4rem; min-width: 0; padding: clamp(12px, 1.6vw, 18px); }
+.loved-card__kicker {
+  margin: 0; font-size: .72rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--rank-1);
+}
+.loved-card--pick .loved-card__kicker { color: var(--specimen); }
+.loved-card__name { margin: 0; font-family: var(--font-display); font-size: 1.08rem; line-height: 1.2; color: var(--ink); }
+.loved-card__link { color: inherit; text-decoration: none; outline: none; }
+.loved-card__link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: var(--r-card); }  /* cả thẻ bấm được */
+.loved-card__link:focus-visible::after { outline: 3px solid var(--specimen); outline-offset: 3px; }
+.loved-card__sci { margin: -.15rem 0 0; font-size: .8rem; color: var(--ink-soft); }
+.loved-card__pitch { margin: .2rem 0 0; color: var(--ink-soft); font-size: .95rem; line-height: 1.6; max-width: 52ch; }
+.loved-card__facts { list-style: none; margin: .1rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem .7rem; font-size: .8rem; color: var(--ink-soft); }
+.loved-card__facts li { display: inline-flex; align-items: center; gap: .3rem; min-width: 0; }
+.loved-card__facts svg { width: 14px; height: 14px; flex: none; color: var(--specimen); }
+.loved-card__love { margin: .15rem 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .55rem; font-size: .84rem; color: var(--specimen-dark); font-weight: 600; }
+.loved-card__love-main { display: inline-flex; align-items: flex-start; gap: .4rem; min-width: 0; }
+.loved-card__love svg { width: 14px; height: 14px; flex: none; margin-top: .22em; }
+.loved-card__love b { font-family: var(--font-display); font-size: 1.15em; }
+.loved-card__love .card__rating { font-weight: 500; }
+.loved-card__low { font-weight: 500; color: var(--stamp); font-size: .78rem; }
+.loved-card__foot { margin-top: auto; padding-top: .45rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .8rem; }
+.loved-card__price { margin: 0; font-weight: 700; font-size: 1rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.loved-card__price s { font-weight: 400; font-size: .82em; color: var(--ink-soft); margin-left: .25rem; }
+.loved-card .btn { position: relative; z-index: 2; min-height: 38px; padding: 0 var(--sp-4); font-size: .86rem; }
+.loved-card__more {
+  margin-left: auto; display: inline-flex; align-items: center; gap: .3rem;
+  font-size: .84rem; font-weight: 600; color: var(--specimen-dark); white-space: nowrap;
+}
+.loved-card__more i { font-style: normal; display: inline-block; transition: transform var(--dur-mid) var(--ease-out); }
+
+/* --- Con dấu thứ hạng (một lần, một kiểu) --- */
+.loved-seal {
+  --seal: var(--rank-2); --seal-tint: var(--rank-2-tint);
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  width: 54px; height: 54px; border-radius: 50%;
+  display: grid; place-content: center; justify-items: center; gap: 1px; text-align: center;
+  background: var(--seal-tint); color: var(--seal);
+  border: 1.5px solid currentColor; outline: 1px dashed currentColor; outline-offset: -5px;
+  box-shadow: var(--shadow-lift);
+  transform: rotate(-8deg);
+  transition: transform var(--dur-mid) var(--ease-spring);
+}
+.loved-seal small { font: 700 .69rem/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; }
+.loved-seal b { font: 600 1.1rem/1 var(--font-display); }
+.loved-seal svg { width: 18px; height: 18px; }
+.loved-seal--1 { --seal: var(--rank-1); --seal-tint: var(--rank-1-tint); }
+.loved-seal--3 { --seal: var(--rank-3); --seal-tint: var(--rank-3-tint); }
+.loved-seal--pick { --seal: var(--specimen); --seal-tint: var(--accent-soft); }
+
+/* --- Thẻ lớn (hạng 1 / gợi ý đầu tiên): to hơn, nền ấm, có băng keo --- */
+.loved-card--hero {
+  grid-template-columns: minmax(0, 46%) minmax(0, 1fr);
+  border-color: color-mix(in srgb, var(--rank-1) 38%, transparent);
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--rank-1-tint) 0%, transparent 58%),
+    var(--paper-lift);
+  box-shadow: var(--shadow-lift);
+}
+.loved-card--hero.loved-card--pick {
+  border-color: var(--glass-border);
+  background: radial-gradient(120% 90% at 100% 0%, var(--accent-soft) 0%, transparent 58%), var(--paper-lift);
+}
+.loved__item--hero::after {            /* băng keo giấy dán góc thẻ lớn */
+  content: ""; position: absolute; top: -8px; right: 34px; z-index: 3;
+  width: 64px; height: 18px; background: var(--tape); transform: rotate(4deg); pointer-events: none;
+}
+.loved-card--hero .loved-card__media { min-height: clamp(300px, 30vw, 400px); }
+.loved-card--hero .loved-card__body { gap: .5rem; padding: clamp(18px, 2.6vw, 34px); justify-content: center; }
+.loved-card--hero .loved-card__name { font-size: var(--step-3); line-height: 1.1; }
+.loved-card--hero .loved-card__sci { font-size: .92rem; margin-top: 0; }
+.loved-card--hero .loved-card__facts { font-size: .88rem; gap: .4rem 1rem; margin-top: .3rem; }
+.loved-card--hero .loved-card__love { font-size: .95rem; margin-top: .3rem; }
+.loved-card--hero .loved-card__foot { margin-top: .6rem; padding-top: .9rem; border-top: 1px dashed var(--rule-strong); gap: .7rem 1rem; }
+.loved-card--hero .loved-card__price { font-size: var(--step-1); font-family: var(--font-display); }
+.loved-card--hero .btn { min-height: 46px; padding: 0 var(--sp-5); font-size: .95rem; }
+.loved-card--hero .loved-seal { top: 16px; left: 16px; width: 76px; height: 76px; outline-offset: -7px; }
+.loved-card--hero .loved-seal small { font-size: .72rem; letter-spacing: .1em; }
+.loved-card--hero .loved-seal b { font-size: 1.9rem; }
+.loved-card--hero .loved-seal svg { width: 28px; height: 28px; }
+/* Có thẻ đứng cạnh: thẻ lớn hẹp hơn nên thu gọn lề và cỡ chữ cho cân */
+:is(.loved__list--2, .loved__list--3) .loved-card--hero { grid-template-columns: minmax(0, 43%) minmax(0, 1fr); }
+:is(.loved__list--2, .loved__list--3) .loved-card--hero .loved-card__body { padding: clamp(16px, 2vw, 26px); }
+:is(.loved__list--2, .loved__list--3) .loved-card--hero .loved-card__name { font-size: clamp(1.55rem, 2.3vw, 2.05rem); }
+:is(.loved__list--2, .loved__list--3) .loved-card--hero .loved-card__media { min-height: clamp(280px, 26vw, 360px); }
+/* Chỉ có 1 cây: khối ngang trải hết bảng, ảnh rộng vừa phải để phần lời kể có chỗ */
+.loved__list--1 .loved-card--hero { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); }
+.loved__list--1 .loved-card--hero .loved-card__body { padding-inline: clamp(20px, 4vw, 56px); }
+
+/* 3 cây: hai thẻ sau gọn một hàng giá + nút (cả thẻ vẫn bấm sang trang chi tiết) */
+.loved__list--3 .loved-card:not(.loved-card--hero) .loved-card__more { display: none; }
+.loved__list--3 .loved-card:not(.loved-card--hero) .loved-card__foot { justify-content: space-between; gap: .4rem .5rem; }
+.loved__list--3 .loved-card:not(.loved-card--hero) .btn { padding: 0 var(--sp-3); }
+/* 2 cây: thẻ thứ hai đứng (ảnh trên, chữ dưới) cao bằng thẻ lớn */
+.loved__list--2 .loved-card:not(.loved-card--hero) { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(180px, 1fr) auto; }
+.loved__list--2 .loved-card:not(.loved-card--hero) .loved-card__media { border-radius: var(--r-card) var(--r-card) 0 0; }
+.loved__list--2 .loved-card:not(.loved-card--hero) .loved-card__name { font-size: var(--step-1); }
+.loved__list--2 .loved-card:not(.loved-card--hero) .loved-card__body { padding: clamp(14px, 2vw, 22px); }
+
+/* --- Rê chuột / focus bàn phím: nhấc thẻ, ảnh phóng nhẹ, nhãn tiêu bản hé ra, con dấu nghiêng lại --- */
+.loved-card:focus-within { transform: translateY(-4px); }
+.loved-card:focus-within::before { opacity: 1; }
+.loved-card:focus-within .loved-card__media img { transform: scale(1.045); }
+.loved-card:focus-within .specimen-tag { opacity: 1; transform: none; }
+.loved-card:focus-within .loved-seal { transform: rotate(0deg) scale(1.05); }
+.loved-card:focus-within .loved-card__more i { transform: translateX(4px); }
+@media (hover: hover) {
+  .loved-card:hover { transform: translateY(-4px); }
+  .loved-card:hover::before { opacity: 1; }
+  .loved-card:hover .loved-card__media img { transform: scale(1.045); }
+  .loved-card:hover .specimen-tag { opacity: 1; transform: none; }
+  .loved-card:hover .loved-seal { transform: rotate(0deg) scale(1.05); }
+  .loved-card:hover .loved-card__more i { transform: translateX(4px); }
+}
+
+/* --- Hiện dần khi cuộn tới (JS gắn .loved--anim rồi .is-in; không có JS / giảm chuyển động → hiện sẵn) --- */
+.loved--anim .loved__item {
+  opacity: 0; transform: translateY(18px);
+  transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 130ms);
+}
+.loved--anim.is-in .loved__item { opacity: 1; transform: none; }
+
+/* --- Tablet: thẻ lớn nằm trên, các thẻ sau xếp hàng bên dưới --- */
+@media (max-width: 900px) {
+  .loved__list--2 { grid-template-columns: minmax(0, 1fr); }
+  .loved__list--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
+  .loved__list--3 .loved__item--hero { grid-row: auto; grid-column: 1 / -1; }
+  .loved__list--2 .loved-card:not(.loved-card--hero) { grid-template-columns: minmax(0, 40%) minmax(0, 1fr); grid-template-rows: auto; }
+  .loved__list--2 .loved-card:not(.loved-card--hero) .loved-card__media { border-radius: var(--r-card) 0 0 var(--r-card); }
+  .loved-card--hero .loved-card__media { min-height: 300px; }
+}
+/* --- Điện thoại: xếp dọc; thẻ lớn ảnh trên chữ dưới, thẻ sau ảnh trái chữ phải --- */
+@media (max-width: 640px) {
+  .loved__list.loved__list--3 { grid-template-columns: minmax(0, 1fr); }
+  .loved__list .loved-card.loved-card--hero { grid-template-columns: minmax(0, 1fr); }
+  .loved__list .loved-card.loved-card--hero .loved-card__media { min-height: 0; aspect-ratio: 4 / 3; border-radius: var(--r-card) var(--r-card) 0 0; }
+  .loved__list .loved-card.loved-card--hero .loved-card__body { padding: 16px; }
+  .loved__list .loved-card.loved-card--hero .loved-card__name { font-size: var(--step-2); }
+  .loved__list .loved-card--hero .loved-seal { width: 66px; height: 66px; top: 12px; left: 12px; }
+  .loved__list .loved-card--hero .loved-seal b { font-size: 1.6rem; }
+  .loved__list .loved-card--hero .loved-card__foot .btn { flex: 1 1 100%; order: 3; }
+  .loved__list .loved-card:not(.loved-card--hero) { grid-template-columns: 116px minmax(0, 1fr); grid-template-rows: auto; }
+  .loved__list .loved-card:not(.loved-card--hero) .loved-card__media { border-radius: var(--r-card) 0 0 var(--r-card); }
+  .loved__list .loved-card:not(.loved-card--hero) .loved-card__body { padding: 12px; }
+  .loved__list .loved-card:not(.loved-card--hero) .loved-card__name { font-size: 1.08rem; }
+  .loved__list .loved-card:not(.loved-card--hero) .loved-card__more { display: none; }   /* cả thẻ vẫn bấm được; chỗ hẹp chỉ giữ nút thêm giỏ */
+  .loved__list .loved-card:not(.loved-card--hero) .loved-seal { width: 52px; height: 52px; top: 8px; left: 8px; }
+  .loved__list .loved-card:not(.loved-card--hero) .loved-seal small { letter-spacing: 0; }
+  .loved__board::before { inset: 5px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .podium__item, .seller-card__bar i { animation: none !important; }
+  .loved--anim .loved__item { opacity: 1; transform: none; transition: none; }
+  .loved-card, .loved-card:hover, .loved-card:focus-within { transform: none; }
+  .loved-card .loved-card__media img, .loved-card .loved-seal, .loved-card .loved-card__more i { transform: none; transition: none; }
+  .loved-card .loved-seal { transform: rotate(-8deg); }
+  .loved__info::after { transition: none; transform: none; }
 }
 
 /* ======================================================

@@ -255,14 +255,19 @@
     </section>
 
     <!-- === SẢN PHẨM NỔI BẬT === -->
-    <section class="best-sellers" id="bestSellers" hidden>
+    <section class="best-sellers loved" id="bestSellers" aria-labelledby="lovedTitle" hidden>
       <div class="container">
-        <div class="section-head">
-          <h2>🔥 Bán Chạy Nhất</h2>
-          <p>Top cây được mua nhiều nhất — tính theo số chậu đã bán trong các đơn đã thanh toán</p>
+        <div class="loved__board">
+          <header class="loved__head">
+            <p class="loved__eyebrow" id="lovedEyebrow">Bảng tin của tiệm</p>
+            <h2 class="loved__title" id="lovedTitle">Cây được khách thương nhất</h2>
+            <p class="loved__sub">
+              <span id="lovedSub">Mấy chậu rời tiệm nhanh nhất dạo gần đây — vừa gói xong lại có người hỏi.</span>
+              <button type="button" class="loved__info" id="lovedInfo" aria-label="Cách xếp: theo số chậu khách đã mua về" data-tip="Xếp theo số chậu khách đã mua về.">i</button>
+            </p>
+          </header>
+          <ol class="loved__list" id="bestSellersList"></ol>
         </div>
-        <ol class="podium" id="bestSellersList"></ol>
-        <p class="podium__note muted" id="bestSellersNote" hidden></p>
       </div>
     </section>
 

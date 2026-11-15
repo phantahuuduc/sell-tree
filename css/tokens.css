@@ -17,6 +17,13 @@
   --accent-soft: #E8F0E2; /* nền mảng nhạt (section ưu đãi, badge) */
   --stamp:      #B5473C;  /* đỏ đất nung — ấm & cao cấp hơn đỏ thuần */
   --gold:       #C8A24A;  /* vàng đồng — sao đánh giá, điểm nhấn nhỏ */
+  /* Con dấu thứ hạng ở "Bảng tin của tiệm" (cây được thương nhất): tông trầm, không chói */
+  --rank-1:      #8A6719;  /* đồng thau — hạng 1 (đủ tương phản làm chữ trên nền kem) */
+  --rank-1-tint: #F4EAD0;
+  --rank-2:      #5F6E64;  /* xám rêu — hạng 2 */
+  --rank-2-tint: #E5EAE2;
+  --rank-3:      #94583A;  /* đất nung nhạt — hạng 3 */
+  --rank-3-tint: #F1E3D8;
   --tape:       rgba(214, 203, 168, 0.82); /* băng keo giấy dán nhãn */
   --rule:       rgba(28, 42, 30, 0.12);
   --rule-strong: rgba(28, 42, 30, 0.26);

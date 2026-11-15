@@ -325,7 +325,7 @@ flowchart TD
 - **Three.js** (`three-ambient.js`): 4 hiệu ứng nền — Particle Field (hero), Floating Leaves (toàn trang), Topo Field (quiz), **Banner Particles** (tuyết Giáng Sinh / lấp lánh vàng theo dịp).
 - **Hover sản phẩm:** hiện nhãn tiêu bản (`specimen-tag`) với tên khoa học.
 - **Thanh tiến trình đơn:** đường nối chạy dần, dấu tick tự vẽ lần lượt, vòng sóng ở bước hiện tại, xe giao hàng chạy trên đường nối khi đơn đang giao (tắt khi bật "giảm chuyển động").
-- **Bán chạy nhất:** bục xếp hạng tối đa 3 cây (hạng 1 ở giữa, nhô cao), thanh so sánh số bán chạy dần.
+- **Cây được khách thương nhất:** thẻ hiện dần khi cuộn tới (thẻ hạng 1 đi trước); rê chuột / focus bàn phím thì thẻ nhấc lên, ảnh phóng nhẹ, nhãn tiêu bản hé ra, con dấu thứ hạng xoay thẳng. Chỉ dùng `transform` / `opacity`.
 - Ảnh sản phẩm là ảnh thật tự chụp (`assets/img/p1..p8.jpg`).
 
 ---

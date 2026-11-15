@@ -15,7 +15,7 @@
 const FROM = "pd_from";   // { id, src, rect: [left, top, width, height], at }
 const BACK = "pd_back";   // { path, y, page }
 const NAME = "pd-image";
-const CARD = ".card, .wish-card, .quiz-result, .arrival-card, .seller-card, .together__item, .cart-suggest__item";
+const CARD = ".card, .wish-card, .quiz-result, .arrival-card, .seller-card, .loved-card, .together__item, .cart-suggest__item";
 
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const read = (key) => { try { return JSON.parse(sessionStorage.getItem(key) || "null"); } catch { return null; } };

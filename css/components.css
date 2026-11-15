@@ -1254,8 +1254,8 @@ body.is-leaving { opacity: 0; transition: opacity 160ms var(--ease-soft); animat
    Chuyển cảnh thẻ sản phẩm → trang chi tiết (js/product-flow.js)
    ========================================================== */
 /* Thẻ vừa bấm nhấn nhẹ xuống, các thẻ còn lại mờ đi */
-.pd-dim :is(.card, .wish-card, .quiz-result, .arrival-card, .seller-card, .together__item, .cart-suggest__item):not(.pd-picked) { opacity: .45; transition: opacity 200ms var(--ease-soft); }
-:is(.card, .wish-card, .quiz-result, .arrival-card, .seller-card, .together__item, .cart-suggest__item).pd-picked { transform: scale(.985); transition: transform 140ms var(--ease-soft); }
+.pd-dim :is(.card, .wish-card, .quiz-result, .arrival-card, .seller-card, .loved-card, .together__item, .cart-suggest__item):not(.pd-picked) { opacity: .45; transition: opacity 200ms var(--ease-soft); }
+:is(.card, .wish-card, .quiz-result, .arrival-card, .seller-card, .loved-card, .together__item, .cart-suggest__item).pd-picked { transform: scale(.985); transition: transform 140ms var(--ease-soft); }
 
 /* Ảnh "bay" giữa hai trang (View Transitions liên trang — đã bật ở base.css) */
 ::view-transition-group(pd-image) { animation-duration: 380ms; animation-timing-function: cubic-bezier(.22, 1, .36, 1); border-radius: 12px; overflow: hidden; }

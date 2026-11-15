@@ -276,7 +276,7 @@ export function setCardRatings(reviews) {
   });
   cardRatings = new Map([...acc].map(([id, v]) => [id, { avg: v.sum / v.count, count: v.count }]));
 }
-function cardRatingHtml(productId) {
+export function cardRatingHtml(productId) {
   const r = cardRatings.get(String(productId));
   if (!r) return "";
   return `<span class="card__rating" title="${r.avg.toFixed(1)} / 5 từ ${r.count} đánh giá"><span aria-hidden="true">★</span> ${r.avg.toFixed(1)} <small>(${r.count})</small></span>`;

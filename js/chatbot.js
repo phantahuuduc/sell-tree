@@ -358,7 +358,7 @@ function handleFengShui() {
 
 function handleBestseller() {
   return {
-    text: `Các cây được mua nhiều nhất hiện ở mục <strong>🔥 Được Mua Nhiều Nhất</strong> trên <a href="index.html#bestSellers">trang chủ</a>. Một vài cây dễ chăm, khách hay chọn:\n${listProducts(products.filter((p) => p.isFeatured), 4)}`,
+    text: `Các cây được mua nhiều nhất hiện ở mục <strong>Cây được khách thương nhất</strong> trên <a href="index.html#bestSellers">trang chủ</a>. Một vài cây dễ chăm, khách hay chọn:\n${listProducts(products.filter((p) => p.isFeatured), 4)}`,
     suggestions: ["Cây rẻ nhất?", "Đang có sale?"],
   };
 }
