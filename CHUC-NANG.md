@@ -250,12 +250,12 @@ flowchart TD
 ```
 
 ## 18. Nhật ký audit (minh bạch)
-Ghi bởi `staff.js` → xem tại `admin.html` tab "Nhật ký NV"
+Ghi bởi `staff.js` (nạp ví, tồn kho), `order-flow.js` (mọi thao tác đơn của nhân viên / quản trị), `order-ui.js` (xóa nhiều đơn) → xem tại `admin.html` tab "Nhật ký nhân viên" (`js/admin-audit.js`). Tab **Nhật ký nhân viên** (`js/admin-audit.js`) mặc định xem **hôm nay** (chọn nhanh 7 / 30 ngày / khoảng tùy chọn), chia theo ngày; **gom mọi thao tác trên cùng một đơn / ví / sản phẩm thành một dòng** (trạng thái đơn hiện tại, nhân viên, số bước), bấm để mở dòng thời gian — hoặc chuyển sang **danh sách đầy đủ**. Lọc theo nhân viên (bấm ô tóm tắt), loại thao tác, **chỉ thao tác quan trọng** (tiền, hủy, xóa, sửa kho — viền đỏ đất), tìm theo mã đơn / sản phẩm / tên khách; xuất Excel đúng bộ lọc. Máy chủ lọc + phân trang (60 thao tác / lượt, "Xem thêm").
 ```mermaid
 flowchart LR
   A[NV thao tác nhạy cảm] --> B[logAction → createAuditLog]
   B --> C[(auditLog: ai · làm gì ·<br/>lúc nào · chi tiết)]
-  C --> D[Admin xem + thống kê<br/>theo nhân viên]
+  C --> D[Admin: gom theo đơn / đối tượng,<br/>lọc thời gian · nhân viên · loại · quan trọng,<br/>tìm kiếm, xuất Excel]
 ```
 *Ghi log: duyệt/từ chối nạp ví (`confirm_topup`/`reject_topup`) · sửa tồn kho (`update_stock`) · mọi bước vòng đời đơn do nhân viên hoặc quản trị thực hiện (`order_<hành động>`, vd `order_approve_payment`, `order_ship`, `order_set_delivery_date`, `order_out_for_delivery`, `order_receive_return`) · xóa đơn hàng loạt (`orders_bulk_delete`).*
 

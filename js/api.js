@@ -192,6 +192,20 @@ export async function findOrderByRef(ref) {
   return findByRef("/orders", ref);
 }
 
+// Lấy một nhóm đơn theo mã (mỗi lượt tối đa 40 mã: /orders?id=a&id=b…). Chỉ giữ đúng những đơn được hỏi
+// (phòng trường hợp máy chủ bỏ qua bộ lọc và trả cả danh sách). Đơn đã xóa thì không có trong kết quả.
+export async function getOrdersByIds(ids = []) {
+  const want = [...new Set(ids.map(String).filter(Boolean))];
+  const out = [];
+  for (let i = 0; i < want.length; i += 40) {
+    const chunk = want.slice(i, i + 40);
+    const res = await api.get("/orders", { params: { id: chunk }, paramsSerializer: { indexes: null } });
+    const set = new Set(chunk);
+    (Array.isArray(res.data) ? res.data : []).forEach((o) => { if (set.has(String(o.id))) out.push(o); });
+  }
+  return out;
+}
+
 export async function getOrders() {
   const res = await api.get("/orders");
   return res.data;
@@ -520,6 +534,16 @@ export async function getAuditLog(params = {}) {
 export async function createAuditLog(data) {
   const res = await api.post("/auditLog", data);
   return res.data;
+}
+// Một trang nhật ký đã lọc / sắp xếp sẵn ở máy chủ (json-server 0.17: _page, _limit, _sort, _order, <field>_gte/_lte,
+// <field>_like là biểu thức chính quy không phân biệt hoa thường, lặp lại một khóa = "hoặc"). Trả { items, total }:
+// total lấy từ header X-Total-Count. Mảng được gửi dạng lặp khóa (action=a&action=b), không phải action[]=…
+// Lưu ý 0.17: lọc theo trường mà CHƯA bản ghi nào có thì máy chủ bỏ qua bộ lọc → nơi gọi phải tự kiểm tra lại kết quả.
+export async function getAuditLogPage(params = {}) {
+  const res = await api.get("/auditLog", { params, paramsSerializer: { indexes: null } });
+  const total = Number(res.headers?.["x-total-count"]);
+  const items = Array.isArray(res.data) ? res.data : [];
+  return { items, total: Number.isFinite(total) ? total : items.length };
 }
 
 // ----- Đăng ký nhận thông báo có hàng lại -----

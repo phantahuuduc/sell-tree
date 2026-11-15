@@ -227,7 +227,7 @@ Trang chủ có "Bảng tin của tiệm — Cây được khách thương nhấ
 Chuông ở header (khách) — poll 10s, badge chưa đọc, dropdown với icon phân loại.
 
 ### 🛡 Minh bạch chống gian lận
-Mọi thao tác nhạy cảm của nhân viên (duyệt TT, duyệt nạp ví, đổi trạng thái đơn, sửa kho) đều ghi `auditLog` — admin xem được **ai · làm gì · lúc nào · chi tiết**.
+Mọi thao tác nhạy cảm của nhân viên (duyệt TT, duyệt nạp ví, đổi trạng thái đơn, sửa kho) đều ghi `auditLog` — admin xem được **ai · làm gì · lúc nào · chi tiết**. Tab **Nhật ký nhân viên** (`js/admin-audit.js`) mặc định xem **hôm nay** (chọn nhanh 7 / 30 ngày / khoảng tùy chọn), chia theo ngày; **gom mọi thao tác trên cùng một đơn / ví / sản phẩm thành một dòng** (trạng thái đơn hiện tại, nhân viên, số bước), bấm để mở dòng thời gian — hoặc chuyển sang **danh sách đầy đủ**. Lọc theo nhân viên (bấm ô tóm tắt), loại thao tác, **chỉ thao tác quan trọng** (tiền, hủy, xóa, sửa kho — viền đỏ đất), tìm theo mã đơn / sản phẩm / tên khách; xuất Excel đúng bộ lọc. Máy chủ lọc + phân trang (60 thao tác / lượt, "Xem thêm").
 
 ---
 

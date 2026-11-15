@@ -183,6 +183,7 @@
     import { attachMarker } from "./js/slide-marker.js";
     import { ensureLabels } from "./js/labels.js";
     import { initLabelsPanel, renderLabelPicker, readLabelPicker, legacyFields } from "./js/admin-labels.js";
+    import { initAuditPanel } from "./js/admin-audit.js";
 
     await initPage();
 
@@ -1318,66 +1319,13 @@
     }
 
     // ----- Panel Nhật ký NV: xem mọi thao tác nhân viên (minh bạch, chống gian lận) -----
-    const AUDIT_LABEL = {
-      confirm_payment: "✓ Duyệt thanh toán", reject_payment: "✗ Từ chối thanh toán",
-      confirm_topup: "✓ Duyệt nạp ví", reject_topup: "✗ Từ chối nạp ví",
-      update_order_status: "↻ Đổi trạng thái đơn", update_stock: "📦 Cập nhật tồn kho",
-      order_approve_payment: "✓ Duyệt thanh toán", order_reject_payment: "✗ Từ chối thanh toán",
-      order_ship: "🚚 Giao cho vận chuyển", order_mark_delivered: "📦 Xác nhận đã giao",
-      order_delivery_failed: "✗ Giao thất bại", order_shop_cancel: "✗ Hủy đơn",
-      order_approve_return: "↩ Duyệt hoàn hàng", order_reject_return: "✗ Từ chối hoàn hàng",
-      order_receive_return: "↩ Nhận lại hàng hoàn", order_refund_confirm: "💸 Hoàn tiền",
-      order_refund_decline: "✗ Không hoàn tiền",
-    };
-    let _auditLoaded = false;
+    // Toàn bộ phần hiển thị nằm ở js/admin-audit.js: gom theo đơn / đối tượng, lọc theo thời gian, nhân viên, loại,
+    // tìm kiếm, chỉ thao tác quan trọng, phân trang ở máy chủ, xuất Excel. Cách GHI nhật ký không đổi.
+    let auditView = null;
     async function renderAudit() {
       const panel = document.getElementById("panelAudit");
-      panel.innerHTML = `<div class="state"><p>Đang tải nhật ký...</p></div>`;
-      let logs = [];
-      try { logs = await getAuditLog(); } catch (err) {
-        panel.innerHTML = `<div class="state"><p>Lỗi tải nhật ký: ${escapeHTML(err.message)}</p></div>`; return;
-      }
-      logs = logs.slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      _auditLoaded = true;
-
-      if (!logs.length) {
-        panel.innerHTML = `
-          <p class="muted">Mọi thao tác nhạy cảm của nhân viên (duyệt/từ chối thanh toán, nạp ví, đổi trạng thái đơn, sửa tồn kho) được ghi lại tại đây để admin giám sát.</p>
-          <div class="state"><p>Chưa có thao tác nào được ghi nhận.</p></div>`;
-        return;
-      }
-
-      const rows = logs.map((l) => {
-        const dt = new Date(l.createdAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-        const label = AUDIT_LABEL[l.action] || l.action;
-        const isReject = /reject/.test(l.action);
-        return `
-          <tr>
-            <td style="white-space:nowrap">${dt}</td>
-            <td><strong>${escapeHTML(l.staffName || "—")}</strong><br><span class="muted" style="font-size:.78rem">#${escapeHTML(String(l.staffId || "?"))}</span></td>
-            <td><span class="chip ${isReject ? "chip--alert" : "chip--active"}">${label}</span></td>
-            <td>${escapeHTML(l.detail || "")}</td>
-          </tr>`;
-      }).join("");
-
-      // Thống kê nhanh theo nhân viên
-      const byStaff = {};
-      logs.forEach((l) => { byStaff[l.staffName || l.staffId] = (byStaff[l.staffName || l.staffId] || 0) + 1; });
-      const statChips = Object.entries(byStaff)
-        .map(([name, n]) => `<span class="chip chip--plain">${escapeHTML(name)}: ${n} thao tác</span>`).join(" ");
-
-      panel.innerHTML = `
-        <div class="users-toolbar">
-          <p class="muted" style="margin:0">Giám sát minh bạch: ${logs.length} thao tác được ghi. ${statChips}</p>
-          <button class="btn btn--ghost btn--sm" id="btnRefreshAudit">↻ Làm mới</button>
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th>Thời gian</th><th>Nhân viên</th><th>Hành động</th><th>Chi tiết</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>`;
-      document.getElementById("btnRefreshAudit").addEventListener("click", renderAudit);
+      if (!auditView) auditView = initAuditPanel(panel);   // lần đầu mở tab: dựng khung + tải
+      else await auditView.reload();                         // các lần sau: tải lại dữ liệu mới, giữ bộ lọc đang chọn
     }
 
     // ----- Panel Danh mục (CRUD) -----
