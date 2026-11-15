@@ -521,6 +521,41 @@ export async function getWalletTransactions(params = {}) {
 export async function createWalletTransaction(data) {
   return postOnce("/walletTransactions", data); // giao dịch ví cũng không được ghi trùng khi mạng chập chờn
 }
+// "Giữ chỗ" một giao dịch ví theo MÃ CỐ ĐỊNH (vd "rf-<mã đơn>" cho lượt hoàn tiền của một đơn).
+// json-server 0.17 từ chối tạo bản ghi trùng id → chỉ MỘT lượt giữ được chỗ, dù hai tab / hai lần bấm chạy cùng lúc
+// hay phản hồi bị rớt rồi gửi lại. Trả { mine, tx }: mine = true khi chính lượt này tạo ra bản ghi (so theo mã lượt `attempt`).
+// Lỗi mạng thì KHÔNG gửi lại mù quáng: đọc lại bản ghi theo id trước — có rồi thì biết của ai, chưa có mới gửi lại.
+export async function claimWalletTransaction(data) {
+  const id = String(data.id || "");
+  if (!id) throw new Error("Thiếu mã giao dịch để giữ chỗ");
+  const attempt = data.attempt || newClientRef();
+  const body = { ...data, id, attempt };
+  const readBack = async () => {
+    try { return (await api.get(`/walletTransactions/${encodeURIComponent(id)}`)).data || null; }
+    catch (err) { if (err.response?.status === 404) return null; throw err; }
+  };
+  let lastErr = null;
+  for (let k = 0; k < 3; k++) {
+    if (k) {
+      await pause(800 * k);
+      let found;
+      try { found = await readBack(); } catch (e) { lastErr = e; continue; } // chưa biết → không gửi lại
+      if (found) return { mine: found.attempt === attempt, tx: found };
+    }
+    try {
+      const res = await api.post("/walletTransactions", body);
+      return { mine: true, tx: res.data };
+    } catch (err) {
+      lastErr = err;
+      if (err.response) {                       // máy chủ trả lời (500 "trùng id") → đã có người giữ chỗ
+        const found = await readBack();
+        if (found) return { mine: found.attempt === attempt, tx: found };
+        throw err;
+      }
+    }
+  }
+  throw lastErr;
+}
 export async function updateWalletTransaction(id, patch) {
   const res = await api.patch(`/walletTransactions/${encodeURIComponent(id)}`, patch);
   return res.data;

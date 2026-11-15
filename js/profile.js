@@ -181,6 +181,7 @@ const TX_STATUS = {
   pending: `<span class="chip chip--mid">Chờ duyệt</span>`,
   confirmed: `<span class="chip chip--active">Thành công</span>`,
   rejected: `<span class="chip chip--alert">Từ chối</span>`,
+  processing: `<span class="chip chip--mid">Đang xử lý</span>`, // lượt hoàn tiền đang chạy (xem refundToWallet trong order-flow.js)
 };
 
 async function loadWallet() {

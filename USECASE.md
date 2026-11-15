@@ -574,7 +574,7 @@ flowchart LR
 | BR10 | OTP: 6 số, hạn 10 phút, tối đa 5 lần sai, gửi lại sau 60 giây, chỉ lưu dạng băm. |
 | BR11 | **Nhân viên và quản trị viên không được mua hàng**: ẩn giỏ hàng, chặn thêm vào giỏ, trang giỏ hiện thông báo. |
 | BR12 | **Kho bị trừ khi đặt hàng**; số đã trừ lưu trong đơn (`stockDeducted`) để khi hủy / giao thất bại / nhận lại hàng hoàn trả **đúng** số đó. |
-| BR13 | **Hoàn tiền luôn về Ví web** và ghi giao dịch `refund`. Đơn đã thanh toán → hoàn ngay; đơn chưa duyệt tiền mà khách báo đã chuyển → chờ nhân viên kiểm tra sao kê. |
+| BR13 | **Hoàn tiền luôn về Ví web** và ghi giao dịch `refund`. Đơn đã thanh toán → hoàn ngay; đơn chưa duyệt tiền mà khách báo đã chuyển → chờ nhân viên kiểm tra sao kê. **Mỗi đơn chỉ được hoàn tiền đúng một lần** (`refundToWallet` trong `order-flow.js`): đọc lại đơn từ máy chủ trước khi làm; đơn đã có giao dịch hoàn `confirmed` thì không cộng nữa; lượt hoàn giữ chỗ bằng một giao dịch mã cố định `rf-<mã đơn>` (json-server từ chối mã trùng → chỉ một lượt giữ được, dù bấm hai lần, hai tab cùng làm hay phản hồi rớt rồi bấm lại); cộng ví bằng số dư đích, lỗi mạng thì đọc lại số dư để biết đã cộng chưa; phiếu chỉ chuyển `confirmed` sau khi đơn đã ghi xong. Trong cùng một tab, đơn đang xử lý thì lần bấm thứ hai bị từ chối; nút thao tác khóa trong lúc chạy. |
 | BR14 | Khách chỉ hủy được trước khi shop giao cho vận chuyển; hoàn hàng trong 7 ngày kể từ lúc giao; đơn "Đã giao" tự hoàn tất sau N ngày (mặc định 3, chỉnh trong Cài đặt). |
 | BR15 | Đơn hủy / đã hoàn hàng / đã hoàn tiền **không** tính vào doanh thu, số lượng bán, "Bán chạy". |
 | BR16 | Thanh toán chuyển khoản chỉ được duyệt ở **một nơi duy nhất**: tab "Duyệt thanh toán" (nơi có ảnh chuyển khoản). Tab "Đơn hàng" của nhân viên chỉ dẫn sang đó, không có nút duyệt → không xác nhận trùng. Quản trị viên không có tab đó nên duyệt ngay tại tab "Đơn hàng" (vẫn là một nơi). |
@@ -590,6 +590,7 @@ flowchart LR
 | BR26 | **Email không phân biệt chữ hoa / thường** khi đăng ký, đăng nhập, quên mật khẩu; email mới được lưu dạng chữ thường. |
 | BR27 | **Mỗi đơn chỉ được ghi đúng một lần.** Mỗi lần đặt hàng mang một mã riêng do trình duyệt sinh, lưu trong đơn (`id` = `clientRef`). Lệnh tạo đơn gặp lỗi mạng thì **không gửi lại mù quáng**: tra theo mã trước — đã có thì dùng đơn đó, chưa có mới gửi lại. Hệ thống chỉ tự gửi lại lệnh an toàn khi lặp (`GET`, `PUT`). **Code không bao giờ tự xóa đơn hàng.** |
 | BR28 | **Thanh toán bằng ví theo thứ tự: tạo đơn chờ thanh toán → trừ ví → đánh dấu đã thanh toán → trừ kho.** Trừ ví thất bại thì đơn bị hủy hoặc ở lại "Chưa thanh toán" — không có trường hợp ví bị trừ mà không có đơn. Đơn chưa thanh toán không tính vào doanh thu (BR01). Mọi bước hoàn tiền tự động chỉ chạy khi **đã đọc lại và biết chắc** đơn chưa thanh toán. |
+| BR29 | **Nhật ký ghi cả thao tác của quản trị**: thêm / sửa / xóa sản phẩm (đổi giá ghi giá cũ → mới, đổi tồn kho), khuyến mãi và mã giảm giá (đổi % giảm ghi riêng), tạo tài khoản nhân viên, đổi vai trò, khóa / mở khóa, xóa tài khoản — cùng định dạng với nhật ký nhân viên. Đổi giá, đổi % giảm, xóa, khóa / mở khóa, đổi vai trò, tạo / xóa tài khoản được xếp **quan trọng**. |
 
 ---
 

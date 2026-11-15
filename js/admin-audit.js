@@ -39,7 +39,31 @@ export const AUDIT_TYPES = [
   { key: "bulk_del",   icon: "🗑",  label: "Xóa nhiều đơn",               codes: ["orders_bulk_delete"], important: true },
   { key: "topup_ok",   icon: "💰", label: "Duyệt nạp ví",                codes: ["confirm_topup"], important: true },
   { key: "topup_no",   icon: "✗",  label: "Từ chối nạp ví",              codes: ["reject_topup"], important: true },
-  { key: "stock",      icon: "📦", label: "Sửa tồn kho",                 codes: ["update_stock"], important: true },
+  { key: "stock",      icon: "📦", label: "Sửa tồn kho",                 codes: ["update_stock", "product_stock"], important: true },
+  // --- Thao tác của quản trị (admin.html) ---
+  { key: "p_create",   icon: "🌱", label: "Thêm sản phẩm",               codes: ["product_create"] },
+  { key: "p_update",   icon: "✎",  label: "Sửa sản phẩm",                codes: ["product_update"] },
+  { key: "p_price",    icon: "₫",  label: "Đổi giá sản phẩm",            codes: ["product_price"], important: true },
+  { key: "p_delete",   icon: "🗑",  label: "Xóa sản phẩm",                codes: ["product_delete"], important: true },
+  { key: "p_import",   icon: "⬆",  label: "Nhập sản phẩm từ Excel",      codes: ["product_import"] },
+  { key: "pr_create",  icon: "🎉", label: "Tạo khuyến mãi",              codes: ["promo_create"] },
+  { key: "pr_update",  icon: "✎",  label: "Sửa khuyến mãi",              codes: ["promo_update"] },
+  { key: "pr_toggle",  icon: "⏻",  label: "Bật / tắt khuyến mãi",        codes: ["promo_toggle"] },
+  { key: "pr_pct",     icon: "%",  label: "Đổi % giảm của khuyến mãi",   codes: ["promo_discount"], important: true },
+  { key: "pr_delete",  icon: "🗑",  label: "Xóa khuyến mãi",              codes: ["promo_delete"], important: true },
+  { key: "c_create",   icon: "🏷",  label: "Tạo mã giảm giá",             codes: ["coupon_create"] },
+  { key: "c_update",   icon: "✎",  label: "Sửa mã giảm giá",             codes: ["coupon_update"] },
+  { key: "c_toggle",   icon: "⏻",  label: "Tạm ngưng / kích hoạt mã",    codes: ["coupon_toggle"] },
+  { key: "c_restore",  icon: "↺",  label: "Khôi phục mã giảm giá",       codes: ["coupon_restore"] },
+  { key: "c_pct",      icon: "%",  label: "Đổi % giảm của mã giảm giá",  codes: ["coupon_discount"], important: true },
+  { key: "c_delete",   icon: "🗑",  label: "Xóa mã giảm giá",             codes: ["coupon_delete"], important: true },
+  { key: "u_create",   icon: "👤", label: "Tạo tài khoản nhân viên",     codes: ["user_create"], important: true },
+  { key: "u_role",     icon: "⇄",  label: "Đổi vai trò tài khoản",       codes: ["user_role"], important: true },
+  { key: "u_lock",     icon: "🔒", label: "Khóa tài khoản",              codes: ["user_lock"], important: true },
+  { key: "u_unlock",   icon: "🔓", label: "Mở khóa tài khoản",           codes: ["user_unlock"], important: true },
+  { key: "u_delete",   icon: "🗑",  label: "Xóa tài khoản",               codes: ["user_delete"], important: true },
+  // Dự phòng: trang quản trị hiện CHƯA có chức năng nạp / trừ ví thủ công — khai báo sẵn tên để không lộ mã thô nếu thêm sau
+  { key: "w_adjust",   icon: "💰", label: "Sửa số dư ví thủ công",       codes: ["wallet_adjust"], important: true, hidden: true },
   // Các hành động phía khách / hệ thống — hiện chưa được ghi vào nhật ký nhân viên, khai báo sẵn để không bao giờ lộ mã thô
   { key: "cust",       icon: "•",  label: "Thao tác thay khách",         codes: ["order_confirm_received", "order_report_not_received", "order_request_return", "order_cancel_return", "order_auto_complete"] },
 ];
@@ -99,8 +123,15 @@ function subjectOf(log) {
   if (w) return { key: `wallet:${w[1]}`, kind: "wallet", id: w[1] };
   const t = /nạp ví #([A-Za-z0-9_-]+)/i.exec(detail);
   if (t) return { key: `topup:${t[1]}`, kind: "topup", id: t[1] };
-  const p = /Tồn kho "(.+?)"/.exec(detail);
+  if (log.action === "product_import") return { key: `one:${log.id}`, kind: "other" };
+  const p = /Tồn kho "(.+?)"/.exec(detail) || /sản phẩm "(.+?)"/i.exec(detail);
   if (p) return { key: `product:${p[1]}`, kind: "product", id: p[1] };
+  const pr = /khuyến mãi "(.+?)"/i.exec(detail);
+  if (pr) return { key: `promo:${pr[1]}`, kind: "promo", id: pr[1] };
+  const c = /mã giảm giá "(.+?)"/i.exec(detail);
+  if (c) return { key: `coupon:${c[1]}`, kind: "coupon", id: c[1] };
+  const a = /tài khoản (?:nhân viên )?"(.+?)"/i.exec(detail);
+  if (a) return { key: `account:${a[1]}`, kind: "account", id: a[1] };
   return { key: `one:${log.id}`, kind: "other" };
 }
 // Phần ghi chú của một bước (bỏ "Đơn #id: <tên thao tác>" lặp lại)
@@ -169,7 +200,7 @@ export function initAuditPanel(panel) {
         <label class="aud__select"><span class="visually-hidden">Loại thao tác</span>
           <select id="audType">
             <option value="">Mọi loại thao tác</option>
-            ${AUDIT_TYPES.filter((t) => t.key !== "cust").map((t) => `<option value="${t.key}">${t.icon} ${escapeHTML(t.label)}${t.important ? " ●" : ""}</option>`).join("")}
+            ${AUDIT_TYPES.filter((t) => t.key !== "cust" && !t.hidden).map((t) => `<option value="${t.key}">${t.icon} ${escapeHTML(t.label)}${t.important ? " ●" : ""}</option>`).join("")}
           </select>
         </label>
         <label class="aud__switch"><input type="checkbox" id="audImportant"><span>Chỉ xem thao tác quan trọng</span></label>
@@ -324,7 +355,10 @@ export function initAuditPanel(panel) {
       return { title: `Ví của ${u?.name || `khách #${sub.id}`}`, meta: "Nạp ví" };
     }
     if (sub.kind === "topup") return { title: `Yêu cầu nạp ví #${sub.id}`, meta: "Nạp ví" };
-    if (sub.kind === "product") return { title: sub.id, meta: "Tồn kho sản phẩm" };
+    if (sub.kind === "product") return { title: sub.id, meta: "Sản phẩm" };
+    if (sub.kind === "promo") return { title: `Khuyến mãi "${sub.id}"`, meta: "Chương trình khuyến mãi" };
+    if (sub.kind === "coupon") return { title: `Mã giảm giá ${sub.id}`, meta: "Mã giảm giá" };
+    if (sub.kind === "account") return { title: `Tài khoản ${sub.id}`, meta: "Tài khoản" };
     if (sub.kind === "bulk") return { title: "Xóa nhiều đơn", meta: "Dọn đơn đã kết thúc" };
     return { title: auditType(logs[0].action).label, meta: "" };
   }

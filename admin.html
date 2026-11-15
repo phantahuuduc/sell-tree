@@ -174,7 +174,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <script type="module">
     import { getUser, requireRole } from "./js/storage.js";
-    import { getProducts, getOrders, getUsers, updateOrderStatus, getPromotions, createPromotion, updatePromotion, deletePromotion, getCategories, createProduct, updateProduct, deleteProduct, getBanners, createBanner, updateBanner, deleteBanner, getSettings, updateSettings, createCategory, updateCategory, deleteCategory, getCoupons, createCoupon, updateCoupon, updateUser, deleteUser, createUser, getAuditLog, getReviews, updateReview, deleteReview } from "./js/api.js";
+    import { getProducts, getOrders, getUsers, updateOrderStatus, getPromotions, createPromotion, updatePromotion, deletePromotion, getCategories, createProduct, updateProduct, deleteProduct, getBanners, createBanner, updateBanner, deleteBanner, getSettings, updateSettings, createCategory, updateCategory, deleteCategory, getCoupons, createCoupon, updateCoupon, updateUser, deleteUser, createUser, getAuditLog, createAuditLog, getReviews, updateReview, deleteReview } from "./js/api.js";
     import { initPage, formatPrice, showToast, escapeHTML, compressImageToDataURL } from "./js/ui.js";
     import { exportToExcel, exportToTxt, getOrdersInRange, importProductsFromExcel, downloadProductTemplate } from "./js/report.js";
     import { revenueOf } from "./js/sale.js";
@@ -390,6 +390,7 @@
         if (!file) { alert("Vui lòng chọn file Excel trước."); return; }
         try {
           const result = await importProductsFromExcel(file);
+          if (result.success) await adminLog("product_import", `Nhập ${result.success}/${result.total} sản phẩm từ file Excel "${file.name}"`);
           alert(`Đã nhập ${result.success}/${result.total} sản phẩm.\nSố dòng lỗi/bỏ qua: ${result.errors}`);
           location.reload();
         } catch (err) {
@@ -466,6 +467,7 @@
           try {
             await deleteProduct(btn.dataset.delProduct);
             showToast("Đã xóa sản phẩm");
+            await adminLog("product_delete", `Xóa sản phẩm "${p?.name || btn.dataset.delProduct}" (#${btn.dataset.delProduct}, giá ${vnd(p?.price)}, tồn kho ${Number(p?.stock) || 0})`);
             renderProducts(await getProducts());
           } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
         });
@@ -688,9 +690,15 @@
           if (isEdit) {
             await updateProduct(product.id, data);
             showToast("Đã cập nhật sản phẩm");
+            const ch = productChanges(product, { ...product, ...data });
+            if (ch.out.length) {
+              const act = ch.price ? "product_price" : (ch.stock && ch.out.length === 1 ? "product_stock" : "product_update");
+              await adminLog(act, `Sửa sản phẩm "${data.name}": ${ch.out.join("; ")}`);
+            }
           } else {
-            await createProduct(data);
+            const created = await createProduct(data);
             showToast("Đã tạo sản phẩm mới");
+            await adminLog("product_create", `Thêm sản phẩm "${data.name}" (#${created?.id || "?"}, giá ${vnd(data.price)}, tồn kho ${Number(data.stock) || 0}, danh mục ${catName(data.categoryId)})`);
           }
           wrap.hidden = true;
           renderProducts(await getProducts());
@@ -1031,6 +1039,8 @@
           try {
             await updatePromotion(btn.dataset.togglePromo, { isActive: !active });
             showToast(`Đã ${!active ? "bật" : "tắt"} khuyến mãi`);
+            const pm = promos.find((p) => String(p.id) === btn.dataset.togglePromo);
+            await adminLog("promo_toggle", `${!active ? "Bật" : "Tắt"} khuyến mãi "${pm?.name || btn.dataset.togglePromo}" (−${pm?.discountPercent ?? "?"}%)`);
             loadSalePanel(await getPromotions().catch(() => []));
           } catch { showToast("Lỗi cập nhật", { icon: "alert" }); }
         });
@@ -1043,6 +1053,7 @@
           try {
             await deletePromotion(btn.dataset.delPromo);
             showToast("Đã xóa khuyến mãi");
+            await adminLog("promo_delete", `Xóa khuyến mãi "${promo?.name || btn.dataset.delPromo}" (−${promo?.discountPercent ?? "?"}%, ${logDate(promo?.startDate)} – ${logDate(promo?.endDate)})`);
             loadSalePanel(await getPromotions().catch(() => []));
           } catch { showToast("Lỗi xóa", { icon: "alert" }); }
         });
@@ -1143,9 +1154,12 @@
           if (isEdit) {
             await updatePromotion(promo.id, data);
             showToast("Đã cập nhật khuyến mãi");
+            const ch = discountChanges(promo, data, [["name", "tên"], ["discountPercent", "% giảm", (v) => `${v}%`], ["startDate", "bắt đầu", logDate], ["endDate", "kết thúc", logDate], ["appliesTo", "áp dụng cho"], ["isActive", "đang bật", (v) => (v ? "có" : "không")], ["description", "mô tả", (v) => `"${v || ""}"`]]);
+            if (ch.out.length) await adminLog(ch.pct ? "promo_discount" : "promo_update", `Sửa khuyến mãi "${data.name}": ${ch.out.join("; ")}`);
           } else {
             await createPromotion(data);
             showToast("Đã tạo khuyến mãi mới");
+            await adminLog("promo_create", `Tạo khuyến mãi "${data.name}" (−${data.discountPercent}%, ${logDate(data.startDate)} – ${logDate(data.endDate)}, ${data.isActive ? "đang bật" : "đang tắt"})`);
             // Thông báo SALE cho toàn bộ khách (web + email) nếu đang bật
             if (data.isActive && confirm(`Gửi thông báo khuyến mãi "${data.name}" (−${data.discountPercent}%) đến tất cả khách hàng?`)) {
               try {
@@ -1253,6 +1267,7 @@
           try {
             await updateUser(uid, { role });
             showToast(`Đã cập nhật vai trò "${u?.name}" → ${ROLE_LABEL[role]}`);
+            if (u && u.role !== role) await adminLog("user_role", `Đổi vai trò tài khoản "${u.name}" (${u.email}): ${ROLE_LABEL[u.role] || u.role} → ${ROLE_LABEL[role] || role}`);
             renderUsers(await getUsers());
           } catch (err) { showToast("Lỗi cập nhật: " + err.message, { icon: "alert" }); }
         } else if (e.target.closest("[data-lock-user]")) {
@@ -1261,6 +1276,7 @@
           try {
             await updateUser(uid, { locked: newLocked });
             showToast(`Đã ${newLocked ? "khóa" : "mở khóa"} tài khoản "${u?.name}"`);
+            await adminLog(newLocked ? "user_lock" : "user_unlock", `${newLocked ? "Khóa" : "Mở khóa"} tài khoản "${u?.name || uid}" (${u?.email || "#" + uid}, ${ROLE_LABEL[u?.role] || u?.role || "?"})`);
             renderUsers(await getUsers());
           } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
         } else if (e.target.closest("[data-del-user]")) {
@@ -1268,6 +1284,7 @@
           try {
             await deleteUser(uid);
             showToast("Đã xóa tài khoản");
+            await adminLog("user_delete", `Xóa tài khoản "${u?.name || uid}" (${u?.email || "#" + uid}, ${ROLE_LABEL[u?.role] || u?.role || "?"}${u?.role === "user" ? `, số dư ví ${vnd(u?.walletBalance)}` : ""})`);
             renderUsers(await getUsers());
           } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
         }
@@ -1312,10 +1329,56 @@
         try {
           await createUser(newStaff);
           showToast(`Đã tạo nhân viên "${newStaff.name}"`);
+          await adminLog("user_create", `Tạo tài khoản nhân viên "${newStaff.name}" (${newStaff.email})`);
           document.getElementById("addStaffWrap").hidden = true;
           renderUsers(await getUsers());
         } catch (err) { showToast("Lỗi tạo nhân viên: " + err.message, { icon: "alert" }); }
       });
+    }
+
+    // ----- Ghi nhật ký thao tác của QUẢN TRỊ -----
+    // Cùng định dạng với log nhân viên: { staffId, staffName, action, detail, createdAt }. Ghi SAU khi thao tác thành công;
+    // ghi lỗi thì chỉ cảnh báo trong console, không chặn thao tác chính. Tên tiếng Việt + mức độ: AUDIT_TYPES (js/admin-audit.js).
+    async function adminLog(action, detail) {
+      try {
+        await createAuditLog({ staffId: String(user.id), staffName: user.name || "Quản trị viên", action, detail, createdAt: new Date().toISOString() });
+      } catch (err) { console.warn("Ghi nhật ký quản trị lỗi:", err?.message); }
+    }
+    const vnd = (n) => formatPrice(Number(n) || 0);
+    const catName = (id) => (window.__adminCategories || []).find((c) => String(c.id) === String(id))?.name || `#${id}`;
+    const logDate = (iso) => (iso ? new Date(iso).toLocaleDateString("vi-VN") : "—");
+    // So sánh sản phẩm trước / sau khi sửa → các thay đổi đáng ghi + cờ đổi giá / đổi tồn kho
+    function productChanges(a, b) {
+      const out = [];
+      let price = false, stock = false;
+      if (a.name !== b.name) out.push(`tên "${a.name}" → "${b.name}"`);
+      if (Number(a.price) !== Number(b.price)) { out.push(`giá ${vnd(a.price)} → ${vnd(b.price)}`); price = true; }
+      if ((Number(a.oldPrice) || 0) !== (Number(b.oldPrice) || 0)) { out.push(`giá trước giảm ${a.oldPrice ? vnd(a.oldPrice) : "—"} → ${b.oldPrice ? vnd(b.oldPrice) : "—"}`); price = true; }
+      const vp = (p) => Object.fromEntries((p.variants || []).map((v) => [v.label, Number(v.price)]));
+      const va = vp(a), vb = vp(b);
+      [...new Set([...Object.keys(va), ...Object.keys(vb)])].forEach((k) => {
+        if (va[k] === vb[k]) return;
+        out.push(va[k] == null ? `thêm size "${k}" ${vnd(vb[k])}` : vb[k] == null ? `bỏ size "${k}"` : `giá size "${k}" ${vnd(va[k])} → ${vnd(vb[k])}`);
+        price = true;
+      });
+      if (Number(a.stock) !== Number(b.stock)) { out.push(`tồn kho ${Number(a.stock) || 0} → ${Number(b.stock) || 0}`); stock = true; }
+      if (String(a.categoryId) !== String(b.categoryId)) out.push(`danh mục ${catName(a.categoryId)} → ${catName(b.categoryId)}`);
+      if ((a.scientificName || "") !== (b.scientificName || "")) out.push("tên khoa học");
+      if ((a.image || "") !== (b.image || "")) out.push("ảnh");
+      if ((a.description || "") !== (b.description || "")) out.push("mô tả");
+      if (JSON.stringify(a.labelIds || []) !== JSON.stringify(b.labelIds || [])) out.push("nhãn");
+      return { out, price, stock };
+    }
+    // Thay đổi của khuyến mãi / mã giảm giá (trả cờ pct khi % giảm đổi — xếp vào nhóm quan trọng)
+    function discountChanges(a, b, fields) {
+      const out = []; let pct = false;
+      fields.forEach(([k, label, fmt = (v) => (v == null || v === "" ? "—" : v)]) => {
+        const x = a[k] ?? null, y = b[k] ?? null;
+        if (String(x ?? "") === String(y ?? "")) return;
+        out.push(`${label} ${fmt(x)} → ${fmt(y)}`);
+        if (k === "discountPercent") pct = true;
+      });
+      return { out, pct };
     }
 
     // ----- Panel Nhật ký NV: xem mọi thao tác nhân viên (minh bạch, chống gian lận) -----
@@ -1525,6 +1588,7 @@
         try {
           await updateCoupon(c.id, { isActive: c.isActive === false });
           showToast(c.isActive === false ? `Đã kích hoạt lại mã ${c.code}` : `Đã tạm ngưng mã ${c.code}`);
+          await adminLog("coupon_toggle", `${c.isActive === false ? "Kích hoạt lại" : "Tạm ngưng"} mã giảm giá "${c.code}" (−${c.discountPercent}%)`);
           reload();
         } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
       }));
@@ -1534,6 +1598,7 @@
         try {
           await updateCoupon(c.id, { deletedAt: new Date().toISOString() });
           showToast(`Đã xóa mã ${c.code} (có thể khôi phục)`);
+          await adminLog("coupon_delete", `Xóa mã giảm giá "${c.code}" (−${c.discountPercent}%, đã dùng ${Number(c.usedCount) || 0} lượt)`);
           reload();
         } catch (err) { showToast("Lỗi xóa: " + err.message, { icon: "alert" }); }
       }));
@@ -1542,6 +1607,7 @@
         try {
           await updateCoupon(c.id, { deletedAt: null });
           showToast(`Đã khôi phục mã ${c.code}`);
+          await adminLog("coupon_restore", `Khôi phục mã giảm giá "${c.code}" (−${c.discountPercent}%)`);
           reload();
         } catch (err) { showToast("Lỗi: " + err.message, { icon: "alert" }); }
       }));
@@ -1658,9 +1724,13 @@
           if (isEdit) {
             await updateCoupon(coupon.id, data);
             showToast(`Đã lưu mã ${data.code}`);
+            const money = (v) => (v ? vnd(v) : "—");
+            const ch = discountChanges(coupon, data, [["code", "mã"], ["discountPercent", "% giảm", (v) => `${v}%`], ["maxDiscount", "giảm tối đa", money], ["minOrder", "đơn tối thiểu", money], ["usageLimit", "giới hạn lượt"], ["startDate", "bắt đầu", logDate], ["expiryDate", "hết hạn", logDate], ["requireNewUser", "chỉ khách mới", (v) => (v ? "có" : "không")], ["isActive", "đang bật", (v) => (v === false ? "không" : "có")], ["description", "mô tả", (v) => `"${v || ""}"`]]);
+            if (ch.out.length) await adminLog(ch.pct ? "coupon_discount" : "coupon_update", `Sửa mã giảm giá "${data.code}": ${ch.out.join("; ")}`);
           } else {
             await createCoupon(data);
             showToast("Đã tạo mã giảm giá");
+            await adminLog("coupon_create", `Tạo mã giảm giá "${data.code}" (−${data.discountPercent}%${data.maxDiscount ? `, tối đa ${vnd(data.maxDiscount)}` : ""}${data.minOrder ? `, đơn từ ${vnd(data.minOrder)}` : ""})`);
           }
           wrap.hidden = true;
           loadCouponsPanel(await getCoupons().catch(() => []));

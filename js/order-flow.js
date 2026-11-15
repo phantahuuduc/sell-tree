@@ -15,8 +15,8 @@
 //                                                         └─ từ chối → trạng thái trước đó
 // ==========================================================
 import {
-  getOrderById, updateOrder, getUserById, updateUser, createWalletTransaction,
-  getProductById, updateProduct, createAuditLog, getStockAlerts, updateStockAlert, getSettings,
+  getOrderById, updateOrder, getUserById, updateUser, createWalletTransaction, claimWalletTransaction,
+  getWalletTransactions, updateWalletTransaction, newClientRef, getProductById, updateProduct, createAuditLog, getStockAlerts, updateStockAlert, getSettings,
 } from "./api.js";
 import { notifyUser } from "./notify.js";
 import { formatPrice } from "./ui.js";
@@ -386,19 +386,81 @@ export function availableActions(order, actor) {
 }
 
 // ---------- Hiệu ứng đi kèm ----------
+// Hoàn tiền vào ví — mỗi đơn chỉ được hoàn ĐÚNG MỘT LẦN, dù bấm hai lần, hai tab cùng làm hay phản hồi bị rớt rồi bấm lại.
+//  1. Đơn đã có giao dịch hoàn "confirmed" (kể cả dữ liệu cũ trước khi có cơ chế này) → không cộng nữa.
+//  2. Giữ chỗ giao dịch hoàn với MÃ CỐ ĐỊNH "rf-<mã đơn>" (claimWalletTransaction): máy chủ từ chối id trùng nên chỉ
+//     một lượt giữ được. Phiếu ghi kèm số dư trước / sau dự kiến để lượt sau biết lượt trước đã cộng ví hay chưa.
+//  3. Cộng ví bằng số dư ĐÍCH (ghi giá trị tuyệt đối, gửi lại vẫn ra một kết quả); lỗi thì đọc lại số dư để biết đã cộng chưa.
+//  4. Phiếu chỉ chuyển "confirmed" ở bước CUỐI của hành động (finalize, sau khi đơn đã được ghi) — lượt khác thấy phiếu
+//     "processing" thì biết đang có người xử lý và dừng, không trả kho / ghi đơn lần nữa.
+// Trả { amount, newBalance, already, finalize } — already = true: tiền đã được hoàn từ trước, lần này không cộng ví.
+const REFUND_STALE_MS = 2 * 60 * 1000;   // phiếu "processing" quá 2 phút coi như lượt trước đã dừng giữa chừng
+const refundId = (orderId) => `rf-${orderId}`;
+
+async function creditTo(userId, target, before) {
+  let lastErr = null;
+  for (let k = 0; k < 3; k++) {
+    if (k) await new Promise((r) => setTimeout(r, 800 * k));
+    try { await updateUser(userId, { walletBalance: target }); return true; }
+    catch (err) {
+      lastErr = err;
+      const now = await getUserById(userId).catch(() => null);   // phản hồi có thể rớt SAU khi máy chủ đã ghi
+      if (now && Number(now.walletBalance) === target) return true;
+      if (!now || Number(now.walletBalance) !== before) break;     // không biết / ví vừa đổi vì lý do khác → dừng, không đoán
+    }
+  }
+  throw lastErr || new Error("Không cộng được tiền vào ví");
+}
+
 async function refundToWallet(order, actor, note) {
   const amount = Number(order.total) || 0;
   if (!amount) return null;
+  const finalizeNoop = async () => {};
+
+  // 1. Đã hoàn từ trước (giao dịch confirmed bất kỳ cho đơn này)
+  const old = (await getWalletTransactions({ type: "refund" })).filter((t) => String(t.orderId) === String(order.id));
+  if (old.some((t) => t.status === "confirmed")) return { amount, already: true, finalize: finalizeNoop };
+
   const u = await getUserById(order.userId);
   if (!u) throw new Error("Không tìm thấy tài khoản khách để hoàn tiền");
-  const newBalance = Number(u.walletBalance || 0) + amount;
-  await updateUser(u.id, { walletBalance: newBalance });
-  await createWalletTransaction({
-    userId: String(u.id), type: "refund", amount, status: "confirmed",
-    orderId: String(order.id), note, createdAt: new Date().toISOString(),
-    confirmedBy: String(actor?.id || "system"), confirmedAt: new Date().toISOString(),
+  const before = Number(u.walletBalance || 0);
+  const target = before + amount;
+  const at = new Date().toISOString();
+  const by = String(actor?.id || "system");
+
+  // 2. Giữ chỗ
+  const { mine, tx } = await claimWalletTransaction({
+    id: refundId(order.id), attempt: newClientRef(),
+    userId: String(u.id), type: "refund", amount, status: "processing",
+    orderId: String(order.id), note, createdAt: at, confirmedBy: by,
+    balanceBefore: before, balanceAfter: target,
   });
-  return { amount, newBalance };
+
+  if (!mine) {
+    if (tx.status === "confirmed") return { amount, already: true, finalize: finalizeNoop };
+    const age = Date.now() - new Date(tx.createdAt).getTime();
+    if (!(age > REFUND_STALE_MS)) throw new Error(`Đơn #${order.id} đang được hoàn tiền ở một nơi khác (vừa bắt đầu lúc ${new Date(tx.createdAt).toLocaleTimeString("vi-VN")}). Vui lòng tải lại sau ít giây.`);
+    // Lượt trước dừng giữa chừng: dựa vào số dư ghi trên phiếu để biết ví đã được cộng chưa
+    const now = await getUserById(order.userId);
+    const bal = Number(now?.walletBalance);
+    if (bal === Number(tx.balanceAfter)) { /* lượt trước đã cộng ví */ }
+    else if (bal === Number(tx.balanceBefore)) {
+      await creditTo(order.userId, Number(tx.balanceAfter), bal);
+    } else {
+      throw new Error(`Đơn #${order.id} có một lượt hoàn tiền dừng giữa chừng và số dư ví đã thay đổi từ đó (trước ${formatPrice(tx.balanceBefore)}, dự kiến sau ${formatPrice(tx.balanceAfter)}, hiện tại ${formatPrice(bal || 0)}). Vui lòng đối chiếu lịch sử ví trước khi xử lý tiếp — hệ thống không tự cộng thêm.`);
+    }
+    return {
+      amount, newBalance: Number(tx.balanceAfter), already: false,
+      finalize: () => updateWalletTransaction(tx.id, { status: "confirmed", confirmedBy: by, confirmedAt: new Date().toISOString() }),
+    };
+  }
+
+  // 3. Cộng ví (lượt giữ được chỗ)
+  await creditTo(u.id, target, before);
+  return {
+    amount, newBalance: target, already: false,
+    finalize: () => updateWalletTransaction(tx.id, { status: "confirmed", confirmedBy: by, confirmedAt: new Date().toISOString() }),
+  };
 }
 
 // Trả lại đúng số lượng đã trừ khi đặt hàng (đơn cũ chưa từng trừ kho thì bỏ qua)
@@ -465,7 +527,16 @@ function customerMessage(key, order, reason, note, refund, extra = {}) {
 
 // ---------- Thực hiện hành động ----------
 // Luôn đọc lại đơn mới nhất từ server rồi kiểm tra quyền → tránh 2 người xử lý cùng lúc / dữ liệu cũ.
-export async function performAction(orderId, key, actor, { reason = "", note = "", date = "", sendMail = true } = {}) {
+// Đơn đang được xử lý trong tab này → lần bấm thứ hai bị từ chối ngay (không chạy song song trên cùng một đơn)
+const inFlight = new Set();
+export async function performAction(orderId, key, actor, opts = {}) {
+  const id = String(orderId);
+  if (inFlight.has(id)) throw new Error(`Đơn #${id} đang được xử lý — vui lòng chờ một chút.`);
+  inFlight.add(id);
+  try { return await performActionOnce(id, key, actor, opts); }
+  finally { inFlight.delete(id); }
+}
+async function performActionOnce(orderId, key, actor, { reason = "", note = "", date = "", sendMail = true } = {}) {
   const def = ACTIONS[key] || SYSTEM_ACTIONS[key];
   if (!def) throw new Error("Hành động không hợp lệ");
   const order = await getOrderById(orderId);
@@ -515,13 +586,14 @@ export async function performAction(orderId, key, actor, { reason = "", note = "
   // Hoàn tiền
   let refund = null;
   if (def.refund === "auto") {
-    if (isPaid(order)) {
+    if (isPaid(order) && order.refundStatus !== "refunded") {
       refund = await refundToWallet(order, by, `Hoàn tiền đơn #${order.id} (${def.label})`);
       if (refund) Object.assign(patch, { refundStatus: "refunded", refundedAt: now, refundAmount: refund.amount });
     } else if (mayHavePaid(order)) {
       patch.refundStatus = "pending"; // chưa duyệt tiền mà khách báo đã chuyển → nhân viên kiểm tra sao kê
     }
   } else if (def.refund === "force") {
+    if (order.refundStatus === "refunded") throw new Error(`Đơn #${order.id} đã được hoàn tiền rồi.`);
     refund = await refundToWallet(order, by, `Hoàn tiền đơn #${order.id} sau khi kiểm tra sao kê`);
     Object.assign(patch, { refundStatus: "refunded", refundedAt: now, refundAmount: refund?.amount || 0 });
   }
@@ -535,7 +607,20 @@ export async function performAction(orderId, key, actor, { reason = "", note = "
     ...(refund ? { refund: refund.amount } : {}),
   }];
 
-  const updated = await updateOrder(order.id, patch);
+  let updated;
+  try {
+    updated = await updateOrder(order.id, patch);
+  } catch (err) {
+    // Lỗi mạng KHÔNG có nghĩa máy chủ chưa ghi: đọc lại đơn, thấy đúng bước vừa ghi (cùng hành động, cùng thời điểm) thì coi như xong
+    if (err.response) throw err;
+    const back = await getOrderById(order.id).catch(() => null);
+    if (!(back && back.status === toStatus && (back.timeline || []).some((t) => t.action === key && t.at === now))) throw err;
+    updated = back;
+  }
+  // Phiếu hoàn tiền chỉ "confirmed" sau khi đơn đã ghi xong — đánh dấu hành động đã trọn vẹn
+  if (refund?.finalize) await refund.finalize().catch((e) => console.warn("Chưa chốt được phiếu hoàn tiền:", e));
+  // Tiền đã hoàn từ một lượt trước: không báo "hoàn" lần nữa
+  if (refund?.already) refund = null;
 
   // Nhật ký thao tác của nhân viên/quản trị (minh bạch)
   if (by.role === "staff" || by.role === "admin") {

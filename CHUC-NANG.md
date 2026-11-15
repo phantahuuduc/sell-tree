@@ -250,7 +250,7 @@ flowchart TD
 ```
 
 ## 18. Nhật ký audit (minh bạch)
-Ghi bởi `staff.js` (nạp ví, tồn kho), `order-flow.js` (mọi thao tác đơn của nhân viên / quản trị), `order-ui.js` (xóa nhiều đơn) → xem tại `admin.html` tab "Nhật ký nhân viên" (`js/admin-audit.js`). Tab **Nhật ký nhân viên** (`js/admin-audit.js`) mặc định xem **hôm nay** (chọn nhanh 7 / 30 ngày / khoảng tùy chọn), chia theo ngày; **gom mọi thao tác trên cùng một đơn / ví / sản phẩm thành một dòng** (trạng thái đơn hiện tại, nhân viên, số bước), bấm để mở dòng thời gian — hoặc chuyển sang **danh sách đầy đủ**. Lọc theo nhân viên (bấm ô tóm tắt), loại thao tác, **chỉ thao tác quan trọng** (tiền, hủy, xóa, sửa kho — viền đỏ đất), tìm theo mã đơn / sản phẩm / tên khách; xuất Excel đúng bộ lọc. Máy chủ lọc + phân trang (60 thao tác / lượt, "Xem thêm").
+Ghi bởi `staff.js` (nạp ví, tồn kho), `order-flow.js` (mọi thao tác đơn của nhân viên / quản trị), `order-ui.js` (xóa nhiều đơn), `admin.html` (sản phẩm, giá, tồn kho, khuyến mãi, mã giảm giá, tài khoản) → xem tại `admin.html` tab "Nhật ký nhân viên" (`js/admin-audit.js`). Tab **Nhật ký nhân viên** (`js/admin-audit.js`) mặc định xem **hôm nay** (chọn nhanh 7 / 30 ngày / khoảng tùy chọn), chia theo ngày; **gom mọi thao tác trên cùng một đơn / ví / sản phẩm thành một dòng** (trạng thái đơn hiện tại, nhân viên, số bước), bấm để mở dòng thời gian — hoặc chuyển sang **danh sách đầy đủ**. Lọc theo nhân viên (bấm ô tóm tắt), loại thao tác, **chỉ thao tác quan trọng** (tiền, hủy, xóa, sửa kho — viền đỏ đất), tìm theo mã đơn / sản phẩm / tên khách; xuất Excel đúng bộ lọc. Máy chủ lọc + phân trang (60 thao tác / lượt, "Xem thêm").
 ```mermaid
 flowchart LR
   A[NV thao tác nhạy cảm] --> B[logAction → createAuditLog]

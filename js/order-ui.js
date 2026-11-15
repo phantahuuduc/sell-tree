@@ -388,12 +388,13 @@ export async function renderOrderManager(panel, actor, opts = {}) {
       await reload();
     }));
     panel.querySelectorAll("[data-order-action]").forEach((b) => b.addEventListener("click", async () => {
+      if (b.disabled || b.dataset.busy) return;          // đang xử lý → bỏ qua lần bấm thêm
       const o = orders.find((x) => String(x.id) === b.dataset.orderId);
       const a = availableActions(o, actor).find((x) => x.key === b.dataset.orderAction);
       if (!o || !a) return;
-      b.disabled = true;
+      b.disabled = true; b.dataset.busy = "1";
       if (await runAction(o, a, actor)) await reload();
-      else b.disabled = false;
+      else { b.disabled = false; delete b.dataset.busy; }
     }));
   };
   draw();

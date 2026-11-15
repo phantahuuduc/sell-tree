@@ -445,6 +445,7 @@ erDiagram
 - `type`: `topup` (nạp) / `payment` (trả đơn bằng ví) / `refund` (hoàn tiền đơn).
 - Nạp ví phải chờ `status=pending` → nhân viên duyệt → `confirmed` + cộng số dư.
 - **Mọi khoản hoàn tiền đều vào Ví web** và sinh một giao dịch `refund` kèm `orderId` (dù khách trả bằng ví hay chuyển khoản).
+- **Hoàn tiền đúng một lần:** giao dịch hoàn mới có `id = "rf-<mã đơn>"` (mỗi đơn chỉ một), kèm `attempt` (mã lượt xử lý), `balanceBefore` / `balanceAfter` (số dư trước / sau dự kiến). `status` đi `processing` → `confirmed`: `processing` = lượt hoàn đang chạy (hoặc dừng giữa chừng — lượt sau dựa vào `balanceBefore` / `balanceAfter` để biết ví đã được cộng chưa, không đoán). Giao dịch hoàn cũ (trước 11/2026) có id ngẫu nhiên, vẫn được tính khi kiểm tra "đã hoàn chưa".
 
 ### 3.14 `auditLog`
 Mọi thao tác nhạy cảm của nhân viên **và quản trị** được ghi lại (minh bạch, admin giám sát):
@@ -455,6 +456,10 @@ Mọi thao tác nhạy cảm của nhân viên **và quản trị** được ghi
 | `update_stock` | `staff.js` | Sửa tồn kho (ghi cả số cũ → số mới) |
 | `order_<hành động>` | `order-flow.js` | Mỗi bước vòng đời đơn do nhân viên/quản trị làm: `order_approve_payment`, `order_reject_payment`, `order_ship`, `order_mark_delivered`, `order_delivery_failed`, `order_shop_cancel`, `order_approve_return`, `order_reject_return`, `order_receive_return`, `order_refund_confirm`, `order_refund_decline` |
 | `orders_bulk_delete` | `order-ui.js` | Xóa nhiều đơn đã kết thúc một lượt |
+| `product_create` / `product_update` / `product_price` / `product_stock` / `product_delete` / `product_import` | `admin.html` | Thêm / sửa / **đổi giá** / sửa tồn kho / xóa sản phẩm, nhập từ Excel — `detail` ghi giá trị cũ → mới |
+| `promo_create` / `promo_update` / `promo_discount` / `promo_toggle` / `promo_delete` | `admin.html` | Khuyến mãi (đổi % giảm tách riêng thành `promo_discount`) |
+| `coupon_create` / `coupon_update` / `coupon_discount` / `coupon_toggle` / `coupon_delete` / `coupon_restore` | `admin.html` | Mã giảm giá |
+| `user_create` / `user_role` / `user_lock` / `user_unlock` / `user_delete` | `admin.html` | Tạo tài khoản nhân viên, đổi vai trò, khóa / mở khóa, xóa tài khoản |
 
 > Thao tác của **khách** không ghi vào nhật ký nhân viên — nhưng vẫn lưu đầy đủ trong `timeline` của đơn.
 
