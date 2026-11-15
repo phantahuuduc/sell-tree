@@ -67,7 +67,7 @@ Trần đọc khi gửi liên tục (50 kết nối song song): `GET /conversati
 ⚠️ **Phát hiện khi đo:** sau khi ghi đồng thời, nhiều lệnh xóa đã trả "thành công" nhưng bản ghi vẫn còn khi đọc lại; phải chạy dọn 5 lượt mới sạch. Nghĩa là **json-server không đảm bảo nhất quán khi nhiều người ghi cùng lúc**. Đây là lý do số một phải thay bằng CSDL thật trước khi có nhiều người mua hàng cùng lúc (trừ tiền ví, trừ kho, lượt dùng mã giảm giá đều là thao tác ghi).
 
 **Nguyên nhân đã tìm ra và đã sửa (11/2026):** json-server 1.x ở chế độ thường dùng *chokidar* theo dõi `db.json`; mỗi khi file đổi nó **đọc lại toàn bộ file vào bộ nhớ**. Sự kiện "file đổi" đến *sau* khi một lượt ghi xong, nên lượt ghi kế tiếp đã nằm trong bộ nhớ nhưng chưa xuống đĩa sẽ **bị đè mất**. Lỗi thật đã gặp: đặt hàng xong, API trả kho = 39 nhưng đọc lại vẫn là 40.
-**Cách sửa:** chạy bằng `node tools/start-db.mjs` (đặt `NODE_ENV=production` → tắt theo dõi file). Kiểm chứng: ghi liên tiếp 20 bản ghi rồi xóa 20 bản ghi → server và file đều khớp 20/20 và 0/0, không mất lượt nào. Lỗi này nằm ở **công cụ giả lập**, không ở code web; CSDL thật (Cấp 2) không có vấn đề này.
+**Cách sửa:** chạy bằng `node tools/start-db.mjs` (nay chạy **json-server 0.17.4 không `--watch`** — không còn theo dõi file; trước đây dùng 1.x với `NODE_ENV=production`). Kiểm chứng: ghi liên tiếp 20 bản ghi rồi xóa 20 bản ghi → server và file đều khớp 20/20 và 0/0, không mất lượt nào. Lỗi này nằm ở **công cụ giả lập**, không ở code web; CSDL thật (Cấp 2) không có vấn đề này.
 
 ### 3.4 Điểm nghẽn thật: dung lượng tăng theo **bình phương**
 Mỗi khách tải *toàn bộ* thông báo của mọi người mỗi 10 giây. Ví dụ mỗi khách có 20 thông báo (một đợt khuyến mãi tạo 1 thông báo cho mọi khách):

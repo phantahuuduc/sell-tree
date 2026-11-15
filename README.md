@@ -27,7 +27,7 @@
 | **Vòng đời đơn** | Một bộ luật duy nhất (`order-flow.js`) cho giao hàng · khiếu nại chưa nhận · hủy · hoàn hàng 7 ngày · hoàn tiền vào ví · tự hoàn tất sau N ngày (nhắc khách trước 24 giờ) |
 | **Giao hàng minh bạch** | Bắt buộc địa chỉ + SĐT người nhận khi đặt · **dự kiến giao** tính theo lịch làm việc của shop (giờ chốt, ngày chuẩn bị, ngày vận chuyển, bỏ Chủ nhật / ngày nghỉ) và giải thích cách tính cho khách · nhân viên **hẹn ngày giao** và báo **"Sắp tới bạn"** · thanh tiến trình đơn có xe chạy |
 | **Bán chạy** | "Bảng tin của tiệm": tối đa 3 cây được khách thương nhất, không cắt ngang nhóm bán bằng nhau; chưa phân được hạng thì thành "Tiệm chọn giúp bạn" |
-| **An toàn dữ liệu** | Tồn kho tính chung mọi size, kiểm tra lại lúc đặt · hàng đợi ghi chống mất dữ liệu khi json-server chạy `--watch` · đọc lại đơn sau khi tạo |
+| **An toàn dữ liệu** | Tồn kho tính chung mọi size, kiểm tra lại lúc đặt · **mỗi đơn chỉ ghi đúng một lần** (mã riêng do trình duyệt sinh, tra theo mã trước khi gửi lại) · thanh toán ví theo thứ tự tạo đơn → trừ ví → đánh dấu đã thanh toán · hàng đợi ghi · json-server 0.17.4 không `--watch` |
 | **Minh bạch** | **Audit log** mọi thao tác nhạy cảm của nhân viên; mỗi đơn có **lịch sử từng bước** (ai · lúc nào · lý do) cho cả khách lẫn shop |
 | **Hiệu ứng vi mô** | Ảnh **bay vào giỏ** theo đường cong · tim nảy + hạt tim · tick vẽ dần + confetti khi đặt hàng · ripple nút · chuyển trang mờ dần · toast có thanh thời gian — viết tay bằng CSS/JS, tôn trọng `prefers-reduced-motion` |
 | **Tự cập nhật** | Màn hình đơn hàng (khách & nhân viên) tự làm mới khi dữ liệu đổi — không phải F5 |
@@ -47,7 +47,7 @@
 | Lớp | Công nghệ |
 |---|---|
 | **Frontend** | HTML5, CSS3 (design tokens), Vanilla JS ES2020+ Modules + importmap |
-| **Backend** | **json-server v1** (REST giả lập) đọc/ghi `db.json` |
+| **Backend** | **json-server 0.17.4** (REST giả lập, cùng một bản cho local và Render) đọc/ghi `db.json` |
 | **Static server** | `serve.py` — Python ThreadingHTTPServer, no-cache |
 | **HTTP** | axios 1.7.9 |
 | **3D** | three.js 0.170.0 |
@@ -68,14 +68,15 @@
 ## 2. Cài đặt & chạy dự án
 
 ### Yêu cầu
-- **Node.js** ≥ 16 (có `npx`)
+- **Node.js** ≥ 16 và `npm` — lần đầu chạy `npm install` để cài đúng **json-server 0.17.4** ghi trong `package.json` (bấm đúp `start-db.bat` thì tự cài)
 - **Python** ≥ 3.8 (cho static server)
 
 ### Bước 1: Backend API (Terminal 1) — cổng 3000
 ```bash
+npm install                 # chỉ cần lần đầu: cài json-server 0.17.4 theo package.json
 node tools/start-db.mjs
 ```
-> **Vì sao không chạy thẳng `npx json-server db.json`?** Ở chế độ thường, json-server theo dõi `db.json` và **đọc lại cả file** sau mỗi lần ghi. Khi hai lượt ghi sát nhau (vd. đặt hàng rồi trừ kho), lần đọc lại có thể **đè mất** lượt ghi sau → kho không bị trừ, bản ghi đã xóa "sống lại". `tools/start-db.mjs` chạy json-server với `NODE_ENV=production` để tắt cơ chế này (tùy chọn `--port 3000`).
+> **Vì sao không chạy thẳng `npx json-server db.json`?** (1) `npx` tự tải bản mới nhất (1.x), khác bản 0.17.4 trên Render — 1.x bỏ qua `id` do trình duyệt gửi lên. (2) Ở chế độ `--watch`, json-server **đọc lại cả file** sau mỗi lần ghi: lượt ghi tới ngay lúc đó có thể bị đè mất, và trên Windows máy chủ có thể sập. (3) json-server 0.17 mặc định **tự xóa "bản ghi mồ côi"** mỗi khi có lệnh xóa; script chạy kèm `--fks __none__` để tắt. `tools/start-db.mjs` lo cả ba việc.
 >
 > Trên Windows có thể bấm đúp `start-db.bat` (gọi đúng lệnh trên). Phòng khi server vẫn bị bật kiểu `json-server --watch db.json`, `js/api.js` có **hàng đợi ghi**: các lượt ghi đi lần lượt, cách nhau 0,3 giây, và bước đặt hàng tự kiểm tra lại đơn đã thật sự nằm trên server.
 > Đánh đổi: nếu **sửa tay `db.json`** khi server đang chạy thì phải khởi động lại server.
@@ -113,7 +114,7 @@ CayXinh/
 ├── db.json                      # CSDL JSON (19 collection)
 ├── serve.py                     # Static server no-cache :8090
 ├── start-db.bat                 # Bấm đúp để bật json-server đúng chế độ (Windows)
-├── tools/start-db.mjs           # Bật json-server với NODE_ENV=production (không đọc lại file)
+├── tools/start-db.mjs           # Bật json-server 0.17.4 từ node_modules (không --watch, --fks __none__)
 │
 ├── index.html                   # Trang chủ + catalog + dải mời "Gợi ý chọn cây"
 ├── product-detail.html          # Chi tiết sản phẩm + đánh giá + yêu thích
@@ -283,7 +284,18 @@ Các tài khoản trong `db.json` (mục 3) là **tài khoản mẫu phục vụ
 
 **Hướng khắc phục:** lưu dữ liệu trong một cơ sở dữ liệu thật như **MongoDB Atlas** hoặc **PostgreSQL** (Supabase, Neon, Render PostgreSQL…) thay cho file JSON. Kết hợp với backend ở mục 8.1, dữ liệu sẽ tồn tại độc lập với vòng đời của máy chủ ứng dụng.
 
-### 8.3 Các giới hạn khác
+### 8.3 Thanh toán ví khi mạng rớt liên tiếp
+
+**Hiện trạng.** Luồng trả bằng ví đi qua nhiều lệnh ghi (tạo đơn → trừ ví → đánh dấu đã thanh toán → trừ kho). Mỗi khi một lệnh báo lỗi, trình duyệt **đọc lại** dữ liệu trên máy chủ rồi mới quyết định (đi tiếp, hủy đơn, hay hoàn tiền), để không ghi trùng và không hoàn tiền nhầm. Còn một khe không đóng được ở phía trình duyệt: khi lệnh ghi báo lỗi **và** lần đọc lại cũng thất bại (mạng rớt liên tiếp), trình duyệt không biết máy chủ đã làm tới đâu:
+
+- Lệnh **trừ ví** lỗi mà không đọc lại được số dư → đơn ở lại "Chưa thanh toán", khách được báo kiểm tra số dư ví. Ví có thể đã bị trừ hoặc chưa.
+- Lệnh **đánh dấu đã thanh toán** lỗi mà không đọc lại được đơn → hệ thống **không tự hoàn tiền** (vì đơn có thể đã được ghi là đã thanh toán). Đơn được gắn cờ "Cần kiểm tra Ví web" (nếu mạng cho phép ghi), hiện ở mục "Cần xử lý" của nhân viên; khách được dặn liên hệ tiệm.
+
+Trong cả hai trường hợp, nhân viên phải đối chiếu số dư ví và lịch sử giao dịch rồi xử lý tay; hiện chưa có nút "hoàn tiền thủ công" riêng cho tình huống này.
+
+**Hướng khắc phục:** chuyển toàn bộ bước thanh toán lên máy chủ thật, gói "trừ ví + đánh dấu đã thanh toán" trong **một giao dịch cơ sở dữ liệu** (transaction) và cho phép gọi lại an toàn bằng khóa chống trùng (idempotency key). Khi đó trình duyệt chỉ gửi một lệnh, và máy chủ bảo đảm hoặc làm trọn, hoặc không làm gì.
+
+### 8.4 Các giới hạn khác
 
 - Không có máy chủ chạy nền: **nhắc xác nhận nhận hàng** và **tự hoàn tất đơn** chỉ chạy khi có người mở trang đơn hàng (khách hoặc shop). *Hướng phát triển:* tác vụ định kỳ (cron) phía máy chủ.
 - Không có WebSocket — realtime dùng polling. *Hướng phát triển:* WebSocket / Server-Sent Events.

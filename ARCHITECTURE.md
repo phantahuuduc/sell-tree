@@ -94,7 +94,7 @@ flowchart TD
 
 | Module | Vai trò |
 |---|---|
-| `api.js` | **Data access** — instance axios + toàn bộ hàm REST (CRUD products/users/orders/...). Lọc phía client cho các truy vấn bị `json-server` so khớp cứng kiểu; tìm email không phân biệt hoa / thường. **Hàng đợi ghi**: lệnh ghi đi lần lượt, cách nhau ≥ 300 ms (chung mọi tab) để json-server chạy kiểu `--watch` không làm rơi lượt ghi; tự thử lại khi lỗi mạng. |
+| `api.js` | **Data access** — instance axios + toàn bộ hàm REST (CRUD products/users/orders/...). Lọc phía client cho các truy vấn bị `json-server` so khớp cứng kiểu; tìm email không phân biệt hoa / thường. **Hàng đợi ghi**: lệnh ghi đi lần lượt, cách nhau ≥ 300 ms (chung mọi tab) để json-server chạy kiểu `--watch` không làm rơi lượt ghi; tự thử lại khi lỗi mạng. **Chống ghi trùng:** `postOnce()` + `newClientRef()` (tạo đơn / giao dịch ví đúng một lần); chỉ tự gửi lại `GET` / `PUT` khi lỗi mạng. |
 | `storage.js` | Xác thực theo tab (`sessionStorage`), giỏ hàng (`localStorage`), guard `requireRole` (đối chiếu phiên với máy chủ: tài khoản, email, vai trò). Giỏ chặn tồn kho **chung cho mọi size** của một cây; thêm từ thẻ sản phẩm tự lấy size đầu tiên. |
 | `ui.js` | Header (tên user, badge giỏ, avatar), toast, dựng card sản phẩm, thước đo mật khẩu, nạp site-settings, khởi tạo trang. |
 | `app.js` | Trang chủ: catalog, tìm kiếm (form + Enter), lọc danh mục, phân trang, quiz chọn cây, hero, khởi tạo Three.js & banner & chat & chatbot. |
@@ -260,7 +260,7 @@ erDiagram
 
 **Các collection khác:** `promotions` (khuyến mãi), `coupons` (mã giảm), `holidays` (10 ngày lễ VN cho banner theo mùa), `mailbox` (hộp thư mô phỏng — lưu vết mọi email).
 
-> **Lưu ý kỹ thuật:** `json-server` v1 so khớp **cứng kiểu** (`?userId=2` không khớp chuỗi `"2"`), nên các truy vấn lọc (`getOrdersByUser`, `getMessages`, `getNotifications`...) **lọc phía client** trong `api.js`.
+> **Lưu ý kỹ thuật:** `json-server` (bản 1.x so khớp cứng kiểu; bản 0.17 đang dùng thì bỏ qua bộ lọc theo trường chưa bản ghi nào có) so khớp **cứng kiểu** (`?userId=2` không khớp chuỗi `"2"`), nên các truy vấn lọc (`getOrdersByUser`, `getMessages`, `getNotifications`...) **lọc phía client** trong `api.js`.
 
 ---
 
@@ -270,7 +270,7 @@ erDiagram
 |---|---|---|
 | 1 | **Auth theo tab** (`sessionStorage`) thay vì `localStorage` | Cho phép mở 1 tab khách + 1 tab nhân viên song song (yêu cầu chat realtime 2 phía). Giỏ hàng vẫn `localStorage` để bền vững. |
 | 2 | **Realtime bằng polling** (chat 2.5s, chuông 10s) | `json-server` không hỗ trợ WebSocket; polling đơn giản, chạy được nhiều tab nhờ state dùng chung. |
-| 3 | **Lọc phía client trong `api.js`** | Khắc phục so khớp cứng kiểu của json-server v1. |
+| 3 | **Lọc phía client trong `api.js`** | Khắc phục so khớp cứng kiểu của json-server (bản 1.x so khớp cứng kiểu; bản 0.17 đang dùng thì bỏ qua bộ lọc theo trường chưa bản ghi nào có). |
 | 4 | **EmailJS + fallback `mailbox`** | `sendEmail` luôn ghi `mailbox` (kiểm chứng/demo), gửi Gmail thật khi admin đã nhập khóa EmailJS. SDK nạp động để không nặng trang. |
 | 5 | **Static server `serve.py` no-cache, đa luồng** | Tránh trình duyệt cache module JS cũ khi phát triển; đa luồng để không nghẽn khi tải nhiều module song song. |
 | 6 | **Luồng duyệt thanh toán + `auditLog`** | Minh bạch chống gian lận: QR phải nhân viên xác nhận mới xuất hóa đơn; mọi thao tác nhạy cảm được ghi log cho admin giám sát. |
@@ -279,8 +279,10 @@ erDiagram
 | 9 | **Gom toàn bộ luật vòng đời đơn vào `order-flow.js`** | Khách, nhân viên và quản trị dùng chung một bộ luật → không lệch nhau; thêm một bước mới chỉ sửa một chỗ; trước khi ghi luôn đọc lại đơn mới nhất để hai người bấm cùng lúc không ghi đè nhau. |
 | 10 | **Duyệt thanh toán chỉ ở một nơi** | Nút duyệt tiền chỉ nằm ở tab có ảnh chuyển khoản ("Duyệt thanh toán"); tab "Đơn hàng" của nhân viên chỉ dẫn sang đó → tránh xác nhận trùng một khoản tiền. |
 | 11 | **Tự làm mới theo "chữ ký" dữ liệu (`live.js`) thay vì tải lại định kỳ** | Chỉ vẽ lại khi dữ liệu thực sự đổi, và hoãn khi người dùng đang gõ / đang mở hộp thoại / đang chọn đơn → không mất thao tác, không tốn băng thông vô ích. |
-| 12 | **Chạy json-server với `NODE_ENV=production` (`tools/start-db.mjs`, hoặc bấm đúp `start-db.bat`)** | Chế độ thường theo dõi `db.json` và đọc lại cả file sau mỗi lần ghi → có thể **đè mất** lượt ghi kế tiếp (kho không bị trừ, bản ghi đã xóa sống lại). Đổi lại: sửa tay `db.json` khi server đang chạy thì phải khởi động lại. |
+| 12 | **Một phiên bản json-server cho mọi nơi: 0.17.4, không `--watch`, có `--fks __none__`** (`tools/start-db.mjs` / `start-db.bat` ở local, `npm start` trên Render) | Trước đây local chạy `npx json-server` (tự tải bản 1.x) còn Render chạy 0.17.4 → hành vi lệch nhau (1.x bỏ qua `id` do trình duyệt gửi). Nay cả hai dùng đúng bản trong `package.json`. Bỏ `--watch` vì chế độ theo dõi file đọc lại `db.json` sau mỗi lần ghi, có thể đè mất lượt ghi và làm sập máy chủ trên Windows (`EPERM`); đo 120 lượt ghi dồn dập không `--watch`: giữ đủ 120. `--fks __none__` tắt việc 0.17 tự xóa "bản ghi mồ côi" khi có lệnh `DELETE` (thử trên bản sao dữ liệu: xóa 1 đơn làm mất 1 banner và 6 giao dịch ví). Đánh đổi: sửa tay `db.json` thì phải khởi động lại server. |
 | 13 | **Hàng đợi ghi trong `api.js` + đọc lại đơn sau khi đặt** | Phòng khi server vẫn bị bật kiểu `json-server --watch db.json`: đo thực tế, lượt ghi tới trong ~25 ms sau lượt trước có thể bị mất (2–7/30 đơn). Cho lệnh ghi đi lần lượt, cách nhau 300 ms (mốc lưu `localStorage`, áp dụng chung mọi tab) → không còn mất. Bước đặt hàng còn `GET` lại đơn, mất thì ghi lại đúng mã. Lệnh đọc không bị chậm. |
+| 16 | **Tạo đơn đúng một lần bằng mã do trình duyệt sinh** (`createOrder` → `postOnce` trong `api.js`) | "Lỗi mạng" không cho biết máy chủ đã lưu hay chưa. Giả lập phản hồi bị rớt sau khi máy chủ đã lưu: bản cũ (tự gửi lại mọi lệnh) sinh **2 đơn đã thanh toán**. Nay mỗi đơn mang mã riêng (`id` = `clientRef`); gặp lỗi mạng thì tra theo mã trước, có rồi thì dùng, chưa có mới gửi lại. `api.js` chỉ tự gửi lại `GET` / `PUT`. Không có bước "quét và xóa đơn thừa": code không tự xóa đơn. |
+| 17 | **Thanh toán ví: tạo đơn chờ thanh toán → trừ ví → đánh dấu đã thanh toán → trừ kho** | Thứ tự cũ (trừ ví trước, tạo đơn sau) có thể để lại cảnh ví bị trừ mà không có đơn. Thứ tự mới: lỗi ở bước nào thì thứ còn lại là một đơn chưa thanh toán / đã hủy, không phải tiền bị mất. Các lệnh `PATCH` trong luồng này ghi giá trị tuyệt đối nên giỏ hàng được phép thử lại. Bước đánh dấu đã thanh toán báo lỗi thì **đọc lại đơn trước khi hoàn tiền** — cùng bài học với ADR 16: "lỗi" chưa chắc là máy chủ chưa làm. Hoàn tiền = số dư hiện tại + số tiền đơn (không ghi đè số dư cũ) + giao dịch `refund`. |
 | 14 | **Dự kiến giao tính theo lịch làm việc cấu hình được, nhân viên ghi đè được** | Con số "1–3 ngày" cố định không có cơ sở. Tính từ giờ chốt + ngày chuẩn bị + ngày vận chuyển, bỏ Chủ nhật / ngày nghỉ → khách thấy được cách tính; trường hợp đặc biệt (khách hẹn, xe tuyến xa) nhân viên hẹn ngày cụ thể. Thiếu cài đặt thì dùng mặc định → dữ liệu cũ chạy ngay. |
 | 15 | **Tự hoàn tất + nhắc chạy khi có người mở trang** | Không có máy chủ chạy nền (cron). `autoCompleteDelivered` chạy khi mở trang đơn của khách hoặc của shop; đúng hạn vẫn được tính theo thời gian, chỉ trễ tới lần mở trang kế tiếp. Nhắc chỉ 1 lần nhờ cờ `receiveReminderAt`. |
 

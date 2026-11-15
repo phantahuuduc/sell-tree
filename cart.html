@@ -124,7 +124,7 @@
   </script>
   <script type="module">
     import { getCart, setCart, updateCartQuantity, removeFromCart, clearCart, getUser, setUser, requireLogin, cartProductId } from "./js/storage.js";
-    import { createOrder, getCouponByCode, updateCoupon, updateUser, getUserById, createWalletTransaction, getProducts, getSettings, updateProduct, updateOrder, getOrderById } from "./js/api.js";
+    import { createOrder, getCouponByCode, updateCoupon, updateUser, getUserById, createWalletTransaction, getProducts, getSettings, updateProduct, updateOrder, getOrderById, newClientRef } from "./js/api.js";
     import { initPage, formatPrice, updateCartBadge, showToast, escapeHTML, ICONS, normalizePhone, isValidPhone } from "./js/ui.js";
     import { validateCoupon, isNewUser, ensurePromotions, getPriceInfo } from "./js/sale.js";
     import { openPaymentModal } from "./js/payment.js";
@@ -636,44 +636,171 @@
           },
         };
 
+        // Mã riêng của lần đặt hàng này, do trình duyệt sinh — vừa là mã đơn, vừa là mã tra cứu (clientRef) lưu trong đơn.
+        // Tạo đơn với cùng mã bao nhiêu lần cũng chỉ ra MỘT đơn (createOrder / postOnce trong js/api.js).
+        const orderRef = newClientRef();
+        const me = { id: String(currentUser.id), name: currentUser.name || "", role: "user" };
+        const systemActor = { id: "system", name: "Hệ thống", role: "system" };
+        // Lệnh PATCH ở đây ghi GIÁ TRỊ TUYỆT ĐỐI (số dư mới, trạng thái mới) → lặp lại vẫn ra cùng kết quả,
+        // nên được thử lại khi lỗi mạng (api.js không tự gửi lại PATCH). Máy chủ đã trả lời lỗi thì dừng ngay.
+        const retryPatch = async (fn) => {
+          let lastErr;
+          for (let k = 0; k < 3; k++) {
+            if (k) await new Promise((r) => setTimeout(r, 800 * k));
+            try { return await fn(); } catch (e) { lastErr = e; if (e.response) break; }
+          }
+          throw lastErr;
+        };
+        const resetBtn = () => { btn.disabled = false; btn.textContent = "Đặt hàng ngay"; };
+
         let newOrder;
         if (pay.method === "wallet") {
-          // --- Trả bằng ví: trừ số dư ngay, không cần nhân viên ---
+          // --- Trả bằng ví. Thứ tự: (1) tạo đơn CHỜ THANH TOÁN → (2) trừ ví → (3) đánh dấu đã thanh toán → (4) trừ kho.
+          //     Trừ ví không thành thì đơn bị hủy (hoặc ở lại "Chưa thanh toán") — không còn cảnh ví bị trừ mà không có đơn.
           const balance = Number(freshUser.walletBalance || 0);
           if (balance < finalTotal) {
             showToast("Số dư ví không đủ. Vui lòng chọn chuyển khoản QR.", { icon: "alert" });
-            btn.disabled = false; btn.textContent = "Đặt hàng ngay";
+            resetBtn();
             return;
           }
           const newBalance = balance - finalTotal;
-          await updateUser(currentUser.id, { walletBalance: newBalance });
-          await setUser({ ...currentUser, walletBalance: newBalance });
 
-          const paidAt = new Date().toISOString();
+          // (1) Đơn chờ thanh toán — chưa đụng tới tiền. Lỗi ở bước này: không có gì bị trừ.
+          const placedAt = new Date().toISOString();
           newOrder = await createOrder({
             ...orderBase,
-            paymentStatus: "paid",
-            status: "confirmed",
-            paidAt,
-            timeline: [{
-              action: "pay_wallet", label: "Thanh toán bằng Ví web", status: "confirmed", at: paidAt,
-              by: { id: String(currentUser.id), name: currentUser.name || "", role: "user" },
-            }],
+            id: orderRef,
+            clientRef: orderRef,
+            paymentStatus: "unpaid",
+            status: "pending",
+            timeline: [{ action: "place_order", label: "Đặt hàng — chờ trừ Ví web", status: "pending", at: placedAt, by: me }],
           });
 
-          await createWalletTransaction({
-            userId: String(currentUser.id),
-            type: "payment",
-            amount: finalTotal,
-            status: "confirmed",
-            note: `Thanh toán đơn #${newOrder.id}`,
-            orderId: String(newOrder.id),
-            createdAt: new Date().toISOString(),
-          });
+          // (2) Trừ ví
+          let charged = false, chargeUnknown = false;
+          try {
+            await retryPatch(() => updateUser(currentUser.id, { walletBalance: newBalance }));
+            charged = true;
+          } catch (chargeErr) {
+            console.warn("Lệnh trừ ví lỗi, đọc lại số dư để biết chắc:", chargeErr);
+            try {
+              const nowUser = await getUserById(currentUser.id);   // phản hồi có thể rớt SAU khi máy chủ đã ghi
+              charged = !!nowUser && Number(nowUser.walletBalance) === newBalance;
+            } catch { chargeUnknown = true; }
+          }
+          if (!charged) {
+            if (!chargeUnknown) {
+              // Chắc chắn chưa trừ tiền → hủy đơn chờ thanh toán (không cần hoàn tiền vì chưa trừ)
+              const at = new Date().toISOString();
+              try {
+                await retryPatch(() => updateOrder(newOrder.id, {
+                  status: "cancelled", cancelledAt: at, cancelledBy: "system", updatedAt: at,
+                  cancelReason: "Thanh toán bằng Ví web không thành công",
+                  timeline: [...(newOrder.timeline || []), { action: "wallet_failed", label: "Trừ Ví web không thành công — hủy đơn", status: "cancelled", at, by: systemActor }],
+                }));
+              } catch (cancelErr) { console.warn("Chưa hủy được đơn chờ thanh toán:", cancelErr); }
+              showToast(`Chưa trừ được tiền trong ví nên đơn #${newOrder.id} không được thanh toán. Ví của bạn KHÔNG bị trừ — vui lòng thử đặt lại.`, { icon: "alert" });
+            } else {
+              showToast(`Mạng đang chập chờn nên chưa xác nhận được việc trừ ví. Đơn #${newOrder.id} đang "Chưa thanh toán" — hãy xem số dư ví và mục Đơn hàng của tôi trước khi đặt lại.`, { icon: "alert" });
+            }
+            resetBtn();
+            return;
+          }
+          await setUser({ ...currentUser, walletBalance: newBalance });
+
+          // (3) Đánh dấu đã thanh toán
+          const paidAt = new Date().toISOString();
+          try {
+            newOrder = await retryPatch(() => updateOrder(newOrder.id, {
+              paymentStatus: "paid", status: "confirmed", paidAt, updatedAt: paidAt,
+              timeline: [...(newOrder.timeline || []), { action: "pay_wallet", label: "Thanh toán bằng Ví web", status: "confirmed", at: paidAt, by: me }],
+            }));
+          } catch (markErr) {
+            // Lệnh "đánh dấu đã thanh toán" báo lỗi KHÔNG có nghĩa máy chủ chưa làm: có thể đã ghi xong nhưng phản hồi rớt.
+            // → Đọc lại đơn trước khi quyết định. Chỉ hoàn tiền khi biết chắc đơn CHƯA được đánh dấu đã thanh toán.
+            console.warn("Lệnh đánh dấu đã thanh toán lỗi, đọc lại đơn để biết chắc:", markErr);
+            let saved, readOk = true;
+            try { saved = await getOrderById(newOrder.id); } catch { readOk = false; }
+
+            if (readOk && saved && saved.paymentStatus === "paid") {
+              newOrder = saved;                    // máy chủ đã ghi "đã thanh toán" → coi như thành công, đi tiếp
+            } else if (!readOk || !saved) {
+              // Không biết đơn đang ở trạng thái nào → KHÔNG hoàn tiền (tránh vừa có đơn đã thanh toán vừa được trả tiền).
+              // Gắn cờ để nhân viên thấy trong bảng đơn ("Cần xử lý"); chỉ thêm trường, không đụng trạng thái / thanh toán.
+              try {
+                await retryPatch(() => updateOrder(newOrder.id, {
+                  walletCheckNeeded: true, shopUnread: true, shopUnreadAt: new Date().toISOString(),
+                  shopUnreadLabel: `Cần kiểm tra Ví web — mạng lỗi lúc thanh toán, ví đã trừ ${formatPrice(finalTotal)}`,
+                }));
+              } catch { /* mạng vẫn rớt — khách đã được dặn liên hệ tiệm */ }
+              showToast(`Mạng lỗi giữa lúc thanh toán đơn #${newOrder.id}: ví đã trừ ${formatPrice(finalTotal)} nhưng chưa xác nhận được đơn. Vui lòng nhắn tiệm kèm mã đơn để được kiểm tra.`, { icon: "alert" });
+              resetBtn();
+              return;
+            } else {
+              // Biết chắc đơn CHƯA thanh toán → hoàn đúng số tiền đã trừ: đọc số dư HIỆN TẠI rồi cộng thêm (không ghi đè bằng số dư cũ,
+              // phòng khi ví vừa có giao dịch khác). Số dư đích tính MỘT lần nên ghi lặp lại vẫn ra cùng kết quả.
+              let refunded = false, target = null;
+              try {
+                const nowUser = await getUserById(currentUser.id);
+                if (!nowUser) throw new Error("Không đọc được tài khoản");
+                target = Number(nowUser.walletBalance || 0) + finalTotal;
+                try { await retryPatch(() => updateUser(currentUser.id, { walletBalance: target })); refunded = true; }
+                catch {                             // phản hồi có thể rớt sau khi đã ghi → đọc lại để biết
+                  const again = await getUserById(currentUser.id).catch(() => null);
+                  refunded = !!again && Number(again.walletBalance) === target;
+                }
+              } catch (refundErr) { console.warn("Chưa hoàn được tiền vào ví:", refundErr); }
+
+              const at = new Date().toISOString();
+              if (refunded) {
+                await setUser({ ...currentUser, walletBalance: target });
+                try {                               // lịch sử ví: admin / khách thấy khoản hoàn (postOnce → không ghi trùng)
+                  await createWalletTransaction({
+                    userId: String(currentUser.id), type: "refund", amount: finalTotal, status: "confirmed",
+                    orderId: String(newOrder.id), note: `Hoàn tiền đơn #${newOrder.id} — thanh toán bằng Ví web không hoàn tất`,
+                    createdAt: at, confirmedBy: "system", confirmedAt: at,
+                  });
+                } catch (txErr) { console.warn("Chưa ghi được giao dịch hoàn tiền:", txErr); }
+                try {
+                  await retryPatch(() => updateOrder(newOrder.id, {
+                    status: "cancelled", cancelledAt: at, cancelledBy: "system", updatedAt: at,
+                    cancelReason: "Thanh toán bằng Ví web không hoàn tất — đã hoàn tiền vào ví",
+                    timeline: [...(saved.timeline || []), { action: "wallet_refund", label: "Thanh toán không hoàn tất — hoàn tiền vào Ví web", status: "cancelled", at, by: systemActor }],
+                  }));
+                } catch (cancelErr) { console.warn("Chưa hủy được đơn sau khi hoàn tiền:", cancelErr); }
+                showToast(`Mạng lỗi nên đơn #${newOrder.id} chưa được thanh toán. ${formatPrice(finalTotal)} đã được hoàn lại vào ví — vui lòng thử đặt lại.`, { icon: "alert" });
+              } else {
+                try {
+                  await retryPatch(() => updateOrder(newOrder.id, {
+                    walletCheckNeeded: true, shopUnread: true, shopUnreadAt: at,
+                    shopUnreadLabel: `Cần hoàn ${formatPrice(finalTotal)} vào Ví web — ví đã trừ nhưng đơn chưa thanh toán`,
+                  }));
+                } catch { /* mạng vẫn rớt */ }
+                showToast(`Mạng lỗi giữa lúc thanh toán đơn #${newOrder.id}: ví đã trừ ${formatPrice(finalTotal)} nhưng đơn chưa ghi nhận, và chưa hoàn lại được. Vui lòng nhắn tiệm kèm mã đơn.`, { icon: "alert" });
+              }
+              resetBtn();
+              return;
+            }
+          }
+
+          // Lịch sử ví (không ảnh hưởng tiền / đơn nếu ghi lỗi)
+          try {
+            await createWalletTransaction({
+              userId: String(currentUser.id),
+              type: "payment",
+              amount: finalTotal,
+              status: "confirmed",
+              note: `Thanh toán đơn #${newOrder.id}`,
+              orderId: String(newOrder.id),
+              createdAt: new Date().toISOString(),
+            });
+          } catch (txErr) { console.warn("Chưa ghi được lịch sử ví cho đơn:", txErr); }
         } else {
           // --- Chuyển khoản QR: chờ nhân viên xác nhận ---
           newOrder = await createOrder({
             ...orderBase,
+            id: orderRef,
+            clientRef: orderRef,
             paymentStatus: "awaiting_confirmation",
             status: "pending",
             paymentProof: pay.proofImage || "",
@@ -701,9 +828,9 @@
           console.warn("Không trừ được tồn kho:", stockErr);
         }
 
-        // Chốt an toàn: đơn phải còn trên máy chủ sau khi các bước trên chạy xong. Nếu máy chủ đã làm rơi đơn
-        // (json-server chạy kiểu --watch có thể đè mất lượt ghi) thì ghi lại nguyên đơn với đúng mã cũ,
-        // tránh cảnh ví đã trừ tiền mà nhân viên không thấy đơn.
+        // (4b) Chốt an toàn: đơn phải còn trên máy chủ sau khi các bước trên chạy xong. Nếu không thấy (vd máy chủ bị bật
+        // kiểu --watch và làm rơi lượt ghi) thì ghi lại nguyên đơn với CÙNG MÃ — createOrder tra theo mã trước nên
+        // không bao giờ sinh đơn thứ hai. Không có bước nào tự xóa đơn.
         try {
           const saved = await getOrderById(newOrder.id);
           if (!saved) newOrder = await createOrder({ ...newOrder, ...(deducted ? { stockDeducted: deducted } : {}) });

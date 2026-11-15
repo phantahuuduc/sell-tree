@@ -15,15 +15,18 @@ const api = axios.create({
   timeout: IS_LOCAL ? 8000 : 60000,
 });
 
-// Retry interceptor: khi lỗi mạng (server chưa sẵn sàng / mất kết nối tạm thời),
-// tự thử lại tối đa 2 lần, cách 800ms + 1600ms — giúp xử lý race khi json-server
-// khởi động chậm hơn trang web.
+// Tự gửi lại khi lỗi mạng (server chưa sẵn sàng / mất kết nối tạm thời): tối đa 2 lần, cách 800ms + 1600ms.
+// CHỈ áp dụng cho lệnh AN TOÀN KHI LẶP: GET / HEAD / OPTIONS và PUT (ghi đè nguyên bản ghi — gửi 2 lần vẫn ra 1 kết quả).
+// POST KHÔNG được tự gửi lại: "lỗi mạng" có thể là máy chủ ĐÃ lưu nhưng phản hồi rớt giữa đường → gửi lại mù quáng
+// sẽ sinh bản ghi trùng (vd 2 đơn hàng). Lệnh tạo nào cần gửi lại thì đi qua postOnce() bên dưới (tra theo mã trước).
+// PATCH / DELETE cũng không tự gửi lại; nơi gọi tự quyết (vd giỏ hàng thử lại các lệnh PATCH ghi giá trị tuyệt đối).
 // ----- Hàng đợi ghi -----
 // json-server chạy kiểu `json-server --watch db.json` sẽ ĐỌC LẠI cả file sau mỗi lần ghi. Lượt ghi nào tới
 // trong vài chục mili-giây ngay sau lượt trước có thể bị lần đọc lại đó đè mất: server vẫn trả "thành công"
 // nhưng bản ghi biến mất (vd. ví đã trừ tiền mà đơn hàng không còn). Chạy bằng `node tools/start-db.mjs` thì
 // không bị, nhưng để web đúng với MỌI cách bật server: các lượt ghi (POST/PATCH/PUT/DELETE) đi lần lượt,
 // lượt sau cách lượt trước một nhịp ngắn. Lượt đọc (GET) không bị ảnh hưởng.
+const SAFE_RETRY = ["get", "head", "options", "put"]; // lệnh được phép tự gửi lại khi lỗi mạng
 const WRITE_GAP = 300; // ms — đo thực tế: dưới ~25ms mới mất dữ liệu; để dư cho máy chậm / file db lớn
 const LAST_WRITE_KEY = "__api_last_write"; // dùng chung giữa các tab (tab khách + tab nhân viên cùng ghi)
 let writeChain = Promise.resolve();
@@ -53,12 +56,68 @@ api.interceptors.response.use(undefined, async (err) => {
   const cfg = err.config || {};
   writeDone(cfg); // trả lượt cho hàng đợi ghi TRƯỚC khi thử lại (lần thử lại sẽ tự xếp hàng lại)
   const isNetwork = !err.response; // không có HTTP response = lỗi mạng
-  if (!isNetwork || cfg.__retryCount >= 2) return Promise.reject(err);
+  const safeToRepeat = SAFE_RETRY.includes(String(cfg.method || "get").toLowerCase());
+  if (!isNetwork || !safeToRepeat || cfg.__retryCount >= 2) return Promise.reject(err);
   cfg.__retryCount = (cfg.__retryCount || 0) + 1;
   const delay = 800 * cfg.__retryCount;
   await new Promise((r) => setTimeout(r, delay));
   return api.request(cfg);
 });
+
+// ----- Tạo bản ghi "đúng một lần" -----
+// Mỗi lần tạo mang một MÃ RIÊNG do trình duyệt sinh (clientRef), lưu ngay trong bản ghi.
+// Gặp lỗi mạng thì KHÔNG gửi lại ngay: tra `GET <path>?clientRef=<mã>` trước —
+//   • đã có  → dùng luôn bản ghi đó (máy chủ đã lưu, chỉ phản hồi bị rớt);
+//   • chưa có → mới gửi lại;
+//   • chưa tra được (mạng vẫn rớt) → chờ rồi tra lại, tuyệt đối không gửi khi chưa biết.
+// Hết 3 lượt vẫn không xong thì ném lỗi, kèm cờ: err.notCreated (tra được, chắc chắn chưa có)
+// hoặc err.outcomeUnknown (không tra được nên không biết). Hàm KHÔNG bao giờ xóa bản ghi nào.
+// Với json-server 0.17, bản ghi gửi kèm `id` còn được máy chủ tự chặn trùng (id đã có → 500) — thêm một lớp bảo vệ.
+export function newClientRef(length = 11) {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"; // bỏ ký tự dễ nhầm (0/O, 1/l/I)
+  const buf = new Uint32Array(length);
+  if (globalThis.crypto?.getRandomValues) globalThis.crypto.getRandomValues(buf);
+  else for (let k = 0; k < length; k++) buf[k] = Math.floor(Math.random() * 2 ** 32);
+  return Array.from(buf, (n) => abc[n % abc.length]).join("");
+}
+async function findByRef(path, ref) {
+  const res = await api.get(path, { params: { clientRef: ref } }); // GET → được tự gửi lại khi lỗi mạng
+  // PHẢI so khớp lại ở đây: json-server 0.17 BỎ QUA bộ lọc theo trường chưa bản ghi nào có → trả về toàn bộ danh sách.
+  // Lấy phần tử đầu sẽ nhận nhầm bản ghi của người khác.
+  const list = Array.isArray(res.data) ? res.data : [];
+  return list.find((x) => x && x.clientRef === ref) || null;
+}
+const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+async function postOnce(path, data) {
+  const ref = data.clientRef || newClientRef();
+  const body = { ...data, clientRef: ref };
+  let lastErr = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) {
+      await pause(800 * attempt);
+      try {
+        const found = await findByRef(path, ref);
+        if (found) return found;               // máy chủ đã lưu từ lượt trước → không gửi nữa
+      } catch (lookupErr) { lastErr = lookupErr; continue; } // chưa tra được → KHÔNG gửi lại
+    }
+    try {
+      return (await api.post(path, body)).data;
+    } catch (err) {
+      lastErr = err;
+      if (err.response) {                      // máy chủ có trả lời (vd 500 "id đã tồn tại") → không phải lỗi mạng
+        const found = await findByRef(path, ref).catch(() => null);
+        if (found) return found;
+        throw err;
+      }
+    }
+  }
+  try {
+    const found = await findByRef(path, ref);
+    if (found) return found;
+    lastErr.notCreated = true;
+  } catch { lastErr.outcomeUnknown = true; }
+  throw lastErr;
+}
 
 // Lấy toàn bộ danh mục
 export async function getCategories() {
@@ -122,9 +181,15 @@ export async function createUser(user) {
 }
 
 // ----- Đơn hàng -----
+// Tạo đơn "đúng một lần": mã đơn (id) do trình duyệt sinh và cũng là mã tra cứu clientRef.
+// Gọi lại với cùng mã (vd sau lỗi mạng, hoặc bước kiểm tra lại ở giỏ hàng) không bao giờ ra đơn thứ hai.
 export async function createOrder(order) {
-  const res = await api.post("/orders", order);
-  return res.data;
+  const ref = order.clientRef || (order.id != null ? String(order.id) : newClientRef());
+  return postOnce("/orders", { id: ref, ...order, clientRef: ref });
+}
+// Tìm đơn theo mã do trình duyệt sinh (null nếu chưa có)
+export async function findOrderByRef(ref) {
+  return findByRef("/orders", ref);
 }
 
 export async function getOrders() {
@@ -440,8 +505,7 @@ export async function getWalletTransactions(params = {}) {
   return list;
 }
 export async function createWalletTransaction(data) {
-  const res = await api.post("/walletTransactions", data);
-  return res.data;
+  return postOnce("/walletTransactions", data); // giao dịch ví cũng không được ghi trùng khi mạng chập chờn
 }
 export async function updateWalletTransaction(id, patch) {
   const res = await api.patch(`/walletTransactions/${encodeURIComponent(id)}`, patch);

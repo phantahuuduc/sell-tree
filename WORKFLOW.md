@@ -113,13 +113,19 @@ sequenceDiagram
   alt Thanh toán bằng Ví (đủ số dư)
     KH->>Pay: Xác nhận trả bằng ví
     Pay-->>Cart: {method: wallet}
-    Cart->>API: updateUser(trừ số dư) + createOrder(paid/confirmed, shipping)
+    Cart->>API: createOrder(pending / unpaid, shipping)<br/>mã đơn do trình duyệt sinh — lỗi mạng thì tra theo mã trước khi gửi lại
+    Cart->>API: updateUser(trừ số dư)
+    alt Trừ ví không thành
+      Cart->>API: updateOrder(cancelled) — ví không bị trừ
+    else Trừ ví xong
+      Cart->>API: updateOrder(paid / confirmed) + ghi giao dịch ví
+    end
     Cart->>Cart: Xuất hóa đơn PDF ngay (invoice.js)
   else Chuyển khoản QR
     Pay->>Pay: Hiện mã VietQR (TK thật) + dòng "chụp màn hình..."
     KH->>Pay: Upload ảnh CK + "Tôi đã thanh toán"
     Pay-->>Cart: {method: qr, proofImage}
-    Cart->>API: createOrder(status=pending, paymentStatus=awaiting_confirmation,<br/>paymentProof=ảnh CK, shipping)
+    Cart->>API: createOrder(status=pending, paymentStatus=awaiting_confirmation,<br/>paymentProof=ảnh CK, shipping, mã đơn do trình duyệt sinh)
     Note over KH: Đơn ở trạng thái "Chờ nhân viên xác nhận"<br/>(vẫn tạo đơn khác được)
     NV->>API: Mở tab "Duyệt thanh toán" → thấy đơn chờ
     NV->>API: Bấm "Xác nhận" → updateOrder(paid/confirmed)
@@ -128,15 +134,16 @@ sequenceDiagram
     NV->>Noti: notifyUser (thông báo web "Đã xác nhận thanh toán")
     KH->>API: Trang "Đơn của tôi" → nút "Tải hóa đơn" PDF
   end
-  Cart->>API: Trừ kho (stockDeducted) → đọc lại đơn<br/>(máy chủ làm rơi đơn → ghi lại đúng mã)
+  Cart->>API: Trừ kho (stockDeducted) → đọc lại đơn<br/>(không thấy đơn → ghi lại với CÙNG MÃ, không sinh đơn trùng)
 ```
 
 - **Phương thức thanh toán:** Ví web **hoặc** Chuyển khoản QR (VietQR), chọn trong modal.
-- **Ví đủ số dư:** trừ thẳng, đơn `paid/confirmed` ngay, không cần nhân viên.
+- **Ví đủ số dư:** không cần nhân viên, nhưng đi theo thứ tự **tạo đơn chờ thanh toán → trừ ví → đánh dấu đã thanh toán → trừ kho**. Trừ ví không thành thì đơn bị hủy (hoặc ở lại "Chưa thanh toán"), ví không bị trừ; đơn chưa thanh toán không tính vào doanh thu. Lệnh đánh dấu đã thanh toán báo lỗi thì đọc lại đơn trước: đã thanh toán → đi tiếp; chắc chắn chưa → hoàn tiền (cộng vào số dư hiện tại, ghi giao dịch hoàn) và hủy đơn; không đọc lại được → không hoàn, gắn cờ "Cần kiểm tra Ví web" cho nhân viên.
 - **QR:** đơn `awaiting_confirmation` → **phải chờ nhân viên duyệt** mới xuất hóa đơn + email.
 - **Địa chỉ giao bắt buộc:** đơn lưu `shipping = {name, phone, address, note}`; hiện ở đơn của khách, bảng đơn + thẻ duyệt thanh toán của nhân viên, hóa đơn PDF và email hóa đơn.
 - **Tồn kho:** tính chung cho mọi size của một cây; kiểm tra lại với tồn kho mới nhất trước khi thanh toán.
-- **An toàn ghi dữ liệu:** `api.js` cho các lượt ghi đi lần lượt, cách nhau 0,3 giây (phòng khi json-server bị bật kiểu `--watch` và làm rơi lượt ghi sát nhau); sau khi tạo đơn, giỏ hàng đọc lại đơn để chắc đơn đã nằm trên máy chủ.
+- **Mỗi đơn chỉ được ghi một lần:** mỗi lần đặt hàng mang một mã riêng do trình duyệt sinh, lưu trong đơn (`id` = `clientRef`). Lệnh tạo đơn gặp lỗi mạng thì **tra theo mã trước**: đã có → dùng đơn đó, chưa có → mới gửi lại. `api.js` chỉ tự gửi lại `GET` và `PUT`; `POST` không bao giờ tự gửi lại mù quáng; không có bước nào tự xóa đơn.
+- **An toàn ghi dữ liệu:** `api.js` cho các lượt ghi đi lần lượt, cách nhau 0,3 giây; máy chủ chạy **json-server 0.17.4 không `--watch`** (cả local lẫn Render) nên không còn cảnh đọc lại file làm rơi lượt ghi. Sau khi tạo đơn, giỏ hàng đọc lại đơn để chắc đơn đã nằm trên máy chủ.
 - **VietQR:** ảnh QR thật từ `img.vietqr.io` (BIN 970436 Vietcombank, TK `1051236810` — PHAN TA HUU DUC), cấu hình trong `settings`.
 
 ### Trạng thái đơn hàng (`js/order-flow.js` — nơi duy nhất định nghĩa)

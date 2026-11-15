@@ -7,9 +7,9 @@
 
 ## 1. Tổng quan
 
-- **Loại CSDL:** NoSQL dạng document — một file JSON duy nhất (`db.json`) phục vụ bởi **json-server v1**.
+- **Loại CSDL:** NoSQL dạng document — một file JSON duy nhất (`db.json`) phục vụ bởi **json-server 0.17.4**.
 - **Giao tiếp:** REST (`GET/POST/PATCH/DELETE`) tại `http://localhost:3000`.
-- **Khoá chính:** mọi `id` là **chuỗi** (tránh lỗi so khớp cứng kiểu của json-server v1).
+- **Khoá chính:** mọi `id` là **chuỗi** (tránh lỗi so khớp cứng kiểu của json-server 1.x; dự án nay chạy 0.17.4 nhưng vẫn giữ quy ước này).
 - **Khoá ngoại:** biểu diễn bằng tham chiếu id (`categoryId`, `userId`, `productId`...).
 - **19 collection** (gồm object `settings`) + 1 object `$schema` (meta).
 
@@ -363,6 +363,7 @@ erDiagram
 | `couponCode` | string | Mã giảm đã áp (nếu có) |
 | `paymentMethod` | enum | `wallet` \| `qr` |
 | `addInfo` | string | Nội dung chuyển khoản (`LASOI<mã khách>-<5 số>`) |
+| `clientRef` | string | **Mã riêng của lần đặt hàng, do trình duyệt sinh** (11 ký tự) — bằng luôn `id` của đơn. Dùng để tra lại đơn khi lệnh tạo gặp lỗi mạng, bảo đảm một đơn chỉ được ghi một lần. Đơn tạo trước 11/2026 không có trường này |
 | `shipping` | object | Thông tin giao **bắt buộc** với đơn mới: `{ name, phone, address, note? }` — `phone` đã chuẩn hóa 10 số bắt đầu bằng 0. Đơn cũ (trước khi có ô địa chỉ) không có trường này |
 | `stockDeducted` | object | `{ productId: số lượng }` đã trừ kho — để hoàn trả **đúng** số khi hủy / hoàn hàng |
 
@@ -510,7 +511,7 @@ Nhãn mặc định: *Dễ chăm · Trung bình · Cần chú ý* và *An toàn 
 ## 4. Quy ước kỹ thuật
 
 ### 4.1 Lọc phía client
-`json-server v1` so khớp **cứng kiểu**: `?userId=2` (số) **không** khớp `"2"` (chuỗi). Vì vậy `api.js` lọc phía client cho:
+`json-server` 1.x so khớp **cứng kiểu**: `?userId=2` (số) **không** khớp `"2"` (chuỗi). Vì vậy `api.js` lọc phía client cho:
 - `getOrdersByUser`, `getMessages`, `getNotifications`, `getStockAlerts`, `getWalletTransactions`, `getConversationByCustomer`.
 
 ### 4.2 Sinh id

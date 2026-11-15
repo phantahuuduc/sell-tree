@@ -328,14 +328,14 @@ flowchart LR
 | Mục | Nội dung |
 |---|---|
 | Tiền điều kiện | Đã đăng nhập, giỏ có hàng. |
-| Luồng chính | 1. Bấm Đặt hàng ngay. 2. Kiểm tra khối **Giao đến**: tên người nhận, SĐT hợp lệ, địa chỉ đầy đủ (BR25). 3. Hệ thống lấy **khuyến mãi, cài đặt phí giao và tồn kho mới nhất**, tính lại tổng. 4. Mở hộp thanh toán: Ví web (UC12) hoặc Chuyển khoản QR (UC13). 5. Tạo đơn lưu: món (giá thực, giá niêm yết, tên khuyến mãi), tạm tính, phí giao, giảm giá, tổng, **địa chỉ giao (`shipping`)**. 6. Trừ kho, **đọc lại đơn trên máy chủ** — đơn bị máy chủ làm rơi thì ghi lại nguyên đơn với đúng mã. 7. Cộng lượt dùng mã, làm trống giỏ; khách tích "Lưu làm địa chỉ mặc định" thì SĐT + địa chỉ được ghi vào Hồ sơ. |
-| Luồng thay thế | 2a. Thiếu / sai thông tin giao → tô đỏ ô sai, cuộn tới ô đó, không mở thanh toán. 3a. Kho vừa giảm (người khác mua) → giỏ tự chỉnh về đúng số còn lại, báo khách kiểm tra rồi đặt lại. 4a. Đóng hộp thanh toán → hủy thao tác, giỏ giữ nguyên. 5a. Lỗi máy chủ → báo lỗi, giỏ giữ nguyên. |
+| Luồng chính | 1. Bấm Đặt hàng ngay. 2. Kiểm tra khối **Giao đến**: tên người nhận, SĐT hợp lệ, địa chỉ đầy đủ (BR25). 3. Hệ thống lấy **khuyến mãi, cài đặt phí giao và tồn kho mới nhất**, tính lại tổng. 4. Mở hộp thanh toán: Ví web (UC12) hoặc Chuyển khoản QR (UC13). 5. Tạo đơn **đúng một lần** (BR27) với mã riêng do trình duyệt sinh, lưu: món (giá thực, giá niêm yết, tên khuyến mãi), tạm tính, phí giao, giảm giá, tổng, **địa chỉ giao (`shipping`)**. Trả bằng ví thì đơn tạo ra ở trạng thái **chờ thanh toán** rồi mới trừ ví (UC12, BR28). 6. Trừ kho, **đọc lại đơn trên máy chủ** — không thấy đơn thì ghi lại với **cùng mã** (không sinh đơn trùng). 7. Cộng lượt dùng mã, làm trống giỏ; khách tích "Lưu làm địa chỉ mặc định" thì SĐT + địa chỉ được ghi vào Hồ sơ. |
+| Luồng thay thế | 2a. Thiếu / sai thông tin giao → tô đỏ ô sai, cuộn tới ô đó, không mở thanh toán. 3a. Kho vừa giảm (người khác mua) → giỏ tự chỉnh về đúng số còn lại, báo khách kiểm tra rồi đặt lại. 4a. Đóng hộp thanh toán → hủy thao tác, giỏ giữ nguyên. 5a. Lỗi máy chủ → báo lỗi, giỏ giữ nguyên. 5b. **Mạng rớt giữa lúc tạo đơn** → hệ thống tra theo mã của lần đặt hàng: đơn đã có thì đi tiếp với đơn đó; chưa có thì gửi lại (tối đa 3 lượt); vẫn không được → báo lỗi, giỏ giữ nguyên, chưa có tiền nào bị trừ. |
 
 ### UC12 — Thanh toán bằng ví
 | Mục | Nội dung |
 |---|---|
-| Luồng chính | 1. Hệ thống lấy số dư **mới nhất từ máy chủ**. 2. Đủ tiền → hiện số dư trước/sau. 3. Xác nhận → trừ ví, đơn `confirmed / paid`, ghi giao dịch ví, tải hóa đơn PDF ngay. |
-| Luồng thay thế | 2a. Không đủ → nút Ví bị khóa kèm số dư và gợi ý nạp tiền. |
+| Luồng chính | 1. Hệ thống lấy số dư **mới nhất từ máy chủ**. 2. Đủ tiền → hiện số dư trước/sau. 3. Xác nhận → **tạo đơn `pending / unpaid`** (chưa đụng tới tiền). 4. **Trừ ví**. 5. **Đánh dấu đơn `confirmed / paid`**, ghi giao dịch ví. 6. Trừ kho, tải hóa đơn PDF ngay. (BR28) |
+| Luồng thay thế | 2a. Không đủ → nút Ví bị khóa kèm số dư và gợi ý nạp tiền. 4a. **Trừ ví không thành** → đọc lại số dư: chưa bị trừ thì đơn bị **hủy** (lý do "Thanh toán bằng Ví web không thành công"), ví giữ nguyên, khách được mời đặt lại; không đọc lại được (mạng vẫn rớt) thì đơn ở lại "Chưa thanh toán" và khách được báo kiểm tra số dư. 5a. **Không đánh dấu được đã thanh toán** → đọc lại đơn: đã thanh toán thì đi tiếp bình thường (không hoàn tiền); chắc chắn chưa thanh toán thì **hoàn tiền** (cộng đúng số đã trừ vào số dư hiện tại, ghi giao dịch hoàn tiền) và hủy đơn; không đọc lại được thì **không hoàn**, đơn được gắn cờ "Cần kiểm tra Ví web" cho nhân viên và khách được dặn liên hệ tiệm. |
 
 ### UC13 — Thanh toán chuyển khoản QR
 | Mục | Nội dung |
@@ -588,6 +588,8 @@ flowchart LR
 | BR24 | **Tồn kho tính chung cho mọi size** của một cây: tổng số chậu trong giỏ ≤ tồn kho (ở thẻ sản phẩm, trang chi tiết, giỏ trượt, trang giỏ). Lúc đặt hàng kiểm tra lại với tồn kho mới nhất. Tồn kho = 0 là hàng **đặt trước** → không giới hạn. |
 | BR25 | Đơn mới phải có **thông tin giao**: người nhận ≥ 2 ký tự, **SĐT Việt Nam 10 số bắt đầu bằng 0** (bỏ khoảng trắng / dấu chấm / gạch, `+84…` → `0…`), địa chỉ ≥ 10 ký tự; ghi chú không bắt buộc. |
 | BR26 | **Email không phân biệt chữ hoa / thường** khi đăng ký, đăng nhập, quên mật khẩu; email mới được lưu dạng chữ thường. |
+| BR27 | **Mỗi đơn chỉ được ghi đúng một lần.** Mỗi lần đặt hàng mang một mã riêng do trình duyệt sinh, lưu trong đơn (`id` = `clientRef`). Lệnh tạo đơn gặp lỗi mạng thì **không gửi lại mù quáng**: tra theo mã trước — đã có thì dùng đơn đó, chưa có mới gửi lại. Hệ thống chỉ tự gửi lại lệnh an toàn khi lặp (`GET`, `PUT`). **Code không bao giờ tự xóa đơn hàng.** |
+| BR28 | **Thanh toán bằng ví theo thứ tự: tạo đơn chờ thanh toán → trừ ví → đánh dấu đã thanh toán → trừ kho.** Trừ ví thất bại thì đơn bị hủy hoặc ở lại "Chưa thanh toán" — không có trường hợp ví bị trừ mà không có đơn. Đơn chưa thanh toán không tính vào doanh thu (BR01). Mọi bước hoàn tiền tự động chỉ chạy khi **đã đọc lại và biết chắc** đơn chưa thanh toán. |
 
 ---
 

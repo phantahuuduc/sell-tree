@@ -1890,6 +1890,10 @@
   .loved-card, .loved-card:hover, .loved-card:focus-within { transform: none; }
   .loved-card .loved-card__media img, .loved-card .loved-seal, .loved-card .loved-card__more i { transform: none; transition: none; }
   .loved-card .loved-seal { transform: rotate(-8deg); }
+  /* Rê chuột / focus cũng không phóng ảnh, không xoay con dấu, không đẩy mũi tên (viết cùng độ ưu tiên với quy tắc thường để thắng được) */
+  .loved-card:is(:hover, :focus-within) .loved-card__media img,
+  .loved-card:is(:hover, :focus-within) .loved-card__more i { transform: none; }
+  .loved-card:is(:hover, :focus-within) .loved-seal { transform: rotate(-8deg); }
   .loved__info::after { transition: none; transform: none; }
 }
 

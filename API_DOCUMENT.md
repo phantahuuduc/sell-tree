@@ -1,7 +1,7 @@
 # Lá & Sỏi — Tài Liệu API
 
 > Toàn bộ endpoint REST của website **Lá & Sỏi**.
-> Backend: **json-server v1** đọc/ghi `db.json`. Client gọi qua `js/api.js` (axios).
+> Backend: **json-server 0.17.4** — đúng bản ghi trong `package.json`, dùng chung cho máy local (`node tools/start-db.mjs`) và Render (`npm start`). Đọc/ghi `db.json`. Client gọi qua `js/api.js` (axios).
 > Base URL: `http://localhost:3000` · Cập nhật: 2026-11-12.
 
 ---
@@ -26,7 +26,7 @@
 | `DELETE /collection/:id` | Xoá |
 
 ### ⚠️ Lưu ý "lọc cứng kiểu"
-json-server v1 so khớp **cùng kiểu**: `GET /orders?userId=2` sẽ **không** trả bản ghi có `"userId": "2"`. Client (`api.js`) tải cả collection rồi `filter` phía client cho các truy vấn:
+Bộ lọc trên URL của json-server không đủ tin cậy để dùng trực tiếp: có phiên bản so khớp **cùng kiểu** (`GET /orders?userId=2` không trả bản ghi có `"userId": "2"`), và **json-server 0.17 bỏ qua hẳn bộ lọc theo một trường mà chưa bản ghi nào có** — khi đó nó trả về **cả collection**. Vì vậy `api.js` luôn so khớp lại phía client (tải collection rồi `filter`), kể cả khi đã gửi bộ lọc lên máy chủ.
 `getOrdersByUser`, `getMessages`, `getNotifications`, `getStockAlerts`, `getWalletTransactions`, `getConversationByCustomer`.
 
 ---
@@ -180,11 +180,25 @@ Chuyển khoản QR (chờ nhân viên duyệt):
 }
 ```
 `shipping` bắt buộc với đơn mới (kiểm tra ở `cart.html` trước khi gọi API — BR25 trong USECASE). Khách tích "Lưu làm địa chỉ mặc định" thì client gọi thêm `PATCH /users/:id` `{ phone, address }`.
-Trả bằng Ví web (xong ngay, không cần duyệt): `"status": "confirmed"`, `"paymentStatus": "paid"`, `"paidAt": "…"`, kèm `timeline` bước đầu tiên.
+Trả bằng Ví web đi qua **ba lệnh ghi theo thứ tự** (không cần nhân viên duyệt):
 
-Ngay sau khi tạo đơn, client `PATCH /products/:id` trừ kho rồi `PATCH /orders/:id` ghi `stockDeducted` để hoàn trả đúng số khi hủy / hoàn hàng. Cuối cùng client `GET /orders/:id` để chắc đơn đã nằm trên máy chủ; nhận `404` (máy chủ đã làm rơi lượt ghi) thì `POST /orders` lại nguyên đơn với **đúng `id` cũ**.
+1. `POST /orders` — đơn **chờ thanh toán**: `"status": "pending"`, `"paymentStatus": "unpaid"`, `timeline` có bước `place_order`. Chưa đụng tới tiền.
+2. `PATCH /users/:id { walletBalance }` — trừ ví (ghi số dư mới, là giá trị tuyệt đối).
+3. `PATCH /orders/:id` — `"status": "confirmed"`, `"paymentStatus": "paid"`, `"paidAt": "…"`, thêm bước `pay_wallet` vào `timeline`; sau đó `POST /walletTransactions` ghi lịch sử ví.
 
-> **Hàng đợi ghi (`js/api.js`):** mọi lệnh `POST` / `PATCH` / `PUT` / `DELETE` đi **lần lượt**, lệnh sau cách lệnh trước tối thiểu **300 ms** (mốc lưu trong `localStorage` nên áp dụng chung cho mọi tab). Lý do: json-server bật kiểu `--watch` đọc lại cả file sau mỗi lần ghi và có thể đè mất lượt ghi tới trong ~25 ms sau đó (đo thực tế). Lệnh `GET` không phải chờ. Chạy server bằng `node tools/start-db.mjs` (hoặc `start-db.bat`) thì không có rủi ro này.
+Nếu bước 2 không thành: client đọc lại `GET /users/:id` để biết chắc. Số dư chưa đổi → `PATCH /orders/:id { status: "cancelled", cancelReason, cancelledBy: "system" }` (bước `wallet_failed`), ví không bị trừ. Không đọc lại được (mạng vẫn rớt) → đơn ở lại `pending / unpaid`, khách được báo kiểm tra số dư. Nếu bước 3 báo lỗi (ví đã trừ), client **không hoàn tiền ngay** — lệnh có thể đã được máy chủ ghi mà chỉ phản hồi bị rớt. Client đọc lại `GET /orders/:id`: đơn đã `paid` → coi như thành công, đi tiếp (không hoàn tiền). Đơn chắc chắn chưa `paid` → **hoàn tiền**: đọc số dư **hiện tại** rồi `PATCH /users/:id { walletBalance: hiện tại + số tiền đơn }` (không ghi đè bằng số dư cũ), `POST /walletTransactions` loại `refund` để admin / khách thấy khoản hoàn, rồi hủy đơn (bước `wallet_refund`). Không đọc lại được đơn → **không hoàn tiền**; client chỉ thêm cờ `walletCheckNeeded: true` + `shopUnread` (nhân viên thấy ở "Cần xử lý") và báo khách liên hệ tiệm. Đơn `unpaid` không được tính vào doanh thu (chỉ đếm đơn `isCompletedSale` — xem `js/sale.js`).
+
+Sau khi đơn đã ở đúng trạng thái thanh toán, client `PATCH /products/:id` trừ kho rồi `PATCH /orders/:id` ghi `stockDeducted` để hoàn trả đúng số khi hủy / hoàn hàng. Cuối cùng client `GET /orders/:id` để chắc đơn còn trên máy chủ; nhận `404` thì gọi lại `createOrder` với **cùng mã** (xem "Tạo đơn đúng một lần" bên dưới) — không bao giờ sinh đơn thứ hai.
+
+> **Tạo đơn đúng một lần (`createOrder` → `postOnce` trong `js/api.js`).** Mỗi lần đặt hàng mang một **mã riêng do trình duyệt sinh** (`newClientRef()` trong `js/api.js`): mã này vừa là `id` của đơn, vừa được lưu trong trường `clientRef`.
+> - Lệnh `POST /orders` gặp **lỗi mạng** (không có phản hồi) thì **không gửi lại ngay**: client tra `GET /orders?clientRef=<mã>` (và so khớp lại `clientRef` phía client). Đã có → dùng luôn đơn đó (máy chủ đã lưu, chỉ phản hồi bị rớt). Chưa có → mới gửi lại. Chưa tra được → chờ rồi tra lại, không gửi khi chưa biết. Tối đa 3 lượt.
+> - Hết 3 lượt vẫn không xong → ném lỗi, kèm cờ `notCreated` (tra được, chắc chắn chưa có) hoặc `outcomeUnknown` (không tra được). Giỏ hàng giữ nguyên, **chưa có tiền nào bị trừ** vì đơn được tạo trước khi trừ ví.
+> - Lớp bảo vệ thứ hai ở máy chủ: json-server 0.17 từ chối `POST` có `id` đã tồn tại (trả `500`); client coi đó là "đơn đã có" và đọc lại đơn theo mã.
+> - `POST /walletTransactions` cũng đi qua `postOnce` (có `clientRef`). Client **không có bước nào tự xóa đơn**.
+>
+> **Lệnh nào được tự gửi lại khi lỗi mạng?** Chỉ `GET` / `HEAD` / `OPTIONS` và `PUT` (tối đa 2 lần, cách 800 ms + 1600 ms). `POST` không bao giờ tự gửi lại ngoài cơ chế tra-theo-mã ở trên. `PATCH` / `DELETE` không tự gửi lại ở `api.js`; riêng giỏ hàng tự thử lại 3 lần các lệnh `PATCH` ghi **giá trị tuyệt đối** (số dư mới, trạng thái mới) vì lặp lại vẫn ra cùng kết quả.
+
+> **Hàng đợi ghi (`js/api.js`):** mọi lệnh `POST` / `PATCH` / `PUT` / `DELETE` đi **lần lượt**, lệnh sau cách lệnh trước tối thiểu **300 ms** (mốc lưu trong `localStorage` nên áp dụng chung cho mọi tab). Lý do: nếu json-server bị bật kiểu `--watch`, nó đọc lại cả file sau mỗi lần ghi và có thể đè mất lượt ghi tới ngay sau đó (đo trên 0.17.4 / Windows: máy chủ còn sập với lỗi `EPERM`). Lệnh `GET` không phải chờ. Hai lệnh chạy chuẩn của dự án (`node tools/start-db.mjs`, `npm start`) đều **không** dùng `--watch`, và đều có `--fks __none__` để tắt việc json-server 0.17 tự xóa "bản ghi mồ côi" mỗi khi có lệnh `DELETE`.
 
 #### `PATCH /orders/:id` — Mọi bước vòng đời
 

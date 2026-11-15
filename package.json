@@ -2,7 +2,8 @@
     "name": "sell-tree",
     "version": "1.0.0",
     "scripts": {
-        "start": "json-server --watch db.json --host 0.0.0.0 --port ${PORT:-3000}"
+        "start": "json-server db.json --host 0.0.0.0 --port ${PORT:-3000} --fks __none__",
+        "db": "node tools/start-db.mjs"
     },
     "dependencies": {
         "json-server": "0.17.4"
