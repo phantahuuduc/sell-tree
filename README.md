@@ -166,7 +166,8 @@ CayXinh/
     ├── banner.js                # Banner theo lịch
     ├── three-ambient.js         # 4 hiệu ứng Three.js
     ├── chat.js                  # Chat khách ↔ NV (polling 2.5s)
-    ├── chatbot.js               # Trợ lý FAQ tự động
+    ├── chatbot.js               # Trợ lý AI (Gemini) + fallback rule-based
+    ├── ai-config.example.js     # Mẫu cấu hình API key Gemini
     ├── staff.js                 # Trang nhân viên
     ├── profile.js               # Trang hồ sơ
     ├── orders.js                # Đơn của tôi (thanh tiến trình, dự kiến giao, nút thao tác, đánh giá sao)
@@ -318,6 +319,17 @@ Phiên bản cũ chưa có cơ chế chống hoàn tiền nhiều lần cho cùn
 - `careWeekSteps`: mảng 4 object `{key, from, to, day, title, text}` — 4 mốc lịch tuần đầu
 
 Cả `care-card.js` và `care-week.js` đều đọc trường structured trước, fallback sang text-parsing cũ nếu thiếu. Admin có thể chỉnh sửa qua form trong tab "Sản phẩm" (mục "Phiếu chăm sóc" và "Lịch tuần đầu" dạng `<details>` — mở ra để sửa, giữ đóng = không ghi đè).
+
+### 8.7 Tích hợp AI chatbot — Google Gemini (11/2026)
+
+Chatbot tư vấn cây cảnh giờ sử dụng **Google Gemini** (model `gemini-flash-lite-latest`, tầng miễn phí) để trả lời tự nhiên hơn. System prompt chứa toàn bộ danh mục sản phẩm, giá, tồn kho, khuyến mãi, mã giảm giá — giúp AI trả lời chính xác theo dữ liệu thật.
+
+- **Lịch sử hội thoại:** lưu tối đa 16 tin nhắn gần nhất, AI nhớ ngữ cảnh câu hỏi trước.
+- **Link sản phẩm:** AI trả về link dẫn thẳng đến trang chi tiết sản phẩm.
+- **Nhãn AI:** Tin nhắn từ Gemini có badge "AI" màu xanh, phân biệt với rule-based.
+- **Markdown đơn giản:** In đậm, in nghiêng, danh sách, link — render ngay trong chat.
+- **Fallback rule-based:** Không có API key hoặc API lỗi → tự động dùng hệ thống rule-based cũ (không gián đoạn).
+- **Bảo mật API key:** Key lưu riêng trong `js/ai-config.js` (nằm trong `.gitignore`). File mẫu `js/ai-config.example.js` hướng dẫn cấu hình. **Lưu ý:** đây là project học tập — key nằm ở frontend (client-side), không an toàn cho production. Ở môi trường thực cần proxy backend.
 
 ---
 

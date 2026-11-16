@@ -1,10 +1,21 @@
 // ==========================================================
 // chatbot.js — Chatbot tư vấn cây cảnh Lá & Sỏi
-// Rule-based, chỉ trả lời trong phạm vi dữ liệu web
+// AI (Google Gemini) với fallback rule-based
 // ==========================================================
 import { getProducts, getCategories, getPromotions, getCoupons, getSettings } from "./api.js";
 import { getActivePromotions, setActivePromotions, getPriceInfo, isPlant } from "./sale.js";
 import { removeAccents, formatPrice, escapeHTML } from "./ui.js";
+
+let AI_API_KEY = "";
+try {
+  const m = await import("./ai-config.js");
+  AI_API_KEY = m.AI_API_KEY || "";
+} catch { /* ai-config.js chưa có — dùng rule-based */ }
+
+const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent";
+const MAX_HISTORY = 16;
+let conversationHistory = [];
+let aiAvailable = !!AI_API_KEY;
 
 let products = [];
 let categories = [];
@@ -640,6 +651,100 @@ function handleStock(n) {
   };
 }
 
+// ===== Gemini AI =====
+function buildSystemPrompt() {
+  const prodList = products.map((p) => {
+    const pi = getPriceInfo(p);
+    const s = p.specs || {};
+    const cl = p.careLevel || {};
+    return [
+      `- ${p.name} (${p.scientificName || "?"})`,
+      `  ID:${p.id} | Giá: ${formatPrice(pi.price)}${pi.original ? ` (gốc ${formatPrice(pi.original)})` : ""}`,
+      `  Tồn kho: ${p.stock > 0 ? p.stock + " chậu" : "HẾT HÀNG"}`,
+      `  Độ khó: ${p.difficulty || "?"}${p.petSafe ? " | An toàn thú cưng" : ""}`,
+      s.light ? `  Ánh sáng: ${s.light}` : "",
+      s.water ? `  Tưới: ${s.water}` : "",
+      s.humidity ? `  Độ ẩm: ${s.humidity}` : "",
+      s.potSize ? `  Chậu: ${s.potSize}` : "",
+      p.description ? `  Mô tả: ${p.description}` : "",
+    ].filter(Boolean).join("\n");
+  }).join("\n\n");
+
+  const catList = categories.map((c) => c.name).join(", ");
+
+  return `Bạn là trợ lý tư vấn cây cảnh của tiệm "Lá & Sỏi". Quy tắc:
+1. Trả lời bằng tiếng Việt, giọng thân thiện như người bán cây thật.
+2. CHỈ tư vấn về cây cảnh và sản phẩm của shop. Từ chối lịch sự câu hỏi không liên quan.
+3. KHÔNG bịa sản phẩm không có trong danh sách dưới đây.
+4. Khi đề cập sản phẩm, ghi kèm giá và link dạng: [Tên cây](product-detail.html?id=ID)
+5. Trả lời ngắn gọn, dùng markdown đơn giản (in đậm, danh sách).
+6. Có thể tư vấn: cây phù hợp điều kiện nhà, cách chăm sóc, so sánh cây.
+7. Nếu không có cây phù hợp, nói thẳng.
+
+Danh mục: ${catList}
+
+DANH SÁCH SẢN PHẨM:
+${prodList}
+
+Thông tin shop:
+- Tên: ${shop.shopName || "Lá & Sỏi"}
+- Địa chỉ: ${shop.address || "86 Nguyễn Văn Thủ, P. Đa Kao, Q.1, TP.HCM"}
+- SĐT: ${shop.phone || "0908 123 456"}
+- Phí ship: ${formatPrice(Number(shop.shipFee ?? 30000))}, miễn phí từ ${formatPrice(Number(shop.freeShipThreshold ?? 300000))}`;
+}
+
+function simpleMarkdown(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/^[-•]\s+/gm, "• ")
+    .replace(/\n/g, "<br>");
+}
+
+async function callGemini(userText) {
+  if (!AI_API_KEY) return null;
+
+  conversationHistory.push({ role: "user", parts: [{ text: userText }] });
+  if (conversationHistory.length > MAX_HISTORY) {
+    conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+  }
+
+  try {
+    const res = await fetch(`${GEMINI_URL}?key=${AI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: buildSystemPrompt() }] },
+        contents: conversationHistory,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 600,
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      conversationHistory.pop();
+      if (res.status === 429) aiAvailable = false;
+      return null;
+    }
+
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!reply) { conversationHistory.pop(); return null; }
+
+    conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+    if (conversationHistory.length > MAX_HISTORY) {
+      conversationHistory = conversationHistory.slice(-MAX_HISTORY);
+    }
+    return reply;
+  } catch {
+    conversationHistory.pop();
+    return null;
+  }
+}
+
 function createChatWidget() {
   if (document.getElementById("chatWidget")) return;
   const widget = document.createElement("div");
@@ -681,12 +786,17 @@ function createChatWidget() {
   document.body.appendChild(widget);
 }
 
-function appendMessage(role, html) {
+function appendMessage(role, html, { isAI = false } = {}) {
   const body = document.getElementById("chatBody");
   if (!body) return;
   const div = document.createElement("div");
   div.className = `chat-msg chat-msg--${role}`;
-  div.innerHTML = role === "bot" ? html.replace(/\n/g, "<br>") : escapeHTML(html);
+  if (role === "bot") {
+    const badge = isAI ? '<span class="chat-ai-badge">AI</span> ' : "";
+    div.innerHTML = badge + html.replace(/\n/g, "<br>");
+  } else {
+    div.innerHTML = escapeHTML(html);
+  }
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
 }
@@ -717,7 +827,25 @@ async function processMessage(text) {
   body.appendChild(typingDiv);
   body.scrollTop = body.scrollHeight;
 
-  await new Promise((r) => setTimeout(r, 400 + Math.random() * 400));
+  // Thử gọi Gemini AI trước
+  if (aiAvailable) {
+    const aiReply = await callGemini(text);
+    document.getElementById(typingId)?.remove();
+    if (aiReply) {
+      appendMessage("bot", simpleMarkdown(aiReply), { isAI: true });
+      renderSuggestions([]);
+      return;
+    }
+    // AI lỗi → fallback rule-based cho câu này
+  }
+
+  // Fallback: rule-based
+  if (!aiAvailable && AI_API_KEY) {
+    // Từng có key nhưng bị rate limit → thông báo nhẹ
+    await new Promise((r) => setTimeout(r, 300));
+  } else {
+    await new Promise((r) => setTimeout(r, 400 + Math.random() * 400));
+  }
   document.getElementById(typingId)?.remove();
 
   const intent = detectIntent(text);

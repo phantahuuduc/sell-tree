@@ -3,3 +3,4 @@ node_modules/
 *.log
 .ui-backup-*/
 .claude/
+js/ai-config.js
