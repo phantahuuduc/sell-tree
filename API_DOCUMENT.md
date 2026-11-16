@@ -84,10 +84,10 @@ Chuẩn CRUD. Admin dùng.
 ### 3.2 Products
 
 #### `GET /products`
-Trả về mảng toàn bộ sản phẩm.
+Trả về mảng toàn bộ sản phẩm. Trường `costPrice` bị lọc bỏ trừ khi người gọi có role `admin` (interceptor trong `api.js`).
 
 #### `GET /products/:id`
-**200** nếu có · **404** nếu không. Client bắt 404 → trả `null`.
+**200** nếu có · **404** nếu không. Client bắt 404 → trả `null`. `costPrice` bị lọc như trên.
 
 #### `POST /products`
 ```json
@@ -103,7 +103,7 @@ Trả về mảng toàn bộ sản phẩm.
 ```
 
 #### `PATCH /products/:id`
-Dùng nhiều nhất: **cập nhật tồn kho** (`{ "stock": 5 }`) — có ghi `auditLog`.
+Dùng nhiều nhất: **cập nhật tồn kho** (`{ "stock": 5 }`) — có ghi `auditLog`. Admin có thể cập nhật `costPrice` (giá vốn); thay đổi sẽ ghi `auditLog` với action `product_cost`.
 
 #### `DELETE /products/:id`
 
@@ -162,6 +162,7 @@ Cập nhật hồ sơ, nạp ví, favorites, khoá/mở khoá:
 **Không tin cậy** — do v1 lọc cứng kiểu. Client dùng `getOrdersByUser` → tải tất cả rồi filter.
 
 #### `POST /orders` — Tạo đơn
+Hàm `createOrder()` trong `api.js` tự động gọi `withCostAtSale()` để chụp `costPrice` hiện tại của từng sản phẩm vào trường `costAtSale` trong mỗi item. Trường này dùng để tính lợi nhuận chính xác theo giá vốn thời điểm bán, không bị ảnh hưởng khi admin sửa giá vốn sau. `costAtSale` bị lọc bỏ nếu người đọc không phải admin.
 
 Chuyển khoản QR (chờ nhân viên duyệt):
 ```json

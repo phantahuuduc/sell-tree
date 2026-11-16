@@ -14,7 +14,7 @@
 // Doanh thu / số lượng bán chỉ tính đơn "đã bán" (isCompletedSale): đã thanh toán hoặc đã giao, không hủy / hoàn.
 // ==========================================================
 import { formatPrice, escapeHTML } from "./ui.js";
-import { isCompletedSale, revenueOf } from "./sale.js";
+import { isCompletedSale, revenueOf, profitOf, profitByProduct } from "./sale.js";
 import { attachMarker } from "./slide-marker.js";
 import { GREEN, slipCell, sproutPlugin, plotOptions, plotBars, plotLine, plotPrevLine, rankOptions, countUp } from "./dash-kit.js";
 
@@ -214,6 +214,7 @@ export function initAdminDashboard(root, data) {
     const prevAll = orders.filter((o) => inRange(o.createdAt, r.prev));
     const prevSold = prevAll.filter(isCompletedSale);
     const revenue = revenueOf(all), prevRevenue = revenueOf(prevAll); // cùng hàm với file báo cáo
+    const pf = profitOf(all, products), prevPf = profitOf(prevAll, products);
     const avg = sold.length ? Math.round(revenue / sold.length) : 0;
     const prevAvg = prevSold.length ? Math.round(prevRevenue / prevSold.length) : 0;
     const buyers = new Set(sold.map((o) => String(o.userId))).size;
@@ -257,6 +258,7 @@ export function initAdminDashboard(root, data) {
     sold.forEach((o) => { const k = String(o.userId); spend[k] = spend[k] || { total: 0, orders: 0 }; spend[k].total += Number(o.total) || 0; spend[k].orders += 1; });
     const topC = Object.entries(spend).sort((a, b) => b[1].total - a[1].total).slice(0, 5);
 
+    const prodProfit = profitByProduct(all, products).sort((a, b) => b.profit - a.profit);
     const bk = buckets(r);
     const span = bk.length ? Math.round((bk[0].to - bk[0].from) / DAY) : 1;
     const unit = span <= 1 ? "ngày" : span <= 7 ? "tuần" : "tháng";
@@ -300,6 +302,11 @@ export function initAdminDashboard(root, data) {
           ${slipCell(4, "Chậu cây đã bán", potCount, delta(potCount, qty(prevSold)), "chậu", { count: { to: potCount } })}
           ${slipCell(5, "Khách đã mua", buyers, delta(buyers, prevBuyers), "khách", { count: { to: buyers } })}
         </div>
+        <div class="slip__cells slip__cells--2">
+          ${slipCell(6, "Lợi nhuận gộp", formatPrice(pf.profit), delta(pf.profit, prevPf.profit, { money: true }), "", { count: { to: pf.profit, money: true } })}
+          ${slipCell(7, "Biên lợi nhuận", `${Math.round(pf.margin)}%`, delta(Math.round(pf.margin), Math.round(prevPf.margin)), "", {})}
+        </div>
+        ${pf.estimatedOrders || pf.missingLines ? `<p class="dsh-note dsh-note--cost">⚠ ${pf.estimatedOrders ? `${pf.estimatedOrders} đơn dùng giá vốn ước tính (lấy từ giá vốn hiện tại vì đơn cũ chưa ghi)` : ""}${pf.estimatedOrders && pf.missingLines ? "; " : ""}${pf.missingLines ? `${pf.missingLines} dòng hàng không có giá vốn (tính = 0)` : ""}.</p>` : ""}
       </section>
 
       <!-- 2. Xu hướng theo thời gian: biểu đồ lớn nhất trang -->
@@ -369,7 +376,7 @@ export function initAdminDashboard(root, data) {
         </div>
 
         <details class="dsh-more" id="dshMore"${view.open ? " open" : ""}>
-          <summary><span>Bảng xếp hạng chi tiết</span><small>bán chạy nhất · doanh thu theo danh mục · khách mua nhiều nhất</small></summary>
+          <summary><span>Bảng xếp hạng chi tiết</span><small>bán chạy nhất · lợi nhuận sản phẩm · doanh thu danh mục · khách mua nhiều nhất</small></summary>
           <div class="dsh-grid">
             <section class="dsh-block">
               <h4>Bán chạy nhất trong kỳ?</h4>
@@ -379,6 +386,21 @@ export function initAdminDashboard(root, data) {
                   <span class="dsh-top__name">${escapeHTML(x.product?.name || x.name || "Sản phẩm #" + x.id)}</span>
                   <span class="dsh-top__val"><strong>${x.qty}</strong> chậu <small>${formatPrice(x.revenue)}</small></span>
                 </li>`).join("")}</ol>` : `<p class="dsh-empty">Chưa bán được sản phẩm nào trong kỳ.</p>`}
+            </section>
+
+            <section class="dsh-block dsh-block--wide">
+              <h4>Lợi nhuận theo sản phẩm</h4>
+              ${prodProfit.length ? `
+              <div class="dsh-tbl-wrap">
+                <table class="dsh-tbl">
+                  <thead><tr><th>Sản phẩm</th><th>SL</th><th>Doanh thu</th><th>Giá vốn</th><th>Lợi nhuận</th><th>Biên %</th></tr></thead>
+                  <tbody>${prodProfit.map((r) => `<tr${r.missing ? ' class="is-warn"' : ""}>
+                    <td>${escapeHTML(r.name)}${r.estimated ? " <small>⚠ ước tính</small>" : ""}${r.missing ? " <small>⚠ chưa có giá vốn</small>" : ""}</td>
+                    <td>${r.qty}</td><td>${formatPrice(r.revenue)}</td><td>${formatPrice(r.cost)}</td>
+                    <td class="${r.profit < 0 ? "is-loss" : ""}">${formatPrice(r.profit)}</td><td>${Math.round(r.margin)}%</td>
+                  </tr>`).join("")}</tbody>
+                </table>
+              </div>` : `<p class="dsh-empty">Chưa bán được sản phẩm nào trong kỳ.</p>`}
             </section>
 
             <section class="dsh-block">
@@ -405,7 +427,8 @@ export function initAdminDashboard(root, data) {
       attachMarker(el, { item: "button", isActive: (b) => b.classList.contains("is-active"), key: "admin-" + el.dataset.seg }));
 
     const series = (list, bs) => bs.map((b) => sum(list.filter((o) => inRange(o.createdAt, b))));
-    plot = { r, bk, unit, cur: series(sold, bk), prv: series(prevSold, buckets(r.prev)).slice(0, bk.length), compare };
+    const profitSeries = (list, bs) => bs.map((b) => { const seg = list.filter((o) => inRange(o.createdAt, b)); return profitOf(seg, products).profit; });
+    plot = { r, bk, unit, cur: series(sold, bk), prv: series(prevSold, buckets(r.prev)).slice(0, bk.length), curProfit: profitSeries(sold, bk), compare };
     drawTrend();
     drawCompare();
     countUp(body); // số đếm tăng dần mỗi lần đổi kỳ
@@ -414,21 +437,22 @@ export function initAdminDashboard(root, data) {
   // ----- Biểu đồ xu hướng: đường (mặc định) hoặc cột "luống cây"; kỳ trước luôn là nét đứt -----
   function drawTrend() {
     trendChart?.destroy(); trendChart = null;
-    const { r, bk, unit, cur, prv } = plot;
+    const { r, bk, unit, cur, prv, curProfit } = plot;
     const line = view.trend === "line";
     const toggleTip = "Bấm vào tên ở chú thích để ẩn / hiện từng đường.";
-    body.querySelector("#dshTrendTitle").textContent = `Doanh thu theo ${unit}`;
+    body.querySelector("#dshTrendTitle").textContent = `Doanh thu & lợi nhuận theo ${unit}`;
     body.querySelector("#dshPlotNote").textContent = line
-      ? `Mỗi điểm là một ${unit}. Đường liền: ${r.label}; đường nét đứt: ${r.prev.label}. ${toggleTip}`
+      ? `Mỗi điểm là một ${unit}. Đường liền xanh: doanh thu ${r.label}; đường liền cam: lợi nhuận; nét đứt: kỳ trước. ${toggleTip}`
       : `Mỗi cột là một ${unit}; cột có mầm là ${unit} có doanh thu. Đường nét đứt: ${r.prev.label}. ${toggleTip}`;
     if (typeof Chart === "undefined") return;
+    const profitLine = { label: "Lợi nhuận gộp", data: curProfit, borderColor: "#e67e22", backgroundColor: "rgba(230,126,34,0.1)", borderWidth: 2, pointRadius: bk.length <= 31 ? 3 : 0, pointHoverRadius: 5, tension: 0.3, fill: false, type: "line", order: 0 };
     trendChart = new Chart(body.querySelector("#dshTrend"), {
       type: line ? "line" : "bar",
       data: {
         labels: bk.map((b) => b.label),
         datasets: line
-          ? [plotLine(r.label, cur, { points: bk.length <= 31 }), plotPrevLine(r.prev.label, prv)]
-          : [plotBars(r.label, cur), plotPrevLine(r.prev.label, prv, { stepped: true })],
+          ? [plotLine(r.label, cur, { points: bk.length <= 31 }), profitLine, plotPrevLine(r.prev.label, prv)]
+          : [plotBars(r.label, cur), profitLine, plotPrevLine(r.prev.label, prv, { stepped: true })],
       },
       options: plotOptions({ legend: true, draw: bk.length }),
       plugins: line ? [] : [sproutPlugin],

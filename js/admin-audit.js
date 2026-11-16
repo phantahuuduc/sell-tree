@@ -44,6 +44,7 @@ export const AUDIT_TYPES = [
   { key: "p_create",   icon: "🌱", label: "Thêm sản phẩm",               codes: ["product_create"] },
   { key: "p_update",   icon: "✎",  label: "Sửa sản phẩm",                codes: ["product_update"] },
   { key: "p_price",    icon: "₫",  label: "Đổi giá sản phẩm",            codes: ["product_price"], important: true },
+  { key: "p_cost",     icon: "💲", label: "Đổi giá vốn sản phẩm",        codes: ["product_cost"], important: true },
   { key: "p_delete",   icon: "🗑",  label: "Xóa sản phẩm",                codes: ["product_delete"], important: true },
   { key: "p_import",   icon: "⬆",  label: "Nhập sản phẩm từ Excel",      codes: ["product_import"] },
   { key: "pr_create",  icon: "🎉", label: "Tạo khuyến mãi",              codes: ["promo_create"] },

@@ -726,6 +726,19 @@ input[type="number"].is-invalid { border-color: var(--stamp, #b23b2a) !important
   vertical-align: middle;
   margin-right: 4px;
 }
+/* ---------- Cost note (admin product form) ---------- */
+.cost-note {
+  display: block;
+  font-size: var(--step--1, 0.85rem);
+  color: var(--ink-soft);
+  margin-top: 2px;
+  transition: color var(--dur-fast, 150ms) var(--ease-soft, ease);
+}
+.cost-note--loss {
+  color: var(--danger, #c0392b);
+  font-weight: 600;
+}
+
 .chat-msg--typing { padding: 10px 18px; }
 .typing-dots span {
   display: inline-block;

@@ -195,6 +195,66 @@ export function revenueOf(orders) {
   return (orders || []).filter(isCompletedSale).reduce((s, o) => s + (Number(o.total) || 0), 0);
 }
 
+// ----- Giá vốn & lợi nhuận (CHỈ admin dùng; api.js đã gỡ giá vốn khỏi dữ liệu của khách / nhân viên) -----
+// Giá vốn một dòng hàng: ưu tiên costAtSale (chụp lúc đặt hàng); đơn cũ chưa có thì lấy costPrice hiện tại của sản phẩm
+// và đánh dấu estimated; không có cả hai thì missing (tính giá vốn = 0, báo riêng để admin biết).
+export function lineCost(item, productById) {
+  const qty = Number(item?.quantity) || 1;
+  if (item && item.costAtSale != null && Number.isFinite(Number(item.costAtSale))) {
+    return { unit: Number(item.costAtSale), cost: Number(item.costAtSale) * qty, estimated: false, missing: false };
+  }
+  const p = productById?.get ? productById.get(String(item?.productId)) : null;
+  if (p && p.costPrice != null && Number.isFinite(Number(p.costPrice))) {
+    return { unit: Number(p.costPrice), cost: Number(p.costPrice) * qty, estimated: true, missing: false };
+  }
+  return { unit: 0, cost: 0, estimated: false, missing: true };
+}
+
+// Lợi nhuận gộp = doanh thu − giá vốn hàng bán, trên CÙNG tập đơn với revenueOf() (isCompletedSale):
+//   • revenue = Σ order.total (đã trừ giảm giá / mã, đã gồm phí ship) — luôn bằng revenueOf(orders)
+//   • cost    = Σ giá vốn × số lượng của các dòng hàng trong những đơn đó
+//   • profit  = revenue − cost;  margin = profit / revenue (%)
+// estimatedOrders: số đơn có dòng dùng giá vốn ước tính; missingLines: số dòng không có giá vốn.
+export function profitOf(orders, products) {
+  const byId = new Map((products || []).map((p) => [String(p.id), p]));
+  const sold = (orders || []).filter(isCompletedSale);
+  let cost = 0, estimatedOrders = 0, missingLines = 0;
+  sold.forEach((o) => {
+    let est = false;
+    (o.items || []).forEach((it) => {
+      const c = lineCost(it, byId);
+      cost += c.cost;
+      if (c.estimated) est = true;
+      if (c.missing) missingLines++;
+    });
+    if (est) estimatedOrders++;
+  });
+  const revenue = revenueOf(orders);
+  const profit = revenue - cost;
+  return { revenue, cost, profit, margin: revenue > 0 ? (profit / revenue) * 100 : 0, orders: sold.length, estimatedOrders, missingLines };
+}
+
+// Lãi theo từng sản phẩm (đơn hợp lệ): doanh thu dòng = giá bán × SL (chưa phân bổ giảm giá / phí ship của đơn).
+export function profitByProduct(orders, products) {
+  const byId = new Map((products || []).map((p) => [String(p.id), p]));
+  const map = new Map();
+  (orders || []).filter(isCompletedSale).forEach((o) => {
+    (o.items || []).forEach((it) => {
+      const key = String(it.productId);
+      const qty = Number(it.quantity) || 1;
+      const c = lineCost(it, byId);
+      const row = map.get(key) || { productId: key, name: it.name || byId.get(key)?.name || key, qty: 0, revenue: 0, cost: 0, estimated: false, missing: false };
+      row.qty += qty;
+      row.revenue += (Number(it.price) || 0) * qty;
+      row.cost += c.cost;
+      row.estimated = row.estimated || c.estimated;
+      row.missing = row.missing || c.missing;
+      map.set(key, row);
+    });
+  });
+  return [...map.values()].map((r) => ({ ...r, profit: r.revenue - r.cost, margin: r.revenue > 0 ? ((r.revenue - r.cost) / r.revenue) * 100 : 0 }));
+}
+
 // Phân loại đơn KHÔNG tính doanh thu (để báo cáo giải thích vì sao tổng là con số đó).
 export function excludedFromRevenue(orders) {
   const out = { cancelled: 0, refunded: 0, unpaid: 0 };

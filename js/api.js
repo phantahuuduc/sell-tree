@@ -3,6 +3,7 @@
 // Các trang khác chỉ import hàm, không tự viết URL.
 // ==========================================================
 import axios from "axios";
+import { getUserRole } from "./storage.js";
 
 const IS_LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
 export const API_URL = IS_LOCAL
@@ -51,6 +52,27 @@ api.interceptors.request.use(async (cfg) => {
   return cfg;
 });
 api.interceptors.response.use((res) => { writeDone(res.config); return res; });
+
+// ----- Giá vốn chỉ dành cho admin -----
+// `costPrice` (sản phẩm) và `costAtSale` (dòng hàng của đơn) bị gỡ khỏi MỌI phản hồi /products, /orders, /db
+// trừ khi người đang đăng nhập là admin (hoặc lệnh gọi nội bộ đặt cờ __keepCost). Nhờ vậy trang khách, giỏ hàng,
+// chatbot, system prompt AI, hóa đơn khách và cả giao diện nhân viên không bao giờ nhận được giá vốn.
+// Lưu ý: json-server không có xác thực — đây là lớp chắn ở giao diện, không phải bảo mật máy chủ (xem README).
+const COST_FIELDS = ["costPrice", "costAtSale"];
+function stripCost(v) {
+  if (Array.isArray(v)) { v.forEach(stripCost); return v; }
+  if (v && typeof v === "object") {
+    COST_FIELDS.forEach((k) => { if (k in v) delete v[k]; });
+    Object.values(v).forEach((x) => { if (x && typeof x === "object") stripCost(x); });
+  }
+  return v;
+}
+api.interceptors.response.use(async (res) => {
+  const url = String(res.config?.url || "");
+  if (res.config?.__keepCost || !/^\/(products|orders|db)(\/|\?|$)/.test(url)) return res;
+  if ((await getUserRole()) !== "admin") stripCost(res.data);
+  return res;
+});
 
 api.interceptors.response.use(undefined, async (err) => {
   const cfg = err.config || {};
@@ -185,7 +207,23 @@ export async function createUser(user) {
 // Gọi lại với cùng mã (vd sau lỗi mạng, hoặc bước kiểm tra lại ở giỏ hàng) không bao giờ ra đơn thứ hai.
 export async function createOrder(order) {
   const ref = order.clientRef || (order.id != null ? String(order.id) : newClientRef());
-  return postOnce("/orders", { id: ref, ...order, clientRef: ref });
+  return postOnce("/orders", { id: ref, ...(await withCostAtSale(order)), clientRef: ref });
+}
+// Chụp giá vốn tại thời điểm bán vào từng dòng hàng (costAtSale) để đổi giá vốn sau này không làm lệch lợi nhuận đơn cũ.
+// Chỉ chạy bên trong api.js; không bao giờ chặn việc đặt hàng nếu không đọc được giá vốn.
+async function withCostAtSale(order) {
+  try {
+    if (!Array.isArray(order.items) || order.items.every((i) => i.costAtSale != null)) return order;
+    const res = await api.get("/products", { __keepCost: true });
+    const cost = new Map((res.data || []).map((p) => [String(p.id), Number(p.costPrice)]));
+    return {
+      ...order,
+      items: order.items.map((i) => {
+        const c = cost.get(String(i.productId));
+        return i.costAtSale == null && Number.isFinite(c) ? { ...i, costAtSale: c } : i;
+      }),
+    };
+  } catch { return order; }
 }
 // Tìm đơn theo mã do trình duyệt sinh (null nếu chưa có)
 export async function findOrderByRef(ref) {

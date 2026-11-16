@@ -40,7 +40,7 @@
 | **Khách vãng lai** | Duyệt sản phẩm · tìm kiếm · lọc · xem chi tiết · hỏi chatbot FAQ |
 | **Khách hàng** | Mua hàng · nhập địa chỉ giao · thanh toán QR/Ví · nạp ví · hóa đơn PDF · **theo dõi & xử lý đơn** (dự kiến giao, "Sắp tới bạn", hủy, xác nhận đã nhận, báo chưa nhận, yêu cầu hoàn hàng) · **đánh giá sao + bình luận sau khi nhận hàng** · yêu thích · chat với shop · nhận thông báo & email · đặt trước hàng hết |
 | **Nhân viên** | Duyệt thanh toán QR + nạp ví · chat khách · **bảng việc cần làm cho đơn hàng** (hẹn ngày giao, giao hàng, báo shipper sắp tới, khiếu nại, hoàn hàng, hoàn tiền, dọn đơn cũ) · cập nhật tồn kho · thống kê ngày/tuần · xuất Excel |
-| **Quản trị** | Toàn quyền: sản phẩm · đơn · tài khoản (khóa/mở, đổi vai trò) · danh mục · nhãn sản phẩm · mã giảm · banner theo lịch · khuyến mãi (gửi toàn khách) · cài đặt shop + **lịch giao hàng** + EmailJS · nhật ký nhân viên |
+| **Quản trị** | Toàn quyền: sản phẩm · đơn · tài khoản (khóa/mở, đổi vai trò) · danh mục · nhãn sản phẩm · mã giảm · banner theo lịch · khuyến mãi (gửi toàn khách) · cài đặt shop + **lịch giao hàng** + EmailJS · nhật ký nhân viên · **giá vốn & lợi nhuận** (dashboard + export) |
 
 ### 🛠 Công nghệ sử dụng
 
@@ -330,6 +330,17 @@ Chatbot tư vấn cây cảnh giờ sử dụng **Google Gemini** (model `gemini
 - **Markdown đơn giản:** In đậm, in nghiêng, danh sách, link — render ngay trong chat.
 - **Fallback rule-based:** Không có API key hoặc API lỗi → tự động dùng hệ thống rule-based cũ (không gián đoạn).
 - **Bảo mật API key:** Key lưu riêng trong `js/ai-config.js` (nằm trong `.gitignore`). File mẫu `js/ai-config.example.js` hướng dẫn cấu hình. **Lưu ý:** đây là project học tập — key nằm ở frontend (client-side), không an toàn cho production. Ở môi trường thực cần proxy backend.
+
+### 8.8 Giá vốn & lợi nhuận — chỉ admin (11/2026)
+
+Thêm quản lý **giá vốn** (`costPrice`) cho từng sản phẩm và hiển thị **lợi nhuận gộp** trên dashboard admin. Giá vốn tuyệt đối không hiện cho khách, nhân viên, chatbot hay hóa đơn.
+
+- **Dữ liệu:** Mỗi sản phẩm có trường `costPrice`. Khi tạo đơn, `costAtSale` (giá vốn lúc bán) tự động chụp vào từng item — đơn cũ không có `costAtSale` sẽ ước tính từ `costPrice` hiện tại.
+- **Bảo mật:** `api.js` interceptor lọc bỏ `costPrice`/`costAtSale` khỏi response nếu người gọi không phải admin.
+- **Form sản phẩm:** Ô "Giá vốn" với hiển thị biên lợi nhuận tức thì (`Lãi gộp Xđ — Y%`), cảnh báo đỏ khi bán lỗ.
+- **Dashboard:** Phiếu "Lợi nhuận gộp" + "Biên lợi nhuận %", đường lợi nhuận cam trên biểu đồ xu hướng, bảng lợi nhuận theo sản phẩm (SL, doanh thu, giá vốn, lợi nhuận, biên %).
+- **Export:** Báo cáo Excel/TXT admin có thêm cột giá vốn/lợi nhuận; staff không có.
+- **Nhật ký:** Thay đổi giá vốn ghi audit log (`product_cost`).
 
 ---
 

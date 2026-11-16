@@ -1,7 +1,7 @@
 # Lá & Sỏi — Thiết Kế Cơ Sở Dữ Liệu
 
 > Thiết kế dữ liệu của website bán cây cảnh **Lá & Sỏi**.
-> Dựa trực tiếp trên `db.json` hiện hành. Cập nhật: 2026-11-12.
+> Dựa trực tiếp trên `db.json` hiện hành. Cập nhật: 2026-11-16.
 
 ---
 
@@ -109,6 +109,7 @@ erDiagram
     string maxHeight
     string lifespan
     array idealPlacement
+    number costPrice "giá vốn (chỉ admin thấy, bị lọc bỏ với vai trò khác)"
   }
   ORDERS {
     string id PK
@@ -139,6 +140,7 @@ erDiagram
     number price
     number quantity
     string variant
+    number costAtSale "giá vốn lúc đặt, chụp tự động từ costPrice"
   }
   REVIEWS {
     string id PK

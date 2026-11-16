@@ -116,7 +116,7 @@
           "text": "Cao"
         },
         "pot": {
-          "cm": 15.0,
+          "cm": 15,
           "kind": "hanging",
           "text": "Chậu treo 15cm"
         }
@@ -154,13 +154,14 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1–2 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 84000
     },
     {
       "id": "2",
       "name": "Lưỡi Hổ Vàng",
       "scientificName": "Dracaena trifasciata 'Laurentii'",
-      "price": 165000,
+      "price": 16500,
       "oldPrice": null,
       "categoryId": "1",
       "image": "assets/img/p2.jpg",
@@ -188,7 +189,7 @@
           "label": "Nhỏ — 20cm",
           "height": "20cm",
           "potDiameter": "12cm",
-          "price": 165000
+          "price": 16500
         },
         {
           "label": "Vừa — 35cm",
@@ -229,7 +230,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 14.0,
+          "days": 14,
           "hydro": false,
           "label": "low",
           "text": "2 tuần 1 lần"
@@ -247,7 +248,7 @@
           "text": "Thấp"
         },
         "pot": {
-          "cm": 18.0,
+          "cm": 18,
           "kind": "pot",
           "text": "Chậu 18cm"
         }
@@ -285,7 +286,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 tuần 1 lần."
         }
-      ]
+      ],
+      "costPrice": 91000
     },
     {
       "id": "3",
@@ -375,7 +377,7 @@
           "text": "Cao"
         },
         "pot": {
-          "cm": 15.0,
+          "cm": 15,
           "kind": "pot",
           "text": "Chậu 15cm"
         }
@@ -413,7 +415,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 84000
     },
     {
       "id": "4",
@@ -488,7 +491,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 7.0,
+          "days": 7,
           "hydro": false,
           "label": "medium",
           "text": "1 lần/tuần"
@@ -504,7 +507,7 @@
           "text": "Trung bình"
         },
         "pot": {
-          "cm": 14.0,
+          "cm": 14,
           "kind": "hanging",
           "text": "Chậu treo 14cm"
         }
@@ -542,7 +545,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 48000
     },
     {
       "id": "5",
@@ -634,7 +638,7 @@
           "text": "Cao"
         },
         "pot": {
-          "cm": 14.0,
+          "cm": 14,
           "kind": "hanging",
           "text": "Chậu treo 14cm"
         }
@@ -672,7 +676,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 66000
     },
     {
       "id": "6",
@@ -740,7 +745,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 10.0,
+          "days": 10,
           "hydro": false,
           "label": "low",
           "text": "10 ngày 1 lần"
@@ -756,7 +761,7 @@
           "text": "Thấp"
         },
         "pot": {
-          "cm": 8.0,
+          "cm": 8,
           "kind": "pot",
           "text": "Chậu 8cm"
         }
@@ -794,7 +799,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 10 ngày 1 lần."
         }
-      ]
+      ],
+      "costPrice": 25000
     },
     {
       "id": "7",
@@ -862,7 +868,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 10.0,
+          "days": 10,
           "hydro": false,
           "label": "low",
           "text": "10 ngày 1 lần"
@@ -879,7 +885,7 @@
           "text": "Thấp"
         },
         "pot": {
-          "cm": 8.0,
+          "cm": 8,
           "kind": "pot",
           "text": "Chậu 8cm"
         }
@@ -917,7 +923,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 10 ngày 1 lần."
         }
-      ]
+      ],
+      "costPrice": 29000
     },
     {
       "id": "8",
@@ -991,7 +998,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 14.0,
+          "days": 14,
           "hydro": false,
           "label": "low",
           "text": "2 tuần 1 lần"
@@ -1007,7 +1014,7 @@
           "text": "Thấp"
         },
         "pot": {
-          "cm": 12.0,
+          "cm": 12,
           "kind": "hanging",
           "text": "Chậu treo 12cm"
         }
@@ -1045,7 +1052,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 tuần 1 lần."
         }
-      ]
+      ],
+      "costPrice": 48000
     },
     {
       "id": "9",
@@ -1120,7 +1128,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 14.0,
+          "days": 14,
           "hydro": false,
           "label": "low",
           "text": "2 tuần 1 lần"
@@ -1137,7 +1145,7 @@
           "text": "Thấp"
         },
         "pot": {
-          "cm": 16.0,
+          "cm": 16,
           "kind": "pot",
           "text": "Chậu 16cm"
         }
@@ -1175,7 +1183,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 tuần 1 lần."
         }
-      ]
+      ],
+      "costPrice": 71000
     },
     {
       "id": "10",
@@ -1243,7 +1252,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 21.0,
+          "days": 21,
           "hydro": false,
           "label": "low",
           "text": "3 tuần 1 lần"
@@ -1259,7 +1268,7 @@
           "text": "Rất thấp"
         },
         "pot": {
-          "cm": 10.0,
+          "cm": 10,
           "kind": "pot",
           "text": "Chậu 10cm"
         }
@@ -1297,7 +1306,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 3 tuần 1 lần."
         }
-      ]
+      ],
+      "costPrice": 52000
     },
     {
       "id": "11",
@@ -1388,7 +1398,7 @@
           "text": "Rất cao"
         },
         "pot": {
-          "cm": 14.0,
+          "cm": 14,
           "kind": "pot",
           "text": "Chậu 14cm"
         }
@@ -1426,7 +1436,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 62000
     },
     {
       "id": "12",
@@ -1517,7 +1528,7 @@
           "text": "Rất cao"
         },
         "pot": {
-          "cm": 14.0,
+          "cm": 14,
           "kind": "pot",
           "text": "Chậu 14cm"
         }
@@ -1555,7 +1566,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 2–3 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 109000
     },
     {
       "id": "13",
@@ -1629,7 +1641,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 21.0,
+          "days": 21,
           "hydro": false,
           "label": "low",
           "text": "3 tuần 1 lần"
@@ -1647,7 +1659,7 @@
           "text": "Thấp"
         },
         "pot": {
-          "cm": 12.0,
+          "cm": 12,
           "kind": "pot",
           "text": "Chậu 12cm"
         }
@@ -1685,7 +1697,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 3 tuần 1 lần."
         }
-      ]
+      ],
+      "costPrice": 91000
     },
     {
       "id": "14",
@@ -1759,7 +1772,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 7.0,
+          "days": 7,
           "hydro": false,
           "label": "medium",
           "text": "1 lần/tuần"
@@ -1776,7 +1789,7 @@
           "text": "Trung bình"
         },
         "pot": {
-          "cm": 12.0,
+          "cm": 12,
           "kind": "hanging",
           "text": "Chậu treo 12cm"
         }
@@ -1814,7 +1827,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 54000
     },
     {
       "id": "15",
@@ -1888,7 +1902,7 @@
       ],
       "careCard": {
         "water": {
-          "days": 7.0,
+          "days": 7,
           "hydro": false,
           "label": "medium",
           "text": "1 lần/tuần"
@@ -1905,7 +1919,7 @@
           "text": "Trung bình"
         },
         "pot": {
-          "cm": 22.0,
+          "cm": 22,
           "kind": "pot",
           "text": "Chậu 22cm"
         }
@@ -1943,7 +1957,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 218000
     },
     {
       "id": "16",
@@ -2034,7 +2049,7 @@
           "text": "Trung bình"
         },
         "pot": {
-          "cm": 12.0,
+          "cm": 12,
           "kind": "vase",
           "text": "Bình thủy tinh 12cm"
         }
@@ -2072,7 +2087,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: thay nước mỗi tuần."
         }
-      ]
+      ],
+      "costPrice": 99000
     },
     {
       "id": "17",
@@ -2162,7 +2178,7 @@
           "text": "Cao"
         },
         "pot": {
-          "cm": 16.0,
+          "cm": 16,
           "kind": "pot",
           "text": "Chậu 16cm"
         }
@@ -2200,7 +2216,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1–2 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 126000
     },
     {
       "id": "18",
@@ -2290,7 +2307,7 @@
           "text": "Cao"
         },
         "pot": {
-          "cm": 20.0,
+          "cm": 20,
           "kind": "pot",
           "text": "Chậu 20cm"
         }
@@ -2328,7 +2345,8 @@
           "title": "Kiểm tra & vào nhịp",
           "text": "Lau bụi trên lá, xoay chậu 1/4 vòng cho cây mọc đều. Từ đây: tưới 1–2 lần/tuần."
         }
-      ]
+      ],
+      "costPrice": 172000
     },
     {
       "id": "19",
@@ -2348,7 +2366,8 @@
       "isFeatured": false,
       "stock": 35,
       "addedDate": "2026-05-15T00:00:00.000Z",
-      "labelIds": []
+      "labelIds": [],
+      "costPrice": 66000
     },
     {
       "id": "20",
@@ -2368,7 +2387,8 @@
       "isFeatured": false,
       "stock": 50,
       "addedDate": "2026-06-10T00:00:00.000Z",
-      "labelIds": []
+      "labelIds": [],
+      "costPrice": 38000
     }
   ],
   "users": [
@@ -6978,6 +6998,14 @@
       "detail": "Đơn #Qi4FKUzJ3eg: Đã giao thành công",
       "createdAt": "2026-11-14T14:20:00.720Z",
       "id": "CPN6I7lBXXc"
+    },
+    {
+      "staffId": "1",
+      "staffName": "Quản trị viên",
+      "action": "product_price",
+      "detail": "Sửa sản phẩm \"Lưỡi Hổ Vàng\": giá 165.000 ₫ → 16.500 ₫; giá size \"Nhỏ — 20cm\" 165.000 ₫ → 16.500 ₫",
+      "createdAt": "2026-11-16T03:30:41.189Z",
+      "id": "3ulZtek"
     }
   ],
   "stockAlerts": [

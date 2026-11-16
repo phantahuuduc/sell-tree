@@ -265,8 +265,8 @@ flowchart LR
 `admin.html` (12 tab: Thống kê · Đơn hàng · Sản phẩm · Danh mục · Nhãn sản phẩm · Đánh giá · Khuyến mãi · Mã giảm · Banner · Tài khoản · Nhật ký NV · Cài đặt)
 ```mermaid
 flowchart TD
-  A[admin.html] --> P1[Thống kê tháng/quý/năm<br/>+ nhập SP từ Excel]
-  A --> P2[Sản phẩm CRUD + upload ảnh]
+  A[admin.html] --> P1[Thống kê tháng/quý/năm<br/>+ lợi nhuận gộp & biên lợi nhuận<br/>+ nhập SP từ Excel]
+  A --> P2[Sản phẩm CRUD + upload ảnh<br/>+ giá vốn & biên lợi nhuận tức thì]
   A --> P3[Đơn hàng: đổi trạng thái]
   A --> P4[Tài khoản: đổi vai trò, khóa/mở,<br/>thêm nhân viên, lọc]
   A --> P5[Nhật ký NV]
@@ -408,6 +408,22 @@ flowchart TD
   J -->|Không| M[Nói bằng lời:<br/>'Khách ghé tiệm hay chọn nhất dạo này']
 ```
 *Ví dụ: `[10, 8, 8, 8]` → 1 cây · `[10, 10, 8, 5]` → 3 cây (hai cây đầu đồng hạng 1) · `[9, 7, 5, 5]` → 2 cây · `[5, 5, 5, 5]` → "Tiệm chọn giúp bạn". Bố cục: 1 cây → một khối ngang lớn; 2 cây → khối lớn + 1 thẻ đứng; 3 cây → khối lớn + 2 thẻ xếp chồng; điện thoại xếp dọc. Khách không thấy câu giải thích cách tính — chỉ có chữ "i" nhỏ cạnh phụ đề.*
+
+---
+
+## 28. Giá vốn & lợi nhuận (chỉ admin)
+`sale.js` (`profitOf`, `profitByProduct`, `lineCost`) · `api.js` (cost-stripping interceptor, `withCostAtSale`) · `admin-dashboard.js` · `report.js` · `admin.html`
+```mermaid
+flowchart TD
+  A[Sản phẩm có costPrice] --> B[api.js interceptor<br/>lọc bỏ costPrice/costAtSale<br/>nếu không phải admin]
+  A --> C[Admin sửa SP: ô Giá vốn<br/>hiển thị biên tức thì, cảnh báo lỗ]
+  A --> D[Tạo đơn: withCostAtSale<br/>chụp costPrice → costAtSale trong item]
+  D --> E[sale.js: lineCost<br/>costAtSale → costPrice hiện tại → 0]
+  E --> F[profitOf: lợi nhuận gộp + biên %<br/>cùng bộ lọc isCompletedSale]
+  F --> G[Dashboard: phiếu lợi nhuận,<br/>đường lợi nhuận trên biểu đồ,<br/>bảng lợi nhuận theo sản phẩm]
+  F --> H[Export: cột giá vốn/lợi nhuận<br/>trong Excel & TXT (chỉ admin)]
+```
+*Giá vốn tuyệt đối không hiện cho khách (trang chủ, chi tiết, giỏ hàng, đơn hàng khách, chatbot, hóa đơn). Đơn cũ chưa có costAtSale thì ước tính từ costPrice hiện tại, ghi chú rõ trên dashboard.*
 
 ---
 

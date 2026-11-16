@@ -358,8 +358,10 @@
     // Thống kê: toàn bộ nằm ở js/admin-dashboard.js (bộ lọc thời gian, chỉ số chính, các khối)
     let dashboard = null;
     let dashOrders = [];
+    let dashProducts = [];
     function loadDashboard(allOrders, products = [], users = [], categories = []) {
       dashOrders = allOrders;
+      dashProducts = products;
       dashboard = initAdminDashboard(document.getElementById("dashRoot"), { orders: allOrders, products, users, categories });
     }
 
@@ -373,14 +375,14 @@
         return r ? dashOrders.filter((o) => { const d = new Date(o.createdAt); return d >= r.from && d < r.to; }) : dashOrders;
       };
       const rangeName = () => (dashboard?.getRange().label || "TatCa").replace(/[^0-9A-Za-zÀ-ỹ]+/g, "_");
-      bind("exportRangeExcel", async () => exportToExcel(rangeOrders(), `DoanhThu_${rangeName()}.xlsx`));
-      bind("exportRangeTxt", async () => exportToTxt(rangeOrders(), `DoanhThu_${rangeName()}.txt`));
-      bind("exportMonthExcel", async () => exportToExcel(await getOrdersInRange("month"), `DoanhThu_Thang_${now().getMonth() + 1}_${now().getFullYear()}.xlsx`));
-      bind("exportMonthTxt", async () => exportToTxt(await getOrdersInRange("month"), `DoanhThu_Thang_${now().getMonth() + 1}_${now().getFullYear()}.txt`));
-      bind("exportQuarterExcel", async () => exportToExcel(await getOrdersInRange("quarter"), `DoanhThu_Quy_${Math.floor(now().getMonth() / 3) + 1}_${now().getFullYear()}.xlsx`));
-      bind("exportQuarterTxt", async () => exportToTxt(await getOrdersInRange("quarter"), `DoanhThu_Quy_${Math.floor(now().getMonth() / 3) + 1}_${now().getFullYear()}.txt`));
-      bind("exportYearExcel", async () => exportToExcel(await getOrdersInRange("year"), `DoanhThu_Nam_${now().getFullYear()}.xlsx`));
-      bind("exportYearTxt", async () => exportToTxt(await getOrdersInRange("year"), `DoanhThu_Nam_${now().getFullYear()}.txt`));
+      bind("exportRangeExcel", async () => exportToExcel(rangeOrders(), `DoanhThu_${rangeName()}.xlsx`, dashProducts));
+      bind("exportRangeTxt", async () => exportToTxt(rangeOrders(), `DoanhThu_${rangeName()}.txt`, dashProducts));
+      bind("exportMonthExcel", async () => exportToExcel(await getOrdersInRange("month"), `DoanhThu_Thang_${now().getMonth() + 1}_${now().getFullYear()}.xlsx`, dashProducts));
+      bind("exportMonthTxt", async () => exportToTxt(await getOrdersInRange("month"), `DoanhThu_Thang_${now().getMonth() + 1}_${now().getFullYear()}.txt`, dashProducts));
+      bind("exportQuarterExcel", async () => exportToExcel(await getOrdersInRange("quarter"), `DoanhThu_Quy_${Math.floor(now().getMonth() / 3) + 1}_${now().getFullYear()}.xlsx`, dashProducts));
+      bind("exportQuarterTxt", async () => exportToTxt(await getOrdersInRange("quarter"), `DoanhThu_Quy_${Math.floor(now().getMonth() / 3) + 1}_${now().getFullYear()}.txt`, dashProducts));
+      bind("exportYearExcel", async () => exportToExcel(await getOrdersInRange("year"), `DoanhThu_Nam_${now().getFullYear()}.xlsx`, dashProducts));
+      bind("exportYearTxt", async () => exportToTxt(await getOrdersInRange("year"), `DoanhThu_Nam_${now().getFullYear()}.txt`, dashProducts));
     }
 
     function initImport() {
@@ -556,6 +558,11 @@
                 <input id="pr_oldprice" name="oldPrice" type="number" min="0" value="${product?.oldPrice ?? ""}">
               </div>
               <div class="sale-form__group">
+                <label for="pr_cost">Giá vốn (VND) <span class="muted" style="font-weight:400">(chỉ admin thấy)</span></label>
+                <input id="pr_cost" name="costPrice" type="number" min="0" value="${product?.costPrice ?? ""}" placeholder="VD: 85000">
+                <small id="pr_costNote" class="cost-note" aria-live="polite"></small>
+              </div>
+              <div class="sale-form__group">
                 <label for="pr_stock">Tồn kho *</label>
                 <input id="pr_stock" name="stock" type="number" min="0" required value="${product?.stock ?? 10}">
               </div>
@@ -678,14 +685,36 @@
           priceNote.textContent = "";
         }
       };
+      // Biên lợi nhuận tức thì + cảnh báo bán lỗ (chỉ nhắc, không chặn lưu)
+      const costInput = document.getElementById("pr_cost");
+      const costNote = document.getElementById("pr_costNote");
+      const syncCost = () => {
+        const price = Number(priceInput.value) || 0;
+        const raw = costInput.value.trim();
+        costNote.className = "cost-note";
+        if (raw === "" || price <= 0) { costNote.textContent = raw === "" ? "Chưa nhập giá vốn — sản phẩm này chưa tính được lãi." : ""; return; }
+        const cost = Number(raw) || 0;
+        const gain = price - cost;
+        const pct = Math.round((gain / price) * 100);
+        if (gain <= 0) {
+          costNote.classList.add("cost-note--loss");
+          costNote.textContent = `⚠ Bán lỗ: giá vốn ${vnd(cost)} ≥ giá bán ${vnd(price)} (lỗ ${vnd(-gain)}).`;
+        } else {
+          costNote.textContent = `Lãi gộp ${vnd(gain)} — ${pct}%`;
+        }
+      };
+      costInput.addEventListener("input", syncCost);
+      priceInput.addEventListener("input", syncCost);
       (product?.variants || []).forEach(addVariantRow);
       syncPrice();
-      document.getElementById("pr_addVariant").addEventListener("click", () => { addVariantRow(); syncPrice(); });
-      vBox.addEventListener("input", syncPrice);
+      syncCost();
+      document.getElementById("pr_addVariant").addEventListener("click", () => { addVariantRow(); syncPrice(); syncCost(); });
+      vBox.addEventListener("input", () => { syncPrice(); syncCost(); });
       vBox.addEventListener("click", (e) => {
         if (!e.target.closest("[data-v-del]")) return;
         e.target.closest(".variant-editor__row").remove();
         syncPrice();
+        syncCost();
       });
 
       document.getElementById("btnCancelProduct").addEventListener("click", () => { wrap.hidden = true; });
@@ -758,12 +787,17 @@
           return;
         }
         data.oldPrice = oldPrice || null;
+        // Giá vốn: để trống = không có (không ghi đè bằng số 0)
+        const costRaw = String(fd.get("costPrice") ?? "").trim();
+        if (costRaw !== "") data.costPrice = Math.max(0, Number(costRaw) || 0);
+        else if (isEdit && product.costPrice != null) data.costPrice = null;
         if (!isEdit) data.addedDate = new Date().toISOString();
         try {
           if (isEdit) {
             await updateProduct(product.id, data);
             showToast("Đã cập nhật sản phẩm");
             const ch = productChanges(product, { ...product, ...data });
+            if (ch.cost) await adminLog("product_cost", `Đổi giá vốn "${data.name}": ${ch.cost}`);
             if (ch.out.length) {
               const act = ch.price ? "product_price" : (ch.stock && ch.out.length === 1 ? "product_stock" : "product_update");
               await adminLog(act, `Sửa sản phẩm "${data.name}": ${ch.out.join("; ")}`);
@@ -1423,7 +1457,7 @@
     // So sánh sản phẩm trước / sau khi sửa → các thay đổi đáng ghi + cờ đổi giá / đổi tồn kho
     function productChanges(a, b) {
       const out = [];
-      let price = false, stock = false;
+      let price = false, stock = false, cost = "";
       if (a.name !== b.name) out.push(`tên "${a.name}" → "${b.name}"`);
       if (Number(a.price) !== Number(b.price)) { out.push(`giá ${vnd(a.price)} → ${vnd(b.price)}`); price = true; }
       if ((Number(a.oldPrice) || 0) !== (Number(b.oldPrice) || 0)) { out.push(`giá trước giảm ${a.oldPrice ? vnd(a.oldPrice) : "—"} → ${b.oldPrice ? vnd(b.oldPrice) : "—"}`); price = true; }
@@ -1434,13 +1468,15 @@
         out.push(va[k] == null ? `thêm size "${k}" ${vnd(vb[k])}` : vb[k] == null ? `bỏ size "${k}"` : `giá size "${k}" ${vnd(va[k])} → ${vnd(vb[k])}`);
         price = true;
       });
+      const ca = a.costPrice == null ? null : Number(a.costPrice), cb = b.costPrice == null ? null : Number(b.costPrice);
+      if (ca !== cb) cost = `${ca == null ? "chưa có" : vnd(ca)} → ${cb == null ? "bỏ trống" : vnd(cb)}`;
       if (Number(a.stock) !== Number(b.stock)) { out.push(`tồn kho ${Number(a.stock) || 0} → ${Number(b.stock) || 0}`); stock = true; }
       if (String(a.categoryId) !== String(b.categoryId)) out.push(`danh mục ${catName(a.categoryId)} → ${catName(b.categoryId)}`);
       if ((a.scientificName || "") !== (b.scientificName || "")) out.push("tên khoa học");
       if ((a.image || "") !== (b.image || "")) out.push("ảnh");
       if ((a.description || "") !== (b.description || "")) out.push("mô tả");
       if (JSON.stringify(a.labelIds || []) !== JSON.stringify(b.labelIds || [])) out.push("nhãn");
-      return { out, price, stock };
+      return { out, price, stock, cost };
     }
     // Thay đổi của khuyến mãi / mã giảm giá (trả cờ pct khi % giảm đổi — xếp vào nhóm quan trọng)
     function discountChanges(a, b, fields) {
