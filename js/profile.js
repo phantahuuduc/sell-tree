@@ -176,6 +176,7 @@ const TX_LABEL = {
   topup: "Nạp ví",
   payment: "Thanh toán đơn",
   refund: "Hoàn tiền",
+  deduction: "Thu hồi / điều chỉnh",
 };
 const TX_STATUS = {
   pending: `<span class="chip chip--mid">Chờ duyệt</span>`,
@@ -195,8 +196,9 @@ async function loadWallet() {
     const rows = txs
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .map((t) => {
-        const sign = t.type === "payment" ? "−" : "+";
-        const color = t.type === "payment" ? "#c0392b" : "#2E5E3A";
+        const isMinus = t.type === "payment" || t.type === "deduction";
+        const sign = isMinus ? "−" : "+";
+        const color = isMinus ? "#c0392b" : "#2E5E3A";
         return `
           <tr>
             <td>${new Date(t.createdAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
